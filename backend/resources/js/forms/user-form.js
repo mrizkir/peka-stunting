@@ -1,4 +1,4 @@
-export function createRegisterForm(initialForm = {}, initialErrors = {}) {
+export function createUserForm(initialForm = {}, initialErrors = {}, options = {}) {
   return {
     submitting: false,
     form: {
@@ -21,6 +21,7 @@ export function createRegisterForm(initialForm = {}, initialErrors = {}) {
       password_confirmation: '',
       ...initialErrors,
     },
+    isEdit: Boolean(options.isEdit),
     asString(value) {
       return typeof value === 'string' ? value : '';
     },
@@ -76,7 +77,9 @@ export function createRegisterForm(initialForm = {}, initialErrors = {}) {
       }
 
       if (field === 'password') {
-        if (!this.form.password) {
+        if (this.isEdit && !this.form.password) {
+          this.errors.password = '';
+        } else if (!this.form.password) {
           this.errors.password = 'Password wajib diisi.';
         } else if (this.form.password.length < 8) {
           this.errors.password = 'Password minimal 8 karakter.';
@@ -93,7 +96,9 @@ export function createRegisterForm(initialForm = {}, initialErrors = {}) {
       }
 
       if (field === 'password_confirmation') {
-        if (!this.form.password_confirmation) {
+        if (this.isEdit && !this.form.password && !this.form.password_confirmation) {
+          this.errors.password_confirmation = '';
+        } else if (!this.form.password_confirmation) {
           this.errors.password_confirmation = 'Konfirmasi password wajib diisi.';
         } else if (this.form.password !== this.form.password_confirmation) {
           this.errors.password_confirmation = 'Konfirmasi password tidak cocok.';
@@ -115,7 +120,7 @@ export function createRegisterForm(initialForm = {}, initialErrors = {}) {
 
       if (this.validateForm()) {
         this.submitting = true;
-        this.$refs.registerForm.submit();
+        this.$refs.userForm.submit();
       }
     },
   };

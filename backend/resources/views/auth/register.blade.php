@@ -100,29 +100,19 @@
             <p class="text-error text-sm">{{ $message }}</p>
           @enderror
 
-          <label class="block">
-            <span class="mb-2 block text-sm font-medium text-base-content/80">Jenis Kelamin</span>
-            <div class="relative">
-              <select
-                name="gender"
-                x-model="form.gender"
-                @change="validateField('gender')"
-                @blur="validateField('gender')"
-                :aria-invalid="errors.gender ? 'true' : 'false'"
-                :class="errors.gender ? 'border-error focus:border-error focus:ring-error/20' : ''"
-                class="bg-base-100 border-base-300 text-base-content focus:border-primary focus:ring-primary/15 block w-full appearance-none rounded-md border px-4 py-3 pr-12 text-sm shadow-sm outline-none transition focus:ring-4"
-              >
-                <option value="">Pilih jenis kelamin</option>
-                <option value="L" @selected(old('gender') === 'L')>Laki-laki</option>
-                <option value="P" @selected(old('gender') === 'P')>Perempuan</option>
-              </select>
-              <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-base-content/70">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.118l3.71-3.89a.75.75 0 111.08 1.04l-4.25 4.455a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                </svg>
-              </span>
-            </div>
-          </label>
+          <x-ui.select
+            label="Jenis Kelamin"
+            name="gender"
+            x-model="form.gender"
+            @change="validateField('gender')"
+            @blur="validateField('gender')"
+            :aria-invalid="errors.gender ? 'true' : 'false'"
+            :class="errors.gender ? 'border-error focus:border-error focus:ring-error/20' : ''"
+          >
+            <option value="">Pilih jenis kelamin</option>
+            <option value="L" @selected(old('gender') === 'L')>Laki-laki</option>
+            <option value="P" @selected(old('gender') === 'P')>Perempuan</option>
+          </x-ui.select>
           <p x-show="errors.gender" x-text="errors.gender" class="text-error text-sm"></p>
           @error('gender')
             <p class="text-error text-sm">{{ $message }}</p>
@@ -171,7 +161,15 @@
           />
           <p x-show="errors.password_confirmation" x-text="errors.password_confirmation" class="text-error text-sm"></p>
 
-          <x-ui.button type="button" class="w-full" @click.prevent="submitForm()">Daftar</x-ui.button>
+          <x-ui.button
+            type="button"
+            class="w-full"
+            @click.prevent="submitForm()"
+            x-bind:disabled="submitting"
+          >
+            <span x-show="!submitting">Daftar</span>
+            <span x-show="submitting">Memproses...</span>
+          </x-ui.button>
         </form>
 
         <p class="mt-4 text-center text-sm text-base-content/70">
