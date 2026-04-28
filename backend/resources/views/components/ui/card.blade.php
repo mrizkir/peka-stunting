@@ -3,7 +3,7 @@
     'description' => null,
 ])
 
-<section {{ $attributes->class('bg-base-100 border-base-300/70 rounded-3xl border p-6 shadow-sm') }}>
+<section {{ $attributes->class('bg-base-100 border-base-300/70 rounded-md border p-6 shadow-sm') }}>
     @if ($title || $description)
         <div class="mb-5">
             @if ($title)
