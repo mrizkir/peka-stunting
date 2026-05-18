@@ -5,14 +5,16 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
 	/** @use HasFactory<UserFactory> */
-	use HasFactory, Notifiable, HasRoles;
+	use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
 	/**
 	 * The attributes that are mass assignable.
@@ -50,5 +52,10 @@ class User extends Authenticatable
 			'birth_date' => 'date',
 			'password' => 'hashed',
 		];
+	}
+
+	public function updatedEducationContents(): HasMany
+	{
+		return $this->hasMany(EducationContent::class, 'updated_by');
 	}
 }

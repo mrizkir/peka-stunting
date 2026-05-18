@@ -27,11 +27,8 @@
           <a href="{{ url('/') }}" class="{{ request()->is('/') ? 'nav-link-active' : 'nav-link' }}">
             Dashboard
           </a>
-          <a href="{{ route('education.index') }}" class="{{ request()->routeIs('education.index') ? 'nav-link-active' : 'nav-link' }}">
+          <a href="{{ route('education.index') }}" class="{{ request()->routeIs('education.*') ? 'nav-link-active' : 'nav-link' }}">
             Menu edukasi
-          </a>
-          <a href="{{ route('education.show') }}" class="{{ request()->routeIs('education.show') ? 'nav-link-active' : 'nav-link' }}">
-            Detail konten
           </a>
           @role('admin')
             <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'nav-link-active' : 'nav-link' }}">
@@ -46,13 +43,6 @@
             Logout
           </button>
         </form>
-
-        <div class="from-primary to-secondary text-primary-content mt-8 rounded-3xl bg-gradient-to-br p-5 shadow-lg">
-          <p class="text-sm font-semibold">Sprint 1 focus</p>
-          <p class="text-primary-content/85 mt-2 text-sm leading-6">
-            Setup base layout Tailwind, komponen reusable, dan template halaman edukasi yang siap dihubungkan ke data backend.
-          </p>
-        </div>
       </aside>
 
       <div class="min-w-0">

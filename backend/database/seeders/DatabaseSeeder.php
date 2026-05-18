@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(RoleSeeder::class);
+        $this->call(EducationTaxonomySeeder::class);
         
         $admin = User::firstOrCreate([
           'email' => 'admin@anugerahbintan.ac.id',
@@ -27,5 +28,15 @@ class DatabaseSeeder extends Seeder
           'gender' => 'L',
       ]);
       $admin->assignRole('admin');
+
+        $kader = User::firstOrCreate([
+            'email' => 'kader@anugerahbintan.ac.id',
+        ], [
+            'name' => 'Kader Demo',
+            'password' => Hash::make('12345678'),
+            'phone' => '081234567892',
+            'gender' => 'P',
+        ]);
+        $kader->assignRole('kader');
     }
 }

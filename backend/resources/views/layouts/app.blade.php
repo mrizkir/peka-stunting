@@ -38,12 +38,6 @@
           </a>
         </nav>
 
-        <div class="from-primary to-secondary text-primary-content mt-8 rounded-3xl bg-gradient-to-br p-5 shadow-lg">
-          <p class="text-sm font-semibold">Sprint 1 focus</p>
-          <p class="text-primary-content/85 mt-2 text-sm leading-6">
-            Setup base layout Tailwind, komponen reusable, dan template halaman edukasi yang siap dihubungkan ke data backend.
-          </p>
-        </div>
       </aside>
 
       <div class="min-w-0">

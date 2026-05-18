@@ -1,12 +1,12 @@
 <x-layouts.app
     title="Menu Edukasi"
     eyebrow="Fixed content"
-    heading="Template Daftar Menu Edukasi"
+    :heading="$menu['title']"
     :description="$menu['description']"
 >
     <x-slot:headerActions>
-        <x-ui.button variant="secondary">Preview mobile</x-ui.button>
-        <x-ui.button>Lihat struktur menu</x-ui.button>
+        <a href="{{ route('education.index') }}" class="inline-flex items-center justify-center rounded-md bg-base-100 px-4 py-2.5 text-sm font-semibold text-base-content ring-1 ring-inset ring-base-300 hover:bg-base-200">Semua menu</a>
+        <a href="{{ route('dashboard') }}" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-content hover:bg-primary/90 shadow-sm">Dashboard</a>
     </x-slot:headerActions>
 
     <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -34,7 +34,7 @@
                                         <x-ui.badge :tone="$item['status'] === 'Published' ? 'success' : 'warning'">
                                             {{ $item['status'] }}
                                         </x-ui.badge>
-                                        <a href="{{ route('education.show') }}" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">Buka</a>
+                                        <a href="{{ route('education.contents.show', ['menu' => $menu['slug'], 'item' => $item['slug']]) }}" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">Buka</a>
                                     </div>
                                 </div>
                             @endforeach

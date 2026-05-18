@@ -6,7 +6,7 @@
 >
     <x-slot:headerActions>
         <x-ui.button variant="secondary">Export ringkas</x-ui.button>
-        <x-ui.button>Tambah konten</x-ui.button>
+        <a href="{{ route('education.index') }}" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-content hover:bg-primary/90 shadow-sm">Kelola edukasi</a>
     </x-slot:headerActions>
 
     <div class="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
@@ -20,13 +20,13 @@
 
                 <x-ui.card>
                     <p class="text-sm text-slate-500">Konten siap tayang</p>
-                    <p class="mt-3 text-3xl font-semibold text-slate-950">2</p>
+                    <p class="mt-3 text-3xl font-semibold text-slate-950">{{ $publishedCount }}</p>
                     <p class="mt-2 text-sm text-slate-500">Contoh status publish untuk halaman edukasi statis.</p>
                 </x-ui.card>
 
                 <x-ui.card>
                     <p class="text-sm text-slate-500">Kalkulator prioritas</p>
-                    <p class="mt-3 text-3xl font-semibold text-slate-950">5</p>
+                    <p class="mt-3 text-3xl font-semibold text-slate-950">{{ $calculatorCount }}</p>
                     <p class="mt-2 text-sm text-slate-500">Blade khusus untuk IMT, LILA, anemia, laktasi, dan status gizi.</p>
                 </x-ui.card>
             </div>
@@ -45,7 +45,7 @@
 
                             <div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 text-sm">
                                 <span class="text-slate-500">{{ $menu['slug'] }}</span>
-                                <a href="{{ route('education.index') }}" class="font-medium text-emerald-600 hover:text-emerald-700">Lihat template</a>
+                                <a href="{{ route('education.menus.show', $menu['slug']) }}" class="font-medium text-emerald-600 hover:text-emerald-700">Kelola konten</a>
                             </div>
                         </article>
                     @endforeach
@@ -57,7 +57,7 @@
             <x-ui.card title="Konten Terbaru" description="Contoh list ringkas untuk panel samping admin.">
                 <div class="space-y-4">
                     @foreach ($recentContents as $item)
-                        <div class="rounded-2xl border border-slate-200 p-4">
+                        <a href="{{ $item['url'] }}" class="block rounded-2xl border border-slate-200 p-4 transition hover:border-emerald-300 hover:bg-emerald-50/40">
                             <div class="flex items-center justify-between gap-3">
                                 <div>
                                     <p class="font-medium text-slate-900">{{ $item['title'] }}</p>
@@ -70,18 +70,9 @@
                             </div>
 
                             <p class="mt-3 text-xs font-medium uppercase tracking-wide text-slate-400">{{ $item['updated_at'] }}</p>
-                        </div>
+                        </a>
                     @endforeach
                 </div>
-            </x-ui.card>
-
-            <x-ui.card title="Checklist Template" description="Ringkasan target yang sedang dikerjakan untuk fondasi UI backend.">
-                <ul class="space-y-3 text-sm text-slate-600">
-                    <li class="flex items-center gap-3"><span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span> Base layout dashboard</li>
-                    <li class="flex items-center gap-3"><span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span> Komponen card, badge, button, input</li>
-                    <li class="flex items-center gap-3"><span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span> Halaman detail konten edit mode</li>
-                    <li class="flex items-center gap-3"><span class="h-2.5 w-2.5 rounded-full bg-slate-300"></span> Halaman blade kalkulator spesifik</li>
-                </ul>
             </x-ui.card>
         </div>
     </div>
