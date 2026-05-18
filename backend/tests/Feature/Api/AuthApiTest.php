@@ -20,6 +20,45 @@ class AuthApiTest extends TestCase
 		$this->seed(RoleSeeder::class);
 	}
 
+	public function test_register_creates_user_with_user_role_and_token(): void
+	{
+		$response = $this->postJson('/api/v1/auth/register', [
+			'name' => 'Orang Tua Demo',
+			'email' => 'user@test.com',
+			'phone' => '081234567890',
+			'gender' => 'P',
+			'birth_date' => '1990-01-15',
+			'password' => 'password123',
+			'password_confirmation' => 'password123',
+			'device_name' => 'flutter-test',
+		]);
+
+		$response
+			->assertCreated()
+			->assertJsonPath('success', true)
+			->assertJsonPath('data.user.email', 'user@test.com')
+			->assertJsonPath('data.user.roles.0', 'user')
+			->assertJsonPath('data.token_type', 'Bearer');
+
+		$this->assertNotEmpty($response->json('data.token'));
+		$this->assertDatabaseHas('users', ['email' => 'user@test.com']);
+	}
+
+	public function test_register_fails_with_duplicate_email(): void
+	{
+		User::factory()->create(['email' => 'user@test.com']);
+
+		$response = $this->postJson('/api/v1/auth/register', [
+			'name' => 'Duplikat',
+			'email' => 'user@test.com',
+			'phone' => '081111111111',
+			'password' => 'password123',
+			'password_confirmation' => 'password123',
+		]);
+
+		$response->assertUnprocessable();
+	}
+
 	public function test_login_returns_token_for_valid_credentials(): void
 	{
 		$user = User::factory()->create([

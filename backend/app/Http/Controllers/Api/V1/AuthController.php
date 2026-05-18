@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\LoginRequest;
+use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
 use App\Support\ApiResponse;
@@ -14,6 +15,31 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+	public function register(RegisterRequest $request): JsonResponse
+	{
+		$validated = $request->validated();
+
+		$user = User::create([
+			'name' => $validated['name'],
+			'email' => $validated['email'],
+			'password' => Hash::make($validated['password']),
+			'phone' => $validated['phone'],
+			'gender' => $validated['gender'] ?? null,
+			'birth_date' => $validated['birth_date'] ?? null,
+		]);
+
+		$user->assignRole('user');
+
+		$deviceName = $validated['device_name'] ?? 'mobile';
+		$token = $user->createToken($deviceName)->plainTextToken;
+
+		return ApiResponse::success([
+			'token' => $token,
+			'token_type' => 'Bearer',
+			'user' => (new UserResource($user))->resolve($request),
+		], 201);
+	}
+
 	public function login(LoginRequest $request): JsonResponse
 	{
 		$user = User::query()
