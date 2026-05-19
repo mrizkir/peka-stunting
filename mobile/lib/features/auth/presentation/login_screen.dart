@@ -16,8 +16,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'kader@anugerahbintan.ac.id');
-  final _passwordController = TextEditingController(text: '12345678');
+  final _emailController = TextEditingController(text: '');
+  final _passwordController = TextEditingController(text: '');
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -26,6 +26,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 6),
+          behavior: SnackBarBehavior.floating,
+          showCloseIcon: true,
+        ),
+      );
   }
 
   Future<void> _submit() async {
@@ -38,16 +51,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             _passwordController.text,
           );
     } on ApiException catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.displayMessage)),
-        );
-      }
+      if (mounted) _showErrorSnackBar(error.displayMessage);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login gagal. Periksa koneksi server.')),
-        );
+        _showErrorSnackBar('Login gagal. Periksa koneksi server.');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -77,7 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       alignment: Alignment.center,
                       child: const Text(
-                        'P',
+                        AppConfig.appName,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 28,
@@ -85,13 +92,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      AppConfig.appName,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
+                    
                     const SizedBox(height: 8),
                     Text(
                       'Masuk dengan akun kader atau akun pengguna yang sudah terdaftar.',

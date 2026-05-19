@@ -85,6 +85,21 @@ List<dynamic> parseApiList(dynamic responseData) {
   return [];
 }
 
+String _dioErrorMessage(DioException error) {
+  switch (error.type) {
+    case DioExceptionType.connectionTimeout:
+    case DioExceptionType.receiveTimeout:
+    case DioExceptionType.sendTimeout:
+      return 'Server tidak merespons. Pastikan backend berjalan dengan '
+          'php artisan serve --host=0.0.0.0, Mac dan HP satu WiFi, '
+          'dan flutter run memakai --dart-define=API_BASE_URL=http://<IP-Mac>:8000/api/v1';
+    case DioExceptionType.connectionError:
+      return 'Tidak dapat terhubung ke server. Periksa URL API dan koneksi jaringan.';
+    default:
+      return error.message ?? 'Tidak dapat terhubung ke server.';
+  }
+}
+
 Never rethrowApi(DioException error) {
   if (error.error is ApiException) {
     throw error.error as ApiException;
@@ -93,7 +108,7 @@ Never rethrowApi(DioException error) {
     throw ApiException('Sesi berakhir. Silakan login kembali.', statusCode: 401);
   }
   throw ApiException(
-    error.message ?? 'Tidak dapat terhubung ke server.',
+    _dioErrorMessage(error),
     statusCode: error.response?.statusCode,
   );
 }
