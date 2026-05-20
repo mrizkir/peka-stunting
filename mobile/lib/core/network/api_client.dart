@@ -90,9 +90,7 @@ String _dioErrorMessage(DioException error) {
     case DioExceptionType.connectionTimeout:
     case DioExceptionType.receiveTimeout:
     case DioExceptionType.sendTimeout:
-      return 'Server tidak merespons. Pastikan backend berjalan dengan '
-          'php artisan serve --host=0.0.0.0, Mac dan HP satu WiFi, '
-          'dan flutter run memakai --dart-define=API_BASE_URL=http://<IP-Mac>:8000/api/v1';
+      return 'Server tidak merespons. Periksa koneksi internet atau coba lagi.';
     case DioExceptionType.connectionError:
       return 'Tidak dapat terhubung ke server. Periksa URL API dan koneksi jaringan.';
     default:

@@ -1,8 +1,11 @@
 class AppConfig {
-  /// Emulator Android → host machine Laravel (`php artisan serve`).
+  static const String productionApiBaseUrl =
+      'https://peka-stunting.yacanet.com/api/v1';
+
+  /// Override untuk development lokal: `flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000/api/v1`
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000/api/v1',
+    defaultValue: productionApiBaseUrl,
   );
 
   static const String appName = 'PEKA Stunting';

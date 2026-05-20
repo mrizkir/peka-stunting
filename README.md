@@ -30,20 +30,13 @@ Akun demo:
 
 ## Mobile (Flutter)
 
-Panduan lengkap (HP fisik, emulator, `adb reverse`, troubleshooting): **[mobile/README.md](mobile/README.md)**.
+Panduan lengkap: **[mobile/README.md](mobile/README.md)**.
 
-### Ringkas
+App mengarah ke API production:
 
-**Backend** (terminal 1):
+**`https://peka-stunting.yacanet.com/api/v1`**
 
-```bash
-cd backend
-php artisan serve --host=0.0.0.0 --port=8000   # HP di WiFi yang sama
-# atau
-php artisan serve --host=127.0.0.1 --port=8000   # jika pakai adb reverse (USB)
-```
-
-**App** (terminal 2):
+Cukup internet di HP (WiFi atau mobile data). Tidak perlu `php artisan serve` untuk menjalankan mobile.
 
 ```bash
 cd mobile
@@ -51,29 +44,7 @@ flutter pub get
 flutter run -d <device_id>
 ```
 
-| Skenario | Perintah run |
-|----------|----------------|
-| Emulator | `flutter run` (default `http://10.0.2.2:8000/api/v1`) |
-| HP fisik, **WiFi sama** dengan laptop | `flutter run -d <id> --dart-define=API_BASE_URL=http://<IP-laptop>:8000/api/v1` |
-| HP **mobile data**, laptop WiFi (beda jaringan) | USB + `adb reverse`, lalu run dengan `127.0.0.1` (lihat bawah) |
-
-### HP mobile data + laptop WiFi (beda jaringan)
-
-IP LAN (`192.168.x.x`) tidak bisa diakses dari mobile data. Colok HP via USB, lalu:
-
-```bash
-adb reverse tcp:8000 tcp:8000
-```
-
-Backend: `php artisan serve --host=127.0.0.1 --port=8000`
-
-```bash
-cd mobile
-flutter run -d <device_id> \
-  --dart-define=API_BASE_URL=http://127.0.0.1:8000/api/v1
-```
-
-Ulangi `adb reverse` setelah cabut USB atau restart HP.
+Override ke backend lokal (opsional): lihat [mobile/README.md](mobile/README.md#development-lokal-opsional).
 
 ## Fitur mobile MVP
 

@@ -7,24 +7,24 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-	Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-	Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
-	Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-	Route::post('/register', [AuthController::class, 'register'])->name('register.store');
+  Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+  Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+  Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+  Route::post('/register', [AuthController::class, 'register'])->name('register.store');
 });
 
 Route::middleware('auth')->group(function () {
-	Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+  Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-	Route::prefix('education')->name('education.')->group(function () {
-		Route::get('/', [EducationController::class, 'index'])->name('index');
-		Route::get('/{menu:slug}', [EducationController::class, 'showMenu'])->name('menus.show');
-		Route::get('/{menu:slug}/{item}', [EducationController::class, 'showContent'])->name('contents.show');
-		Route::put('/{menu:slug}/{item}', [EducationController::class, 'updateContent'])
-			->name('contents.update')
-			->middleware('role:admin');
-	});
+  Route::prefix('education')->name('education.')->group(function () {
+    Route::get('/', [EducationController::class, 'index'])->name('index');
+    Route::get('/{menu:slug}', [EducationController::class, 'showMenu'])->name('menus.show');
+    Route::get('/{menu:slug}/{item}', [EducationController::class, 'showContent'])->name('contents.show');
+    Route::put('/{menu:slug}/{item}', [EducationController::class, 'updateContent'])
+      ->name('contents.update')
+      ->middleware('role:admin');
+  });
 
-	Route::resource('users', UserController::class)->except(['show'])->middleware('role:admin');
-	Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+  Route::resource('users', UserController::class)->except(['show'])->middleware('role:admin');
+  Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
