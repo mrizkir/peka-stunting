@@ -6,13 +6,13 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
-import '../../features/children/presentation/add_child_screen.dart';
-import '../../features/children/presentation/add_measurement_screen.dart';
-import '../../features/children/presentation/child_detail_screen.dart';
-import '../../features/children/presentation/children_list_screen.dart';
-import '../../features/education/presentation/education_content_screen.dart';
-import '../../features/education/presentation/education_menu_screen.dart';
-import '../../features/education/presentation/education_menus_screen.dart';
+import '../../features/home/presentation/app_info_screen.dart';
+import '../../features/kebutuhan_mu/presentation/kebutuhan_mu_content_screen.dart';
+import '../../features/kebutuhan_mu/presentation/kebutuhan_mu_menu_screen.dart';
+import '../../features/kebutuhan_mu/presentation/kebutuhan_mu_screen.dart';
+import '../../features/kebutuhan_mu/presentation/kebutuhan_mu_section_screen.dart';
+import '../../features/mengenal_stunting/presentation/mengenal_stunting_content_screen.dart';
+import '../../features/mengenal_stunting/presentation/mengenal_stunting_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -67,40 +67,41 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
-        path: '/education',
-        builder: (context, state) => const EducationMenusScreen(),
+        path: '/app-info',
+        builder: (context, state) => const AppInfoScreen(),
       ),
       GoRoute(
-        path: '/education/:menuSlug',
-        builder: (context, state) => EducationMenuScreen(
-          menuSlug: state.pathParameters['menuSlug']!,
+        path: '/mengenal-stunting',
+        builder: (context, state) => const MengenalStuntingScreen(),
+      ),
+      GoRoute(
+        path: '/mengenal-stunting/:itemSlug',
+        builder: (context, state) => MengenalStuntingContentScreen(
+          itemSlug: state.pathParameters['itemSlug']!,
         ),
       ),
       GoRoute(
-        path: '/education/:menuSlug/:itemSlug',
-        builder: (context, state) => EducationContentScreen(
+        path: '/kebutuhan-mu',
+        builder: (context, state) => const KebutuhanMuScreen(),
+      ),
+      GoRoute(
+        path: '/kebutuhan-mu/:menuSlug/:sectionSlug/:itemSlug',
+        builder: (context, state) => KebutuhanMuContentScreen(
           menuSlug: state.pathParameters['menuSlug']!,
           itemSlug: state.pathParameters['itemSlug']!,
         ),
       ),
       GoRoute(
-        path: '/children',
-        builder: (context, state) => const ChildrenListScreen(),
-      ),
-      GoRoute(
-        path: '/children/new',
-        builder: (context, state) => const AddChildScreen(),
-      ),
-      GoRoute(
-        path: '/children/:id',
-        builder: (context, state) => ChildDetailScreen(
-          childId: int.parse(state.pathParameters['id']!),
+        path: '/kebutuhan-mu/:menuSlug/:sectionSlug',
+        builder: (context, state) => KebutuhanMuSectionScreen(
+          menuSlug: state.pathParameters['menuSlug']!,
+          sectionSlug: state.pathParameters['sectionSlug']!,
         ),
       ),
       GoRoute(
-        path: '/children/:id/measurement',
-        builder: (context, state) => AddMeasurementScreen(
-          childId: int.parse(state.pathParameters['id']!),
+        path: '/kebutuhan-mu/:menuSlug',
+        builder: (context, state) => KebutuhanMuMenuScreen(
+          menuSlug: state.pathParameters['menuSlug']!,
         ),
       ),
     ],

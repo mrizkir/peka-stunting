@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
-/// Renders sanitized education HTML (headings, lists, emphasis).
-class EducationBodyHtml extends StatelessWidget {
-  const EducationBodyHtml({
+/// Renders sanitized HTML (headings, lists, emphasis).
+class MengenalStuntingBodyHtml extends StatelessWidget {
+  const MengenalStuntingBodyHtml({
     super.key,
     required this.html,
     this.placeholder = 'Belum ada isi konten.',
