@@ -4,9 +4,25 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../kebutuhan_mu/kebutuhan_mu_config.dart';
 import '../domain/bmi_calculator.dart';
+import '../domain/lila_calculator.dart';
 
-class CekImtScreen extends StatefulWidget {
-  const CekImtScreen({
+const _measurementSteps = [
+  'Sediakan pita ukur (meteran kain/plastik yang fleksibel) atau pakai '
+      'pita LILA khusus dari posyandu/puskesmas.',
+  'Tentukan lengan yang diukur — gunakan lengan kiri (standar '
+      'pengukuran kesehatan).',
+  'Tentukan titik tengah lengan: tekuk siku membentuk sudut 90°, cari '
+      'ujung tulang bahu (atas) dan ujung siku (bawah), ukur jarak '
+      'antara keduanya, lalu ambil titik tengahnya.',
+  'Luruskan lengan: setelah titik tengah ditemukan, luruskan kembali '
+      'lengan dan rileks.',
+  'Lingkarkan pita ukur tepat di titik tengah. Pastikan tidak terlalu '
+      'kencang (menekan kulit), tidak terlalu longgar, dan pita sejajar '
+      '(tidak miring).',
+];
+
+class CekLilaScreen extends StatefulWidget {
+  const CekLilaScreen({
     super.key,
     required this.menuSlug,
   });
@@ -14,23 +30,21 @@ class CekImtScreen extends StatefulWidget {
   final String menuSlug;
 
   @override
-  State<CekImtScreen> createState() => _CekImtScreenState();
+  State<CekLilaScreen> createState() => _CekLilaScreenState();
 }
 
-class _CekImtScreenState extends State<CekImtScreen> {
+class _CekLilaScreenState extends State<CekLilaScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _weightController = TextEditingController();
-  final _heightController = TextEditingController();
+  final _lilaController = TextEditingController();
 
-  BmiResult? _result;
+  LilaResult? _result;
 
   String get _groupLabel =>
       KebutuhanMuConfig.groupTitles[widget.menuSlug] ?? 'Kebutuhanmu';
 
   @override
   void dispose() {
-    _weightController.dispose();
-    _heightController.dispose();
+    _lilaController.dispose();
     super.dispose();
   }
 
@@ -39,20 +53,15 @@ class _CekImtScreenState extends State<CekImtScreen> {
       return;
     }
 
-    final weight = double.parse(_weightController.text.replaceAll(',', '.'));
-    final height = double.parse(_heightController.text.replaceAll(',', '.'));
+    final lila = double.parse(_lilaController.text.replaceAll(',', '.'));
 
     setState(() {
-      _result = BmiCalculator.calculate(
-        weightKg: weight,
-        heightCm: height,
-      );
+      _result = LilaCalculator.calculate(circumferenceCm: lila);
     });
   }
 
   void _reset() {
-    _weightController.clear();
-    _heightController.clear();
+    _lilaController.clear();
     setState(() => _result = null);
   }
 
@@ -60,7 +69,7 @@ class _CekImtScreenState extends State<CekImtScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cek IMT'),
+        title: const Text('Cek LILA'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -72,13 +81,40 @@ class _CekImtScreenState extends State<CekImtScreen> {
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
-            'Hitung Indeks Massa Tubuh (IMT) dari berat badan (kg) dan '
-            'tinggi badan (CM).',
-            style: TextStyle(color: Colors.grey.shade700, height: 1.4),
+            'LILA (Lingkar Lengan Atas) adalah ukuran lingkar lengan bagian '
+            'atas (lingkar di pertengahan antara bahu dan siku) yang digunakan '
+            'untuk menilai status gizi remaja apakah mengalami kekurangan '
+            'energi kronis (KEK), yaitu LILA < 23,5 cm. LILA kecil '
+            'menunjukkan tubuh kekurangan asupan energi dan protein dalam waktu '
+            'lama. Akibatnya, risiko stunting meningkat.',
+            style: TextStyle(color: Colors.grey.shade700, height: 1.5),
           ),
           const SizedBox(height: 20),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bagaimana cara mengukur LILA?',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 12),
+                  for (var i = 0; i < _measurementSteps.length; i++) ...[
+                    _StepRow(index: i + 1, text: _measurementSteps[i]),
+                    if (i < _measurementSteps.length - 1)
+                      const SizedBox(height: 10),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -87,37 +123,15 @@ class _CekImtScreenState extends State<CekImtScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextFormField(
-                      controller: _weightController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'[\d.,]'),
-                        ),
-                      ],
-                      decoration: const InputDecoration(
-                        labelText: 'Berat badan',
-                        hintText: 'Contoh: 52',
-                        suffixText: 'kg',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Masukkan berat badan';
-                        }
-                        final n = double.tryParse(
-                          value.replaceAll(',', '.'),
-                        );
-                        if (n == null || n <= 0 || n > 300) {
-                          return 'Berat tidak valid (1–300 kg)';
-                        }
-                        return null;
-                      },
+                    Text(
+                      'Hasil pengukuran',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     TextFormField(
-                      controller: _heightController,
+                      controller: _lilaController,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
@@ -127,19 +141,19 @@ class _CekImtScreenState extends State<CekImtScreen> {
                         ),
                       ],
                       decoration: const InputDecoration(
-                        labelText: 'Tinggi badan (CM)',
-                        hintText: 'Contoh: 160',
-                        suffixText: 'CM',
+                        labelText: 'LILA (cm)',
+                        hintText: 'Contoh: 24,5',
+                        suffixText: 'cm',
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Masukkan tinggi badan (CM)';
+                          return 'Masukkan ukuran LILA';
                         }
                         final n = double.tryParse(
                           value.replaceAll(',', '.'),
                         );
-                        if (n == null || n <= 0 || n > 250) {
-                          return 'Tinggi tidak valid (1–250 CM)';
+                        if (n == null || n <= 0 || n > 60) {
+                          return 'Ukuran tidak valid (1–60 cm)';
                         }
                         return null;
                       },
@@ -147,13 +161,13 @@ class _CekImtScreenState extends State<CekImtScreen> {
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: _calculate,
-                      child: const Text('Hitung IMT'),
+                      child: const Text('Klik Hasil'),
                     ),
                     if (_result != null) ...[
                       const SizedBox(height: 12),
                       OutlinedButton(
                         onPressed: _reset,
-                        child: const Text('Hitung ulang'),
+                        child: const Text('Ukur ulang'),
                       ),
                     ],
                   ],
@@ -163,15 +177,18 @@ class _CekImtScreenState extends State<CekImtScreen> {
           ),
           if (_result != null) ...[
             const SizedBox(height: 16),
-            _ResultCard(result: _result!),
+            _LilaResultCard(result: _result!),
           ],
           const SizedBox(height: 16),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'Hasil ini bersifat skrining awal. Untuk penilaian lebih '
-                'lanjut, konsultasikan dengan tenaga kesehatan.',
+                'Interpretasi: LILA < ${LilaCalculator.normalMinimumCm} cm '
+                'berisiko KEK; LILA ≥ ${LilaCalculator.normalMinimumCm} cm '
+                'status gizi relatif normal. Hasil ini bersifat skrining awal '
+                '— konsultasikan dengan tenaga kesehatan untuk penilaian '
+                'lebih lanjut.',
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.grey.shade600,
@@ -186,10 +203,46 @@ class _CekImtScreenState extends State<CekImtScreen> {
   }
 }
 
-class _ResultCard extends StatelessWidget {
-  const _ResultCard({required this.result});
+class _StepRow extends StatelessWidget {
+  const _StepRow({required this.index, required this.text});
 
-  final BmiResult result;
+  final int index;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 24,
+          child: Text(
+            '$index.',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+              height: 1.5,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.grey.shade700,
+              height: 1.5,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LilaResultCard extends StatelessWidget {
+  const _LilaResultCard({required this.result});
+
+  final LilaResult result;
 
   Color get _accentColor {
     switch (result.colorHint) {
@@ -216,12 +269,12 @@ class _ResultCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  result.value.toStringAsFixed(1),
+                  result.valueCm.toStringAsFixed(1),
                   style: TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
@@ -233,7 +286,7 @@ class _ResultCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
-                    'kg/m²',
+                    'cm',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey.shade600,
@@ -257,9 +310,16 @@ class _ResultCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             Text(
-              result.categoryDescription,
+              'Anjuran',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              result.recommendation,
               style: TextStyle(
                 color: Colors.grey.shade700,
                 height: 1.5,

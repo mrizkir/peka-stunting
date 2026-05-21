@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../calculators/presentation/cek_imt_screen.dart';
+import '../../calculators/presentation/cek_lila_screen.dart';
 import '../kebutuhan_mu_mock_data.dart';
 
 /// Dispatcher: kalkulator vs halaman materi (mockup).
@@ -18,8 +19,13 @@ class KebutuhanMuContentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final item = KebutuhanMuMockData.findItem(itemSlug);
 
-    if (itemSlug == 'cek-imt') {
-      return CekImtScreen(menuSlug: menuSlug);
+    switch (itemSlug) {
+      case 'cek-imt':
+        return CekImtScreen(menuSlug: menuSlug);
+      case 'cek-lila':
+        return CekLilaScreen(menuSlug: menuSlug);
+      default:
+        break;
     }
 
     return _ArticlePlaceholderScreen(
