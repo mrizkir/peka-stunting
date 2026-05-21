@@ -14,16 +14,8 @@ class KebutuhanMuMenuScreen extends StatelessWidget {
 
   final String menuSlug;
 
-  String get _groupTitle {
-    const titles = {
-      'remaja-putri': 'Remaja Putri',
-      'calon-pengantin': 'Calon Pengantin',
-      'ibu-hamil': 'Ibu Hamil',
-      'ibu-nifas-dan-menyusui': 'Ibu Nifas dan Menyusui',
-      'bayi-dan-balita': 'Bayi dan Balita',
-    };
-    return titles[menuSlug] ?? 'Kebutuhanmu';
-  }
+  String get _groupTitle =>
+      KebutuhanMuConfig.groupTitles[menuSlug] ?? 'Kebutuhanmu';
 
   @override
   Widget build(BuildContext context) {

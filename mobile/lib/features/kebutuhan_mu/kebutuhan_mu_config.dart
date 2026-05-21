@@ -7,6 +7,14 @@ class KebutuhanMuConfig {
   static const deteksiDiniSlug = 'deteksi-dini';
   static const upayaPencegahanSlug = 'upaya-pencegahan-stunting';
 
+  static const groupTitles = {
+    'remaja-putri': 'Remaja Putri',
+    'calon-pengantin': 'Calon Pengantin',
+    'ibu-hamil': 'Ibu Hamil',
+    'ibu-nifas-dan-menyusui': 'Ibu Nifas dan Menyusui',
+    'bayi-dan-balita': 'Bayi dan Balita',
+  };
+
   static const sections = [
     KebutuhanMuSectionConfig(
       slug: deteksiDiniSlug,
