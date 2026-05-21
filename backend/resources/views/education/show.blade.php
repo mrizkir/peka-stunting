@@ -98,12 +98,13 @@
           </div>
 
           <div>
-            <x-ui.textarea
+            <x-ui.rich-text-editor
               label="Isi konten"
               name="body"
+              :value="old('body', $content['body'])"
               :readonly="! $canEdit"
-              hint="Untuk kalkulator, area ini bisa dipakai sebagai deskripsi sebelum form hitung."
-            >{{ old('body', $content['body']) }}</x-ui.textarea>
+              hint="Bisa ketik langsung atau salin-tempel dari Word / artikel web. Toolbar: judul, tebal, miring, daftar."
+            />
             @error('body')
               <p class="text-error mt-2 text-sm">{{ $message }}</p>
             @enderror
@@ -150,13 +151,15 @@
             <img src="{{ $content['featured_image_url'] }}" alt="" class="mb-4 max-h-56 rounded-xl object-cover">
           @endif
           <p class="text-base leading-7 text-slate-600">{{ old('excerpt', $content['summary']) ?: '—' }}</p>
-          @php $previewBody = old('body', $content['body']); @endphp
+          @php
+            $previewBody = app(\App\Support\EducationBodySanitizer::class)->sanitize(
+              old('body', $content['body']),
+            );
+          @endphp
           @if (filled($previewBody))
-            @foreach (explode("\n", $previewBody) as $paragraph)
-              @if (filled($paragraph))
-                <p class="mt-4 text-sm leading-7 text-slate-600">{{ $paragraph }}</p>
-              @endif
-            @endforeach
+            <div class="education-body-html mt-4 text-sm leading-7 text-slate-600">
+              {!! $previewBody !!}
+            </div>
           @else
             <p class="mt-4 text-sm italic text-slate-400">Belum ada isi konten.</p>
           @endif

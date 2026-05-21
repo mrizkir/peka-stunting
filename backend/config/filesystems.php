@@ -33,7 +33,8 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Jangan serve lewat /storage — bentrok dengan disk public (gambar media).
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
@@ -43,6 +44,8 @@ return [
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
+            // Fallback jika symlink public/storage belum ada; file tetap bisa diakses tanpa login.
+            'serve' => true,
             'throw' => false,
             'report' => false,
         ],

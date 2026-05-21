@@ -69,4 +69,81 @@
     .nav-link-active {
         @apply flex items-center rounded-2xl bg-primary/12 px-4 py-3 text-sm font-semibold text-primary ring-1 ring-inset ring-primary/20;
     }
+
+    .education-body-html h1 {
+        @apply mt-6 mb-3 text-2xl font-bold text-slate-900;
+    }
+
+    .education-body-html h2 {
+        @apply mt-5 mb-2 text-xl font-bold text-slate-900;
+    }
+
+    .education-body-html h3 {
+        @apply mt-4 mb-2 text-lg font-semibold text-slate-900;
+    }
+
+    .education-body-html h4 {
+        @apply mt-4 mb-2 text-base font-semibold text-slate-900;
+    }
+
+    .education-body-html h5 {
+        @apply mt-3 mb-1 text-sm font-semibold text-slate-800;
+    }
+
+    .education-body-html h6 {
+        @apply mt-3 mb-1 text-sm font-medium text-slate-700;
+    }
+
+    .education-body-html p {
+        @apply my-3 leading-7;
+    }
+
+    .education-body-html ul {
+        @apply my-3 list-disc space-y-1 pl-6;
+    }
+
+    .education-body-html ol {
+        @apply my-3 list-decimal space-y-1 pl-6;
+    }
+
+    .education-body-html li {
+        @apply leading-7;
+    }
+
+    .education-body-html strong,
+    .education-body-html b {
+        @apply font-semibold text-slate-900;
+    }
+
+    .education-rich-editor {
+        @apply border-base-300 overflow-visible rounded-2xl border;
+    }
+
+    .education-rich-editor__toolbar {
+        @apply border-base-300 bg-base-200/60 flex flex-wrap items-center gap-2 rounded-t-2xl border-b px-3 py-2;
+    }
+
+    .education-rich-editor__select {
+        @apply border-base-300 bg-base-100 text-base-content min-w-[7.5rem] rounded-md border px-2 py-1.5 text-sm;
+    }
+
+    .education-rich-editor__btn {
+        @apply border-base-300 bg-base-100 text-base-content hover:bg-base-200 min-w-9 rounded-md border px-2 py-1.5 text-sm font-semibold transition;
+    }
+
+    .education-rich-editor__divider {
+        @apply bg-base-300 mx-1 h-6 w-px;
+    }
+
+    .education-rich-editor__body {
+        @apply bg-base-100 text-base-content min-h-48 rounded-b-2xl px-4 py-3 text-sm leading-7 outline-none;
+    }
+
+    .education-rich-editor__body:empty::before {
+        @apply text-base-content/40 pointer-events-none content-['Tulis_atau_tempel_konten_di_sini...'];
+    }
+
+    .education-rich-editor__body:focus {
+        @apply ring-primary/15 ring-4;
+    }
 }

@@ -5,10 +5,14 @@ namespace App\Services\Education;
 use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
+use App\Support\EducationBodySanitizer;
 use Illuminate\Support\Collection;
 
 class EducationApiPresenter
 {
+	public function __construct(
+		private readonly EducationBodySanitizer $bodySanitizer,
+	) {}
 	/**
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -75,7 +79,7 @@ class EducationApiPresenter
 			'id' => $content->id,
 			'title' => $content->title,
 			'excerpt' => $content->excerpt,
-			'body' => $content->body,
+			'body' => $this->bodySanitizer->sanitize($content->body),
 			'status' => $content->status,
 			'published_at' => $content->published_at?->toIso8601String(),
 			'type' => $item->isCalculator() ? 'calculator' : 'content',

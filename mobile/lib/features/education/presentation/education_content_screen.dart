@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/education_repository.dart';
 import '../models/education_models.dart';
+import 'widgets/education_body_html.dart';
 
 final educationContentProvider = FutureProvider.family<
     EducationContentDetail,
@@ -29,14 +30,48 @@ class EducationContentScreen extends ConsumerWidget {
       educationContentProvider((menuSlug: menuSlug, itemSlug: itemSlug)),
     );
 
+    final contentKey =
+        (menuSlug: menuSlug, itemSlug: itemSlug);
+
+    Future<void> refresh() async {
+      ref.invalidate(educationContentProvider(contentKey));
+      await ref.read(educationContentProvider(contentKey).future);
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Konten')),
-      body: contentAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text(error.toString())),
-        data: (content) => ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
+      appBar: AppBar(
+        title: const Text('Konten'),
+        actions: [
+          IconButton(
+            onPressed: () => refresh(),
+            tooltip: 'Muat ulang',
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: refresh,
+        child: contentAsync.when(
+          loading: () => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              SizedBox(height: 200),
+              Center(child: CircularProgressIndicator()),
+            ],
+          ),
+          error: (error, _) => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            children: [
+              Text(error.toString()),
+              const SizedBox(height: 16),
+              const Text('Tarik ke bawah atau ketuk ikon refresh untuk coba lagi.'),
+            ],
+          ),
+          data: (content) => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            children: [
             if (content.featuredImageUrl != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -65,8 +100,9 @@ class EducationContentScreen extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: 16),
-            Text(content.body ?? 'Belum ada isi konten.'),
-          ],
+            EducationBodyHtml(html: content.body),
+            ],
+          ),
         ),
       ),
     );

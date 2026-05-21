@@ -64,12 +64,42 @@ Atau WiFi sama: `--dart-define=API_BASE_URL=http://<IP-laptop>:8000/api/v1`
 | `R` | Hot restart (disarankan untuk login / provider) |
 | `Ctrl+C` | Stop `flutter run` |
 
+## ADB (Android Debug Bridge)
+
+**Bukan** `adb list` — perintah yang benar:
+
+```bash
+adb devices
+```
+
+Contoh output:
+
+```text
+List of devices attached
+RR8N608YY2F    device
+```
+
+Ganti `RR8N608YY2F` dengan ID di kolom pertama saat `flutter run -d <device_id>`.
+
+| Perintah | Fungsi |
+|----------|--------|
+| `adb devices` | Daftar HP/emulator terhubung |
+| `adb kill-server && adb start-server` | Restart ADB |
+| `adb reverse tcp:8000 tcp:8000` | Forward port backend ke HP (dev lokal via USB) |
+| `flutter devices` | Daftar device untuk Flutter (sama, lebih ringkas) |
+
+| Status `adb devices` | Artinya |
+|----------------------|---------|
+| `device` | Siap dipakai |
+| `unauthorized` | Buka HP → Allow USB debugging |
+| (kosong) | Lihat checklist di bawah |
+
 ## HP tidak muncul di `flutter devices`
 
 1. Developer options → USB debugging ON.
-2. Mode USB: **File transfer (MTP)**.
-3. Terima popup **Allow USB debugging**.
-4. `adb devices` → status `device`.
+2. Mode USB: **File transfer (MTP)**, bukan charging only.
+3. Terima popup **Allow USB debugging** (+ *Always allow*).
+4. `adb kill-server && adb start-server && adb devices` → harus `device`.
 
 ## Troubleshooting
 
@@ -77,6 +107,9 @@ Atau WiFi sama: `--dart-define=API_BASE_URL=http://<IP-laptop>:8000/api/v1`
 |--------|--------|
 | Timeout / tidak bisa login | Cek internet HP; pastikan `https://peka-stunting.yacanet.com` bisa dibuka di browser HP |
 | Perlu backend lokal | Pakai `--dart-define=API_BASE_URL=...` (lihat atas) |
+| Konten edukasi masih lama setelah edit di CMS | Pastikan status **Published** di backend; di app **tarik ke bawah** (pull refresh) atau ketuk ikon refresh di layar Edukasi/Konten |
+
+**Catatan:** API mobile hanya menampilkan konten berstatus **Published**. Draft tidak muncul di app.
 
 ## Akun demo
 

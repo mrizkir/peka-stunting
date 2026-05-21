@@ -19,12 +19,38 @@ class EducationMenuScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detailAsync = ref.watch(educationMenuDetailProvider(menuSlug));
 
+    Future<void> refresh() async {
+      ref.invalidate(educationMenuDetailProvider(menuSlug));
+      await ref.read(educationMenuDetailProvider(menuSlug).future);
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Submenu')),
-      body: detailAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text(error.toString())),
-        data: (detail) {
+      appBar: AppBar(
+        title: const Text('Submenu'),
+        actions: [
+          IconButton(
+            onPressed: () => refresh(),
+            tooltip: 'Muat ulang',
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: refresh,
+        child: detailAsync.when(
+          loading: () => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              SizedBox(height: 200),
+              Center(child: CircularProgressIndicator()),
+            ],
+          ),
+          error: (error, _) => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            children: [Text(error.toString())],
+          ),
+          data: (detail) {
           final sections = [
             ...detail.sections,
             if (detail.items.isNotEmpty)
@@ -36,6 +62,7 @@ class EducationMenuScreen extends ConsumerWidget {
           ];
 
           return ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             children: [
               Text(
@@ -70,7 +97,8 @@ class EducationMenuScreen extends ConsumerWidget {
               ],
             ],
           );
-        },
+          },
+        ),
       ),
     );
   }

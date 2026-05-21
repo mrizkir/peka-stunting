@@ -6,11 +6,16 @@ use App\Http\Requests\UpdateEducationContentRequest;
 use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
+use App\Support\EducationBodySanitizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class EducationController extends Controller
 {
+	public function __construct(
+		private readonly EducationBodySanitizer $bodySanitizer,
+	) {}
+
 	public function index(): View
 	{
 		$menus = EducationMenu::query()
@@ -72,7 +77,7 @@ class EducationController extends Controller
 		$educationContent->update([
 			'title' => $validated['title'],
 			'excerpt' => $validated['excerpt'] ?? null,
-			'body' => $validated['body'] ?? null,
+			'body' => $this->bodySanitizer->sanitize($validated['body'] ?? null),
 			'status' => $status,
 			'published_at' => $publishedAt,
 			'updated_by' => $request->user()->id,

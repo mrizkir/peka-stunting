@@ -16,13 +16,40 @@ class EducationMenusScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final menusAsync = ref.watch(educationMenusProvider);
 
+    Future<void> refresh() async {
+      ref.invalidate(educationMenusProvider);
+      await ref.read(educationMenusProvider.future);
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Edukasi')),
-      body: menusAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text(error.toString())),
-        data: (menus) => ListView.separated(
-          padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: const Text('Edukasi'),
+        actions: [
+          IconButton(
+            onPressed: () => refresh(),
+            tooltip: 'Muat ulang',
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: refresh,
+        child: menusAsync.when(
+          loading: () => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              SizedBox(height: 200),
+              Center(child: CircularProgressIndicator()),
+            ],
+          ),
+          error: (error, _) => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            children: [Text(error.toString())],
+          ),
+          data: (menus) => ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
           itemCount: menus.length,
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
@@ -36,6 +63,7 @@ class EducationMenusScreen extends ConsumerWidget {
               ),
             );
           },
+        ),
         ),
       ),
     );
