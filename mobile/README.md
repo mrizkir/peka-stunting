@@ -101,6 +101,16 @@ Ganti `RR8N608YY2F` dengan ID di kolom pertama saat `flutter run -d <device_id>`
 3. Terima popup **Allow USB debugging** (+ *Always allow*).
 4. `adb kill-server && adb start-server && adb devices` → harus `device`.
 
+## Splash screen (logo)
+
+Urutan tampil logo saat app dibuka:
+
+1. **Gambar dari backend** — admin unggah di CMS: *Splash screen* (`/settings/splash`)
+2. **Fallback lokal** — `assets/images/splash_logo.png` (opsional; letakkan file PNG/JPG di folder itu)
+3. **Teks** — kotak putih bertuliskan **PEKA** jika keduanya tidak ada
+
+API: `GET /api/v1/app/splash` → `{ "image_url": "https://..." }` atau `null`. Gambar disimpan lewat **Spatie Media Library** (`App\Models\AppBranding`, koleksi `splash`).
+
 ## Troubleshooting
 
 | Gejala | Solusi |
