@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppBrandingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EducationController;
@@ -23,6 +24,12 @@ Route::middleware('auth')->group(function () {
     Route::put('/{menu:slug}/{item}', [EducationController::class, 'updateContent'])
       ->name('contents.update')
       ->middleware('role:admin');
+  });
+
+  Route::middleware('role:admin')->prefix('settings')->name('settings.')->group(function () {
+    Route::get('/splash', [AppBrandingController::class, 'editSplash'])->name('splash.edit');
+    Route::post('/splash', [AppBrandingController::class, 'updateSplash'])->name('splash.update');
+    Route::delete('/splash', [AppBrandingController::class, 'destroySplash'])->name('splash.destroy');
   });
 
   Route::resource('users', UserController::class)->except(['show'])->middleware('role:admin');

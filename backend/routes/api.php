@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AppController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ChildController;
 use App\Http\Controllers\Api\V1\ChildRiskAssessmentController;
@@ -7,6 +8,8 @@ use App\Http\Controllers\Api\V1\EducationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+	Route::get('/app/splash', [AppController::class, 'splash'])->name('api.v1.app.splash');
+
 	Route::prefix('auth')->name('api.v1.auth.')->group(function () {
 		Route::post('/register', [AuthController::class, 'register'])->name('register');
 		Route::post('/login', [AuthController::class, 'login'])->name('login');

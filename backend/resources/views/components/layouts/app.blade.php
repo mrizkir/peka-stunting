@@ -31,6 +31,9 @@
             Menu edukasi
           </a>
           @role('admin')
+            <a href="{{ route('settings.splash.edit') }}" class="{{ request()->routeIs('settings.*') ? 'nav-link-active' : 'nav-link' }}">
+              Splash screen
+            </a>
             <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'nav-link-active' : 'nav-link' }}">
               Kelola user
             </a>
