@@ -24,7 +24,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('PEKA Stunting'), findsOneWidget);
+    expect(find.textContaining('Paket Edukasi Komprehensif'), findsOneWidget);
 
     await tester.pump(const Duration(milliseconds: 2500));
     await tester.pump();

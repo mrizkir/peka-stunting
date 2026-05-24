@@ -61,4 +61,9 @@ class EducationItem extends Model
 			'periksa-status-gizi',
 		], true);
 	}
+
+	public function hasScreeningQuestionnaire(): bool
+	{
+		return $this->slug === 'cek-risiko-anemia';
+	}
 }

@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
         $this->call(EducationTaxonomySeeder::class);
+        $this->call(AnemiaScreeningQuestionnaireSeeder::class);
         
         $admin = User::firstOrCreate([
           'email' => 'admin@anugerahbintan.ac.id',

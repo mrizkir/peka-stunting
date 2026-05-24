@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../calculators/presentation/cek_imt_screen.dart';
-import '../../calculators/presentation/cek_lila_screen.dart';
+import '../../deteksi_dini/presentation/cek_imt_screen.dart';
+import '../../deteksi_dini/presentation/cek_lila_screen.dart';
+import '../../deteksi_dini/presentation/cek_risiko_anemia_screen.dart';
 import '../kebutuhan_mu_mock_data.dart';
 
 /// Dispatcher: kalkulator vs halaman materi (mockup).
@@ -24,6 +25,8 @@ class KebutuhanMuContentScreen extends StatelessWidget {
         return CekImtScreen(menuSlug: menuSlug);
       case 'cek-lila':
         return CekLilaScreen(menuSlug: menuSlug);
+      case 'cek-risiko-anemia':
+        return CekRisikoAnemiaScreen(menuSlug: menuSlug);
       default:
         break;
     }

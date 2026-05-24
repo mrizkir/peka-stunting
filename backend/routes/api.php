@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AnemiaScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\AppController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ChildController;
@@ -35,4 +36,12 @@ Route::prefix('v1')->group(function () {
 		Route::get('/{child}/risk-assessments/latest', [ChildRiskAssessmentController::class, 'latest'])->name('risk-assessments.latest');
 		Route::post('/{child}/risk-assessments', [ChildRiskAssessmentController::class, 'store'])->name('risk-assessments.store');
 	});
+
+	Route::middleware('auth:sanctum')
+		->prefix('screening-submissions/cek-risiko-anemia')
+		->name('api.v1.screening-submissions.anemia.')
+		->group(function () {
+			Route::get('/', [AnemiaScreeningSubmissionController::class, 'index'])->name('index');
+			Route::post('/', [AnemiaScreeningSubmissionController::class, 'store'])->name('store');
+		});
 });

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/network/api_exception.dart';
-import '../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -75,27 +74,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Container(
-                      height: 64,
-                      width: 64,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        AppConfig.appName,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    Center(
+                      child: Image.asset(
+                        AppConfig.logoAssetPath,
+                        height: 96,
+                        fit: BoxFit.contain,
                       ),
                     ),
-                    
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Text(
-                      'Masuk dengan akun kader atau akun pengguna yang sudah terdaftar.',
+                      AppConfig.appTagline,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFF334155),
+                            height: 1.45,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Selamat Datang! Silahkan login untuk melanjutkan:',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.grey.shade600,
                           ),

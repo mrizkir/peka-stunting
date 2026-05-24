@@ -24,6 +24,7 @@ class EducationContent extends Model implements HasMedia
 		'title',
 		'excerpt',
 		'body',
+		'calculator_config',
 		'status',
 		'published_at',
 		'updated_by',
@@ -33,6 +34,7 @@ class EducationContent extends Model implements HasMedia
 	{
 		return [
 			'published_at' => 'datetime',
+			'calculator_config' => 'array',
 		];
 	}
 

@@ -6,7 +6,6 @@ import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/splash_provider.dart';
-import 'widgets/splash_logo.dart';
 
 /// Layar pembuka sebelum Login atau Home (jika sudah login).
 class SplashScreen extends ConsumerStatefulWidget {
@@ -78,8 +77,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       );
     });
 
-    final splashUrl = ref.watch(splashImageUrlProvider).valueOrNull;
-
     return Scaffold(
       backgroundColor: AppTheme.primary,
       body: SafeArea(
@@ -89,23 +86,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SplashLogo(remoteUrl: splashUrl),
-                const SizedBox(height: 28),
-                Text(
-                  AppConfig.appName,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                Image.asset(
+                  AppConfig.logoAssetPath,
+                  height: 96,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Edukasi & pendataan stunting untuk kader',
+                  AppConfig.appTagline,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        height: 1.4,
+                        color: Colors.white.withValues(alpha: 0.92),
+                        height: 1.45,
+                        fontWeight: FontWeight.w500,
                       ),
                 ),
                 const SizedBox(height: 48),

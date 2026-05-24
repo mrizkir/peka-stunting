@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
+use App\Support\AnemiaScreeningDefaults;
 use Database\Seeders\EducationTaxonomySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -71,6 +72,42 @@ class EducationApiTest extends TestCase
 		$response
 			->assertNotFound()
 			->assertJsonPath('success', false);
+	}
+
+	public function test_calculator_content_returns_excerpt_for_mobile_intro(): void
+	{
+		$this->publishContent('remaja-putri', 'cek-risiko-anemia', [
+			'excerpt' => 'Teks pengantar dari backend.',
+		]);
+
+		$response = $this->getJson(
+			'/api/v1/education/menus/remaja-putri/contents/cek-risiko-anemia',
+		);
+
+		$response
+			->assertOk()
+			->assertJsonPath('data.excerpt', 'Teks pengantar dari backend.')
+			->assertJsonPath('data.type', 'calculator');
+	}
+
+	public function test_calculator_content_returns_questionnaire_config(): void
+	{
+		$config = AnemiaScreeningDefaults::calculatorConfig();
+
+		$this->publishContent('remaja-putri', 'cek-risiko-anemia', [
+			'calculator_config' => $config,
+		]);
+
+		$response = $this->getJson(
+			'/api/v1/education/menus/remaja-putri/contents/cek-risiko-anemia',
+		);
+
+		$response
+			->assertOk()
+			->assertJsonPath('data.type', 'calculator')
+			->assertJsonPath('data.calculator_config.risk_yes_threshold', 3)
+			->assertJsonCount(14, 'data.calculator_config.questions')
+			->assertJsonPath('data.calculator_config.questions.0.id', 'fatigue_5l');
 	}
 
 	/**

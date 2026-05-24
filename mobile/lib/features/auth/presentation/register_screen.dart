@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/network/api_exception.dart';
-import '../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -94,12 +93,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  AppConfig.appName,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primary,
-                      ),
+                Center(
+                  child: Image.asset(
+                    AppConfig.logoAssetPath,
+                    height: 96,
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(

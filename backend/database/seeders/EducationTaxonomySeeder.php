@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
+use App\Support\AnemiaScreeningDefaults;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -53,13 +54,33 @@ class EducationTaxonomySeeder extends Seeder
 			if ($children !== []) {
 				$this->seedItems($menu, $children, $item->id, $level + 1);
 			} else {
-				EducationContent::updateOrCreate(
+				$attributes = [
+					'title' => $name,
+					'status' => EducationContent::STATUS_DRAFT,
+				];
+
+				if ($slug === 'cek-risiko-anemia') {
+					$attributes['excerpt'] = 'Anemia pada remaja adalah kondisi ketika kadar hemoglobin (Hb) dalam darah rendah, sehingga tubuh kekurangan oksigen. Ini sering terjadi karena kekurangan zat besi, asupan gizi yang kurang, atau pola makan tidak seimbang. Distribusi oksigen ke jaringan terganggu mengakibatkan pertumbuhan tulang dan otot jadi tidak optimal sehingga resiko stunting meningkat.';
+					$attributes['calculator_config'] = AnemiaScreeningDefaults::calculatorConfig();
+				}
+
+				$content = EducationContent::firstOrCreate(
 					['item_id' => $item->id],
-					[
-						'title' => $name,
-						'status' => EducationContent::STATUS_DRAFT,
-					],
+					$attributes,
 				);
+
+				if ($slug === 'cek-risiko-anemia') {
+					$updates = [];
+					if (blank($content->excerpt)) {
+						$updates['excerpt'] = $attributes['excerpt'];
+					}
+					if (blank($content->calculator_config)) {
+						$updates['calculator_config'] = $attributes['calculator_config'];
+					}
+					if ($updates !== []) {
+						$content->update($updates);
+					}
+				}
 			}
 		}
 	}

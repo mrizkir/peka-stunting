@@ -6,6 +6,8 @@ use App\Http\Requests\UpdateEducationContentRequest;
 use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
+use App\Support\AnemiaScreeningDefaults;
+use App\Support\CalculatorConfigNormalizer;
 use App\Support\EducationBodySanitizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -52,6 +54,7 @@ class EducationController extends Controller
 		return view('education.show', [
 			'content' => $this->formatContentForView($educationItem, $educationContent),
 			'educationContent' => $educationContent,
+			'educationItem' => $educationItem,
 			'canEdit' => auth()->user()?->hasRole('admin') ?? false,
 		]);
 	}
@@ -78,6 +81,11 @@ class EducationController extends Controller
 			'title' => $validated['title'],
 			'excerpt' => $validated['excerpt'] ?? null,
 			'body' => $this->bodySanitizer->sanitize($validated['body'] ?? null),
+			'calculator_config' => $educationItem->hasScreeningQuestionnaire()
+				? CalculatorConfigNormalizer::normalize(
+					$validated['calculator_config'] ?? null,
+				)
+				: $educationContent->calculator_config,
 			'status' => $status,
 			'published_at' => $publishedAt,
 			'updated_by' => $request->user()->id,
@@ -123,6 +131,11 @@ class EducationController extends Controller
 			'status_raw' => $educationContent->status,
 			'summary' => $educationContent->excerpt ?? '',
 			'body' => $educationContent->body ?? '',
+			'calculator_config' => $educationItem->hasScreeningQuestionnaire()
+				? ($educationContent->calculator_config
+					?? AnemiaScreeningDefaults::calculatorConfig())
+				: [],
+			'has_screening_questionnaire' => $educationItem->hasScreeningQuestionnaire(),
 			'type' => $educationItem->isCalculator() ? 'Kalkulator' : 'Konten',
 			'featured_image_url' => $educationContent->featuredImage()?->getUrl(),
 		];

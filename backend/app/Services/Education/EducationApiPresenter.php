@@ -80,6 +80,9 @@ class EducationApiPresenter
 			'title' => $content->title,
 			'excerpt' => $content->excerpt,
 			'body' => $this->bodySanitizer->sanitize($content->body),
+			'calculator_config' => $item->hasScreeningQuestionnaire()
+				? $content->calculator_config
+				: null,
 			'status' => $content->status,
 			'published_at' => $content->published_at?->toIso8601String(),
 			'type' => $item->isCalculator() ? 'calculator' : 'content',

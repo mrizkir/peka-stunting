@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:peka_stunting/features/calculators/domain/bmi_calculator.dart';
+import 'package:peka_stunting/features/deteksi_dini/domain/bmi_calculator.dart';
 
 void main() {
   group('BmiCalculator', () {

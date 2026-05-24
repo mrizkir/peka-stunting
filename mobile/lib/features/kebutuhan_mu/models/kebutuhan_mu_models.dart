@@ -99,12 +99,14 @@ class KebutuhanMuContent {
     required this.excerpt,
     required this.body,
     this.featuredImageUrl,
+    this.calculatorConfig,
   });
 
   final String title;
   final String? excerpt;
   final String? body;
   final String? featuredImageUrl;
+  final Map<String, dynamic>? calculatorConfig;
 
   factory KebutuhanMuContent.fromJson(Map<String, dynamic> json) {
     return KebutuhanMuContent(
@@ -112,6 +114,7 @@ class KebutuhanMuContent {
       excerpt: json['excerpt'] as String?,
       body: json['body'] as String?,
       featuredImageUrl: json['featured_image_url'] as String?,
+      calculatorConfig: json['calculator_config'] as Map<String, dynamic>?,
     );
   }
 }

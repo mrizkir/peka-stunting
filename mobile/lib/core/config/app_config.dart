@@ -9,4 +9,10 @@ class AppConfig {
   );
 
   static const String appName = 'PEKA Stunting';
+
+  static const String logoAssetPath = 'assets/images/logo_app_1.png';
+
+  static const String appTagline =
+      'Paket Edukasi Komprehensif Berbasis Android dan '
+      'Kearifan Lokal untuk Deteksi Dini dan Pencegahan Stunting';
 }

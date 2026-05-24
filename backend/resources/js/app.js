@@ -1,11 +1,13 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
+import { createCalculatorQuestionnaire } from './forms/calculator-questionnaire';
 import { createEducationBodyEditor } from './editors/education-body-editor';
 import { createRegisterForm } from './forms/register-form';
 import { createUserForm } from './forms/user-form';
 import { createUsersIndex } from './pages/users-index';
 
 window.Alpine = Alpine;
+window.calculatorQuestionnaire = createCalculatorQuestionnaire;
 window.educationBodyEditor = createEducationBodyEditor;
 window.registerForm = createRegisterForm;
 window.userForm = createUserForm;

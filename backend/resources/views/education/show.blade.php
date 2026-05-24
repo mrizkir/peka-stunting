@@ -90,12 +90,19 @@
               type="text"
               :value="old('excerpt', $content['summary'])"
               :readonly="! $canEdit"
-              hint="Ringkasan ditampilkan pada kartu daftar konten."
+              hint="{{ $content['type'] === 'Kalkulator' ? 'Ditampilkan sebagai pengantar di layar kalkulator aplikasi mobile (setelah dipublikasikan).' : 'Ringkasan ditampilkan pada kartu daftar konten.' }}"
             />
             @error('excerpt')
               <p class="text-error mt-2 text-sm">{{ $message }}</p>
             @enderror
           </div>
+
+          @if ($content['has_screening_questionnaire'] ?? false)
+            <x-education.calculator-questionnaire
+              :config="$content['calculator_config']"
+              :readonly="! $canEdit"
+            />
+          @endif
 
           <div>
             <x-ui.rich-text-editor
