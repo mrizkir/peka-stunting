@@ -49,4 +49,43 @@ class ScreeningSubmission extends Model
 	{
 		return $this->belongsTo(EducationItem::class, 'education_item_id');
 	}
+
+	/**
+	 * @return list<array{number: int, id: string, text: string, answer: bool|null, answer_label: string}>
+	 */
+	public function answerRows(): array
+	{
+		$questions = $this->questions_snapshot ?? [];
+		$answers = $this->answers ?? [];
+		$rows = [];
+
+		foreach ($questions as $index => $question) {
+			if (! is_array($question)) {
+				continue;
+			}
+
+			$id = (string) ($question['id'] ?? '');
+			if ($id === '') {
+				continue;
+			}
+
+			$answer = array_key_exists($id, $answers)
+				? filter_var($answers[$id], FILTER_VALIDATE_BOOLEAN)
+				: null;
+
+			$rows[] = [
+				'number' => $index + 1,
+				'id' => $id,
+				'text' => (string) ($question['text'] ?? $question['label'] ?? $id),
+				'answer' => $answer,
+				'answer_label' => match ($answer) {
+					true => 'Ya',
+					false => 'Tidak',
+					default => '-',
+				},
+			];
+		}
+
+		return $rows;
+	}
 }

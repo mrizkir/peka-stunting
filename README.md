@@ -24,6 +24,17 @@ php artisan serve
 Admin web: http://127.0.0.1:8000  
 API: http://127.0.0.1:8000/api/v1
 
+### Menjalankan test (PHPUnit + MySQL)
+
+Test memakai database MySQL terpisah `pekastunting_testing` (bukan SQLite).
+
+```bash
+mysql -h 127.0.0.1 -P 3307 -u root -e "CREATE DATABASE IF NOT EXISTS pekastunting_testing;"
+cp .env.testing.example .env.testing
+# Salin APP_KEY dan DB_PASSWORD dari .env ke .env.testing jika perlu
+php artisan test
+```
+
 Akun demo:
 - Admin: `admin@anugerahbintan.ac.id` / `12345678`
 - Kader: `kader@anugerahbintan.ac.id` / `12345678`

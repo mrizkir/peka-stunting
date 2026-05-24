@@ -4,6 +4,7 @@ use App\Http\Controllers\AppBrandingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EducationController;
+use App\Http\Controllers\ScreeningSubmissionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,5 +34,10 @@ Route::middleware('auth')->group(function () {
   });
 
   Route::resource('users', UserController::class)->except(['show'])->middleware('role:admin');
+
+  Route::middleware('role:admin')->prefix('screening-submissions')->name('screening-submissions.')->group(function () {
+    Route::get('/', [ScreeningSubmissionController::class, 'index'])->name('index');
+    Route::get('/{screeningSubmission}', [ScreeningSubmissionController::class, 'show'])->name('show');
+  });
   Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
