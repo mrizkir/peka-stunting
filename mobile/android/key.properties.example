@@ -1,0 +1,8 @@
+# Salin ke key.properties lalu isi nilai asli. Jangan commit key.properties.
+# cp key.properties.example key.properties
+
+storePassword=
+keyPassword=
+keyAlias=upload
+# Path relatif ke folder android/, atau path absolut
+storeFile=upload-keystore.jks
