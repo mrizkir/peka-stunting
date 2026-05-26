@@ -2,7 +2,7 @@
   title="Detail Konten"
   eyebrow="CMS Edukasi"
   :heading="$content['title']"
-  description="Kelola judul, ringkasan, isi, status, dan gambar unggulan konten edukasi."
+  description="Kelola judul, ringkasan, isi, status, dan galeri poster konten edukasi."
 >
   <x-slot:headerActions>
     <a href="{{ route('education.menus.show', $content['menu_slug']) }}" class="inline-flex items-center justify-center rounded-md bg-base-100 px-4 py-2.5 text-sm font-semibold text-base-content ring-1 ring-inset ring-base-300 hover:bg-base-200">Kembali</a>
@@ -120,33 +120,49 @@
           @if ($canEdit)
             <div>
               <label class="block">
-                <span class="mb-2 block text-sm font-medium text-base-content/80">Gambar unggulan</span>
+                <span class="mb-2 block text-sm font-medium text-base-content/80">Galeri poster</span>
                 <input
                   type="file"
-                  name="featured_image"
+                  name="poster_images[]"
+                  multiple
                   accept="image/jpeg,image/png,image/webp"
                   class="bg-base-100 border-base-300 text-base-content focus:border-primary focus:ring-primary/15 block w-full rounded-md border px-4 py-3 text-sm shadow-sm outline-none transition focus:ring-4"
                 >
-                <span class="text-base-content/55 mt-2 block text-xs">JPEG, PNG, atau WebP. Maks. 2 MB.</span>
+                <span class="text-base-content/55 mt-2 block text-xs">Upload beberapa poster sekaligus untuk swipe di aplikasi mobile. JPEG, PNG, atau WebP. Maks. 2 MB per file.</span>
               </label>
-              @error('featured_image')
+              @error('poster_images')
+                <p class="text-error mt-2 text-sm">{{ $message }}</p>
+              @enderror
+              @error('poster_images.*')
                 <p class="text-error mt-2 text-sm">{{ $message }}</p>
               @enderror
 
-              @if (! empty($content['featured_image_url']))
-                <div class="mt-4">
-                  <img src="{{ $content['featured_image_url'] }}" alt="{{ $content['title'] }}" class="max-h-48 rounded-xl border border-slate-200 object-cover">
-                  <label class="mt-3 flex items-center gap-2 text-sm text-slate-600">
-                    <input type="checkbox" name="remove_featured_image" value="1" class="rounded border-slate-300">
-                    Hapus gambar saat ini
-                  </label>
+              @if (! empty($content['gallery_images']))
+                <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                  @foreach ($content['gallery_images'] as $galleryImage)
+                    <div class="space-y-2">
+                      <img src="{{ $galleryImage['url'] }}" alt="" class="max-h-48 w-full rounded-xl border border-slate-200 object-cover">
+                      <label class="flex items-center gap-2 text-sm text-slate-600">
+                        <input type="checkbox" name="remove_gallery_image_ids[]" value="{{ $galleryImage['id'] }}" class="rounded border-slate-300">
+                        Hapus gambar ini
+                      </label>
+                    </div>
+                  @endforeach
                 </div>
+                <label class="mt-3 flex items-center gap-2 text-sm text-slate-600">
+                  <input type="checkbox" name="remove_poster_images" value="1" class="rounded border-slate-300">
+                  Hapus semua galeri poster saat ini
+                </label>
               @endif
             </div>
-          @elseif (! empty($content['featured_image_url']))
+          @elseif (! empty($content['gallery_images']))
             <div>
-              <p class="mb-2 text-sm font-medium text-slate-700">Gambar unggulan</p>
-              <img src="{{ $content['featured_image_url'] }}" alt="{{ $content['title'] }}" class="max-h-48 rounded-xl border border-slate-200 object-cover">
+              <p class="mb-2 text-sm font-medium text-slate-700">Galeri poster</p>
+              <div class="grid gap-3 sm:grid-cols-2">
+                @foreach ($content['gallery_images'] as $galleryImage)
+                  <img src="{{ $galleryImage['url'] }}" alt="" class="max-h-48 w-full rounded-xl border border-slate-200 object-cover">
+                @endforeach
+              </div>
             </div>
           @endif
         </form>
@@ -154,8 +170,10 @@
 
       <x-ui.card title="Preview Konten" description="Area ini menampilkan gaya baca yang lebih dekat dengan tampilan pengguna akhir.">
         <div class="prose prose-slate max-w-none">
-          @if (! empty($content['featured_image_url']))
-            <img src="{{ $content['featured_image_url'] }}" alt="" class="mb-4 max-h-56 rounded-xl object-cover">
+          @if (! empty($content['gallery_images']))
+            @foreach ($content['gallery_images'] as $galleryImage)
+              <img src="{{ $galleryImage['url'] }}" alt="" class="mb-4 max-h-56 rounded-xl object-cover">
+            @endforeach
           @endif
           <p class="text-base leading-7 text-slate-600">{{ old('excerpt', $content['summary']) ?: '—' }}</p>
           @php

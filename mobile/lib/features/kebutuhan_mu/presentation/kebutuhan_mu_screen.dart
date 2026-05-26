@@ -133,6 +133,7 @@ class KebutuhanMuScreen extends ConsumerWidget {
 
     return MenuTile(
       icon: style.icon,
+      imageAsset: style.imageAsset,
       title: group.name,
       subtitle: group.publishedContentsCount > 0
           ? '${group.publishedContentsCount} konten siap baca'
@@ -147,6 +148,7 @@ class KebutuhanMuScreen extends ConsumerWidget {
 
     return MenuTile(
       icon: style.icon,
+      imageAsset: style.imageAsset,
       title: group.name,
       subtitle: group.subtitle,
       color: style.color,
@@ -158,31 +160,31 @@ class KebutuhanMuScreen extends ConsumerWidget {
     switch (slug) {
       case 'remaja-putri':
         return _GroupTileStyle(
-          icon: Icons.face_3_outlined,
+          imageAsset: 'assets/images/remaja_putri.png',
           color: const Color(0xFFEC4899),
           subtitle: 'Materi edukasi untuk remaja putri.',
         );
       case 'calon-pengantin':
         return _GroupTileStyle(
-          icon: Icons.favorite_outline,
+          imageAsset: 'assets/images/calon_pengantin.png',
           color: const Color(0xFFF43F5E),
           subtitle: 'Materi edukasi untuk calon pengantin.',
         );
       case 'ibu-hamil':
         return _GroupTileStyle(
-          icon: Icons.pregnant_woman_outlined,
+          imageAsset: 'assets/images/ibu_hamil.png',
           color: const Color(0xFF8B5CF6),
           subtitle: 'Materi edukasi untuk ibu hamil.',
         );
       case 'ibu-nifas-dan-menyusui':
         return _GroupTileStyle(
-          icon: Icons.child_friendly_outlined,
+          imageAsset: 'assets/images/ibu_nifas_menyusui.png',
           color: const Color(0xFF0EA5E9),
           subtitle: 'Materi edukasi untuk ibu nifas dan menyusui.',
         );
       case 'bayi-dan-balita':
         return _GroupTileStyle(
-          icon: Icons.baby_changing_station_outlined,
+          imageAsset: 'assets/images/bayi_balita.png',
           color: AppTheme.primary,
           subtitle: 'Materi edukasi untuk bayi dan balita.',
         );
@@ -210,12 +212,14 @@ class _FallbackGroup {
 
 class _GroupTileStyle {
   const _GroupTileStyle({
-    required this.icon,
+    this.icon,
+    this.imageAsset,
     required this.color,
     required this.subtitle,
-  });
+  }) : assert(icon != null || imageAsset != null);
 
-  final IconData icon;
+  final IconData? icon;
+  final String? imageAsset;
   final Color color;
   final String subtitle;
 }

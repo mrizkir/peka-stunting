@@ -9,7 +9,9 @@ use App\Models\EducationMenu;
 use App\Support\AnemiaScreeningDefaults;
 use App\Support\CalculatorConfigNormalizer;
 use App\Support\EducationBodySanitizer;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class EducationController extends Controller
@@ -91,12 +93,28 @@ class EducationController extends Controller
 			'updated_by' => $request->user()->id,
 		]);
 
-		if ($request->hasFile('featured_image')) {
+		if ($request->boolean('remove_poster_images')) {
+			$educationContent->clearMediaCollection(EducationContent::MEDIA_COLLECTION_GALLERY);
+		}
+
+		$removeGalleryImageIds = collect($validated['remove_gallery_image_ids'] ?? [])
+			->map(fn ($id) => (int) $id)
+			->filter(fn ($id) => $id > 0)
+			->all();
+		if ($removeGalleryImageIds !== []) {
 			$educationContent
-				->addMediaFromRequest('featured_image')
-				->toMediaCollection(EducationContent::MEDIA_COLLECTION_FEATURED);
-		} elseif ($request->boolean('remove_featured_image')) {
-			$educationContent->clearMediaCollection(EducationContent::MEDIA_COLLECTION_FEATURED);
+				->posterGallery()
+				->whereIn('id', $removeGalleryImageIds)
+				->each
+				->delete();
+		}
+
+		$galleryFiles = $request->file('poster_images', []);
+		foreach ($galleryFiles as $galleryFile) {
+			$educationContent
+				->addMedia($galleryFile)
+				->usingFileName($this->normalizedUploadFileName($galleryFile))
+				->toMediaCollection(EducationContent::MEDIA_COLLECTION_GALLERY);
 		}
 
 		return redirect()
@@ -137,7 +155,13 @@ class EducationController extends Controller
 				: [],
 			'has_screening_questionnaire' => $educationItem->hasScreeningQuestionnaire(),
 			'type' => $educationItem->isCalculator() ? 'Kalkulator' : 'Konten',
-			'featured_image_url' => $educationContent->featuredImage()?->getUrl(),
+			'gallery_images' => $educationContent->posterGallery()
+				->map(fn ($media) => [
+					'id' => $media->id,
+					'url' => $media->getUrl(),
+					'name' => $media->file_name,
+				])
+				->all(),
 		];
 	}
 
@@ -199,5 +223,32 @@ class EducationController extends Controller
 			'bayi-dan-balita' => 'Pemantauan status gizi, ASI, MPASI, dan imunisasi.',
 			default => '',
 		};
+	}
+
+	private function normalizedUploadFileName(?UploadedFile $file): string
+	{
+		$originalName = pathinfo($file?->getClientOriginalName() ?? '', PATHINFO_FILENAME);
+		$baseName = Str::of($originalName)
+			->ascii()
+			->lower()
+			->replaceMatches('/[^a-z0-9]+/', '_')
+			->trim('_')
+			->value();
+
+		if ($baseName === '') {
+			$baseName = 'file';
+		}
+
+		$extension = Str::of($file?->getClientOriginalExtension() ?: ($file?->extension() ?? 'jpg'))
+			->ascii()
+			->lower()
+			->replaceMatches('/[^a-z0-9]+/', '')
+			->value();
+
+		if ($extension === '') {
+			$extension = 'jpg';
+		}
+
+		return $baseName.'.'.$extension;
 	}
 }

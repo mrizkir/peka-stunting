@@ -69,7 +69,7 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           MenuTile(
-            icon: Icons.info_outline,
+            imageAsset: 'assets/images/info_aplikasi.png',
             title: 'Info Aplikasi',
             subtitle: 'Tentang aplikasi PEKA Stunting.',
             color: const Color(0xFF6366F1),

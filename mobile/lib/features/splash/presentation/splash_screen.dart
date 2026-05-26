@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../providers/splash_provider.dart';
 
 /// Layar pembuka sebelum Login atau Home (jika sudah login).
 class SplashScreen extends ConsumerStatefulWidget {
@@ -19,19 +18,13 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
   bool _minTimeElapsed = false;
-  bool _splashResolved = false;
+  bool _hasNavigated = false;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      final splash = ref.read(splashImageUrlProvider);
-      if (splash.hasValue || splash.hasError) {
-        _markSplashResolved();
-      }
-    });
     Future<void>.delayed(SplashScreen.minDisplayDuration, () {
-      if (! mounted) {
+      if (!mounted) {
         return;
       }
       setState(() => _minTimeElapsed = true);
@@ -39,16 +32,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     });
   }
 
-  void _markSplashResolved() {
-    if (_splashResolved || ! mounted) {
-      return;
-    }
-    setState(() => _splashResolved = true);
-    _navigateWhenReady();
-  }
-
   void _navigateWhenReady() {
-    if (! _minTimeElapsed || ! _splashResolved || ! mounted) {
+    if (!_minTimeElapsed || _hasNavigated || !mounted) {
       return;
     }
 
@@ -57,6 +42,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       return;
     }
 
+    _hasNavigated = true;
     final user = auth.valueOrNull;
     context.go(user == null ? '/login' : '/');
   }
@@ -64,17 +50,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen(authStateProvider, (previous, next) {
-      if (! next.isLoading) {
+      if (!next.isLoading) {
         _navigateWhenReady();
       }
-    });
-
-    ref.listen(splashImageUrlProvider, (previous, next) {
-      next.when(
-        data: (_) => _markSplashResolved(),
-        error: (_, __) => _markSplashResolved(),
-        loading: () {},
-      );
     });
 
     return Scaffold(

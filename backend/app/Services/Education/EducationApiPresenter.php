@@ -75,6 +75,8 @@ class EducationApiPresenter
 	 */
 	public function presentContentDetail(EducationItem $item, EducationContent $content): array
 	{
+		$posterImages = $this->collectPosterImages($content);
+
 		return [
 			'id' => $content->id,
 			'title' => $content->title,
@@ -86,7 +88,8 @@ class EducationApiPresenter
 			'status' => $content->status,
 			'published_at' => $content->published_at?->toIso8601String(),
 			'type' => $item->isCalculator() ? 'calculator' : 'content',
-			'featured_image_url' => $content->featuredImage()?->getFullUrl(),
+			'featured_image_url' => $posterImages[0] ?? null,
+			'poster_images' => $posterImages,
 			'menu' => [
 				'id' => $item->menu->id,
 				'name' => $item->menu->name,
@@ -116,6 +119,8 @@ class EducationApiPresenter
 			return null;
 		}
 
+		$posterImages = $this->collectPosterImages($content);
+
 		return [
 			'id' => $item->id,
 			'name' => $item->name,
@@ -123,7 +128,40 @@ class EducationApiPresenter
 			'sort_order' => $item->sort_order,
 			'type' => $item->isCalculator() ? 'calculator' : 'content',
 			'excerpt' => $content->excerpt,
-			'featured_image_url' => $content->featuredImage()?->getFullUrl(),
+			'featured_image_url' => $posterImages[0] ?? null,
+			'poster_images' => $posterImages,
 		];
+	}
+
+	/**
+	 * @return array<int, string>
+	 */
+	private function collectPosterImages(EducationContent $content): array
+	{
+		$urls = [];
+
+		foreach ($content->posterGallery() as $media) {
+			$url = $media->getFullUrl();
+			if (filled($url)) {
+				$urls[] = $url;
+			}
+		}
+
+		if ($urls !== []) {
+			return $urls;
+		}
+
+		// Konten lama yang masih pakai unggulan/poster tambahan.
+		$featured = $content->featuredImage()?->getFullUrl();
+		if (filled($featured)) {
+			$urls[] = $featured;
+		}
+
+		$secondary = $content->secondaryPoster()?->getFullUrl();
+		if (filled($secondary)) {
+			$urls[] = $secondary;
+		}
+
+		return array_values(array_unique($urls));
 	}
 }

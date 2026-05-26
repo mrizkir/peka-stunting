@@ -61,6 +61,7 @@ class EducationApiTest extends TestCase
 			->assertJsonPath('data.title', 'Pengertian Stunting')
 			->assertJsonPath('data.excerpt', 'Ringkasan singkat')
 			->assertJsonPath('data.body', 'Isi lengkap konten.')
+			->assertJsonPath('data.poster_images', [])
 			->assertJsonPath('data.status', 'published')
 			->assertJsonPath('data.menu.slug', 'mengenal-stunting');
 	}

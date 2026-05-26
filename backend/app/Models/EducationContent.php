@@ -19,6 +19,12 @@ class EducationContent extends Model implements HasMedia
 
 	public const MEDIA_COLLECTION_FEATURED = 'featured-image';
 
+	/** Poster tambahan (mis. halaman materi bergambar 1–2 poster). */
+	public const MEDIA_COLLECTION_SECONDARY = 'poster-secondary';
+
+	/** Kumpulan poster untuk swipe/carousel di mobile. */
+	public const MEDIA_COLLECTION_GALLERY = 'poster-gallery';
+
 	protected $fillable = [
 		'item_id',
 		'title',
@@ -42,6 +48,15 @@ class EducationContent extends Model implements HasMedia
 	{
 		$this->addMediaCollection(self::MEDIA_COLLECTION_FEATURED)
 			->singleFile()
+			->useDisk('public')
+			->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+		$this->addMediaCollection(self::MEDIA_COLLECTION_SECONDARY)
+			->singleFile()
+			->useDisk('public')
+			->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+		$this->addMediaCollection(self::MEDIA_COLLECTION_GALLERY)
 			->useDisk('public')
 			->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
 	}
@@ -74,5 +89,15 @@ class EducationContent extends Model implements HasMedia
 	public function featuredImage(): ?Media
 	{
 		return $this->getFirstMedia(self::MEDIA_COLLECTION_FEATURED);
+	}
+
+	public function secondaryPoster(): ?Media
+	{
+		return $this->getFirstMedia(self::MEDIA_COLLECTION_SECONDARY);
+	}
+
+	public function posterGallery()
+	{
+		return $this->getMedia(self::MEDIA_COLLECTION_GALLERY);
 	}
 }

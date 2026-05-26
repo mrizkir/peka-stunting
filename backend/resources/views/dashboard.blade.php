@@ -1,6 +1,5 @@
 <x-layouts.app
-    title="Dashboard Template"
-    eyebrow="Template Blade Tailwind"
+    title="Dashboard"
     heading="Dashboard PEKA Stunting"
     description="Fondasi tampilan admin untuk mengelola menu edukasi fixed content dan memantau kesiapan implementasi modul berikutnya."
 >

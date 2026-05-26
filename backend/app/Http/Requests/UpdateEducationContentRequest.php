@@ -44,8 +44,11 @@ class UpdateEducationContentRequest extends FormRequest
 				EducationContent::STATUS_DRAFT,
 				EducationContent::STATUS_PUBLISHED,
 			])],
-			'featured_image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
-			'remove_featured_image' => ['sometimes', 'boolean'],
+			'poster_images' => ['nullable', 'array'],
+			'poster_images.*' => ['image', 'mimes:jpeg,png,webp', 'max:2048'],
+			'remove_poster_images' => ['sometimes', 'boolean'],
+			'remove_gallery_image_ids' => ['nullable', 'array'],
+			'remove_gallery_image_ids.*' => ['integer'],
 		];
 
 		if ($this->isScreeningQuestionnaireItem()) {
@@ -102,7 +105,9 @@ class UpdateEducationContentRequest extends FormRequest
 			'excerpt' => 'ringkasan',
 			'body' => 'isi konten',
 			'status' => 'status',
-			'featured_image' => 'gambar unggulan',
+			'poster_images' => 'daftar poster',
+			'poster_images.*' => 'poster',
+			'remove_gallery_image_ids' => 'gambar galeri yang dihapus',
 			'calculator_config' => 'kuesioner skrining',
 			'calculator_config.risk_yes_threshold' => 'batas jawaban Ya',
 			'calculator_config.questions' => 'daftar pertanyaan',

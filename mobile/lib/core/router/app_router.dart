@@ -18,13 +18,12 @@ import '../../features/home/presentation/home_screen.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     refreshListenable: _AuthRefreshListenable(ref),
     redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
       final location = state.matchedLocation;
       final user = authState.valueOrNull;
       final isSplash = location == '/splash';

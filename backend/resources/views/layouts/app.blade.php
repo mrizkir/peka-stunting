@@ -44,8 +44,10 @@
         <header class="border-base-300/70 bg-base-100/75 border-b px-6 py-4 backdrop-blur">
           <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <p class="text-primary text-sm font-medium">{{ $eyebrow ?? 'Template admin' }}</p>
-              <h1 class="mt-1 text-2xl font-semibold tracking-tight text-base-content">{{ $heading ?? 'PEKA Stunting' }}</h1>
+              @isset($eyebrow)
+                <p class="text-primary text-sm font-medium">{{ $eyebrow }}</p>
+              @endisset
+              <h1 class="{{ isset($eyebrow) ? 'mt-1' : '' }} text-2xl font-semibold tracking-tight text-base-content">{{ $heading ?? 'PEKA Stunting' }}</h1>
               @isset($description)
                 <p class="text-base-content/65 mt-2 max-w-3xl text-sm leading-6">{{ $description }}</p>
               @endisset
