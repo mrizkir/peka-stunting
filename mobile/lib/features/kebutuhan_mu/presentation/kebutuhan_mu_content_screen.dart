@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../deteksi_dini/presentation/cek_imt_screen.dart';
 import '../../deteksi_dini/presentation/cek_lila_screen.dart';
 import '../../deteksi_dini/presentation/cek_risiko_anemia_screen.dart';
+import '../../deteksi_dini/presentation/periksa_status_gizi_screen.dart';
 import '../../../core/widgets/education_video_player.dart';
 import '../data/kebutuhan_mu_repository.dart';
 import '../kebutuhan_mu_mock_data.dart';
@@ -41,6 +42,8 @@ class KebutuhanMuContentScreen extends ConsumerWidget {
         return CekLilaScreen(menuSlug: menuSlug);
       case 'cek-risiko-anemia':
         return CekRisikoAnemiaScreen(menuSlug: menuSlug);
+      case 'periksa-status-gizi':
+        return PeriksaStatusGiziScreen(menuSlug: menuSlug);
       default:
         break;
     }

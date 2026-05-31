@@ -4,6 +4,15 @@ import 'kebutuhan_mu_config.dart';
 class KebutuhanMuMockData {
   KebutuhanMuMockData._();
 
+  static const deteksiDiniBayiBalitaItems = [
+    KebutuhanMuMockItem(
+      slug: 'periksa-status-gizi',
+      name: 'Periksa Status Gizi',
+      subtitle: 'Skrining berat dan tinggi badan balita.',
+      isCalculator: true,
+    ),
+  ];
+
   static const deteksiDiniItems = [
     KebutuhanMuMockItem(
       slug: 'cek-imt',
@@ -75,7 +84,11 @@ class KebutuhanMuMockData {
   }
 
   static KebutuhanMuMockItem? findItem(String itemSlug) {
-    for (final item in [...deteksiDiniItems, ...upayaPencegahanItems]) {
+    for (final item in [
+      ...deteksiDiniItems,
+      ...deteksiDiniBayiBalitaItems,
+      ...upayaPencegahanItems,
+    ]) {
       if (item.slug == itemSlug) {
         return item;
       }

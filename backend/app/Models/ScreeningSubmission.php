@@ -10,6 +10,7 @@ class ScreeningSubmission extends Model
 	public const CALCULATOR_CEK_RISIKO_ANEMIA = 'cek-risiko-anemia';
 	public const CALCULATOR_CEK_IMT = 'cek-imt';
 	public const CALCULATOR_CEK_LILA = 'cek-lila';
+	public const CALCULATOR_PERIKSA_STATUS_GIZI = 'periksa-status-gizi';
 
 	public const CATEGORY_AT_RISK = 'at_risk';
 
@@ -63,6 +64,7 @@ class ScreeningSubmission extends Model
 			self::CALCULATOR_CEK_RISIKO_ANEMIA => 'Cek Risiko Anemia',
 			self::CALCULATOR_CEK_IMT => 'Cek IMT',
 			self::CALCULATOR_CEK_LILA => 'Cek LILA',
+			self::CALCULATOR_PERIKSA_STATUS_GIZI => 'Periksa Status Gizi',
 		];
 	}
 
@@ -84,7 +86,7 @@ class ScreeningSubmission extends Model
 	public function resultBadgeTone(): string
 	{
 		return match ($this->category) {
-			self::CATEGORY_AT_RISK, 'obese', 'underweight' => 'danger',
+			self::CATEGORY_AT_RISK, 'obese', 'underweight', 'need_follow_up', 'risk' => 'danger',
 			'overweight' => 'warning',
 			default => 'success',
 		};
@@ -103,6 +105,9 @@ class ScreeningSubmission extends Model
 				: null,
 			self::CALCULATOR_CEK_IMT => isset($answers['weight_kg'], $answers['height_cm'], $answers['bmi'])
 				? sprintf('BB %s kg · TB %s cm · IMT %s', $answers['weight_kg'], $answers['height_cm'], $answers['bmi'])
+				: null,
+			self::CALCULATOR_PERIKSA_STATUS_GIZI => isset($answers['age_months'], $answers['weight_kg'], $answers['height_cm'])
+				? sprintf('Usia %s bln · BB %s kg · TB %s cm', $answers['age_months'], $answers['weight_kg'], $answers['height_cm'])
 				: null,
 			default => null,
 		};

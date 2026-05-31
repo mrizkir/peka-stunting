@@ -41,6 +41,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
+      locale: const Locale('id', 'ID'),
+      helpText: 'Pilih tanggal lahir',
       initialDate: DateTime(now.year - 25),
       firstDate: DateTime(now.year - 80),
       lastDate: now,

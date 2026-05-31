@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AnemiaScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\BmiScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\LilaScreeningSubmissionController;
+use App\Http\Controllers\Api\V1\NutritionalStatusScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\AppController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ChildController;
@@ -60,5 +61,12 @@ Route::prefix('v1')->group(function () {
 		->name('api.v1.screening-submissions.lila.')
 		->group(function () {
 			Route::post('/', [LilaScreeningSubmissionController::class, 'store'])->name('store');
+		});
+
+	Route::middleware('auth:sanctum')
+		->prefix('screening-submissions/periksa-status-gizi')
+		->name('api.v1.screening-submissions.nutritional-status.')
+		->group(function () {
+			Route::post('/', [NutritionalStatusScreeningSubmissionController::class, 'store'])->name('store');
 		});
 });

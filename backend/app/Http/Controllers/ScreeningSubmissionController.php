@@ -61,6 +61,7 @@ class ScreeningSubmissionController extends Controller
 		$view = match ($screeningSubmission->calculator_slug) {
 			ScreeningSubmission::CALCULATOR_CEK_LILA => 'screening-submissions.show-lila',
 			ScreeningSubmission::CALCULATOR_CEK_IMT => 'screening-submissions.show-bmi',
+			ScreeningSubmission::CALCULATOR_PERIKSA_STATUS_GIZI => 'screening-submissions.show-nutritional-status',
 			default => 'screening-submissions.show-anemia',
 		};
 
