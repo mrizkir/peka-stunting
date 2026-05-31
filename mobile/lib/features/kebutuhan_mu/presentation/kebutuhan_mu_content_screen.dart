@@ -5,6 +5,7 @@ import '../../deteksi_dini/presentation/cek_imt_screen.dart';
 import '../../deteksi_dini/presentation/cek_lila_screen.dart';
 import '../../deteksi_dini/presentation/cek_risiko_anemia_screen.dart';
 import '../../deteksi_dini/presentation/periksa_status_gizi_screen.dart';
+import '../../../core/widgets/cached_poster_image.dart';
 import '../../../core/widgets/education_video_player.dart';
 import '../data/kebutuhan_mu_repository.dart';
 import '../kebutuhan_mu_mock_data.dart';
@@ -95,14 +96,13 @@ class KebutuhanMuContentScreen extends ConsumerWidget {
             ],
           ),
           data: (content) {
-            final media = MediaQuery.of(context);
-            final posterHeight = media.size.height -
-                media.padding.top -
-                kToolbarHeight;
-
-            return _ContentWithPosters(
-              content: content,
-              posterHeight: posterHeight,
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return _ContentWithPosters(
+                  content: content,
+                  posterHeight: constraints.maxHeight,
+                );
+              },
             );
           },
         ),
@@ -125,21 +125,18 @@ class _ContentWithPosters extends StatefulWidget {
 }
 
 class _ContentWithPostersState extends State<_ContentWithPosters> {
-  bool _posterPointerActive = false;
   bool _posterZoomed = false;
-
-  void _onPosterPointer(bool active) {
-    if (_posterPointerActive == active) {
-      return;
-    }
-    setState(() => _posterPointerActive = active);
-  }
 
   void _onPosterZoomed(bool zoomed) {
     if (_posterZoomed == zoomed) {
       return;
     }
-    setState(() => _posterZoomed = zoomed);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _posterZoomed = zoomed);
+    });
   }
 
   @override
@@ -150,7 +147,27 @@ class _ContentWithPostersState extends State<_ContentWithPosters> {
     final hasVideo = content.videoUrl != null;
     final hasBodyText = content.body?.trim().isNotEmpty ?? false;
     final hasExcerpt = content.excerpt?.trim().isNotEmpty ?? false;
-    final lockVerticalScroll = _posterPointerActive || _posterZoomed;
+    final hasExtraContent = hasVideo || hasExcerpt || hasBodyText;
+    final posterOnly = hasPoster && !hasExtraContent;
+    final lockVerticalScroll = _posterZoomed;
+
+    if (posterOnly) {
+      return SingleChildScrollView(
+        physics: lockVerticalScroll
+            ? const NeverScrollableScrollPhysics()
+            : const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: widget.posterHeight,
+          width: double.infinity,
+          child: _PosterTabViewer(
+            key: ValueKey(posterUrls),
+            urls: posterUrls,
+            fillScreen: true,
+            onZoomActiveChanged: _onPosterZoomed,
+          ),
+        ),
+      );
+    }
 
     return CustomScrollView(
       physics: lockVerticalScroll
@@ -159,18 +176,13 @@ class _ContentWithPostersState extends State<_ContentWithPosters> {
       slivers: [
         if (hasPoster)
           SliverToBoxAdapter(
-            child: Listener(
-              behavior: HitTestBehavior.opaque,
-              onPointerDown: (_) => _onPosterPointer(true),
-              onPointerUp: (_) => _onPosterPointer(false),
-              onPointerCancel: (_) => _onPosterPointer(false),
-              child: SizedBox(
-                height: widget.posterHeight,
-                child: _PosterCarousel(
-                  urls: posterUrls,
-                  height: widget.posterHeight,
-                  onZoomActiveChanged: _onPosterZoomed,
-                ),
+            child: SizedBox(
+              height: widget.posterHeight,
+              child: _PosterTabViewer(
+                key: ValueKey(posterUrls),
+                urls: posterUrls,
+                fillScreen: false,
+                onZoomActiveChanged: _onPosterZoomed,
               ),
             ),
           ),
@@ -226,14 +238,14 @@ class _EducationPosterImage extends StatefulWidget {
   const _EducationPosterImage({
     super.key,
     required this.url,
-    this.height,
     required this.isCurrentPage,
+    this.fillScreen = false,
     this.onZoomActiveChanged,
   });
 
   final String url;
-  final double? height;
   final bool isCurrentPage;
+  final bool fillScreen;
   final ValueChanged<bool>? onZoomActiveChanged;
 
   @override
@@ -247,8 +259,8 @@ class _EducationPosterImageState extends State<_EducationPosterImage> {
 
   final TransformationController _transformController =
       TransformationController();
-  bool _reportsPageLocked = false;
   bool _isZoomed = false;
+  int _pointerCount = 0;
 
   @override
   void dispose() {
@@ -259,8 +271,15 @@ class _EducationPosterImageState extends State<_EducationPosterImage> {
   @override
   void didUpdateWidget(covariant _EducationPosterImage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.isCurrentPage != widget.isCurrentPage) {
-      _resetZoom();
+    if (oldWidget.isCurrentPage &&
+        !widget.isCurrentPage &&
+        (_isZoomed || _currentScale > _zoomedThreshold)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _resetZoom();
+      });
     }
   }
 
@@ -268,20 +287,51 @@ class _EducationPosterImageState extends State<_EducationPosterImage> {
 
   void _resetZoom() {
     _transformController.value = Matrix4.identity();
-    _setPageLocked(false);
+    _pointerCount = 0;
+    _setZoomed(false);
   }
 
-  void _setPageLocked(bool locked) {
-    if (_reportsPageLocked == locked && _isZoomed == locked) {
+  void _setZoomed(bool zoomed) {
+    if (_isZoomed == zoomed) {
       return;
     }
-    _reportsPageLocked = locked;
-    widget.onZoomActiveChanged?.call(locked);
-    setState(() => _isZoomed = locked);
+    if (mounted) {
+      setState(() => _isZoomed = zoomed);
+    }
+    widget.onZoomActiveChanged?.call(zoomed);
   }
 
-  void _syncPageLockFromScale() {
-    _setPageLocked(_currentScale > _zoomedThreshold);
+  void _enterZoomMode({double initialScale = 1.0}) {
+    if (_isZoomed) {
+      return;
+    }
+    if (initialScale > 1.0) {
+      _transformController.value =
+          Matrix4.diagonal3Values(initialScale, initialScale, 1.0);
+    }
+    _setZoomed(true);
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    _pointerCount++;
+    if (_pointerCount >= 2 && !_isZoomed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _isZoomed) {
+          return;
+        }
+        _enterZoomMode();
+      });
+    }
+  }
+
+  void _onPointerUp(PointerEvent event) {
+    _pointerCount = (_pointerCount - 1).clamp(0, 10);
+  }
+
+  void _syncZoomFromScale() {
+    if (_currentScale > _zoomedThreshold) {
+      _setZoomed(true);
+    }
   }
 
   void _onInteractionEnd(ScaleEndDetails details) {
@@ -289,14 +339,14 @@ class _EducationPosterImageState extends State<_EducationPosterImage> {
       _resetZoom();
       return;
     }
-    _syncPageLockFromScale();
+    _setZoomed(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final image = Image.network(
-      widget.url,
-      fit: BoxFit.contain,
+    final image = CachedPosterImage(
+      url: widget.url,
+      fit: widget.fillScreen ? BoxFit.cover : BoxFit.contain,
       gaplessPlayback: true,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) {
@@ -331,17 +381,26 @@ class _EducationPosterImageState extends State<_EducationPosterImage> {
     );
 
     final poster = RepaintBoundary(
-      child: InteractiveViewer(
-        transformationController: _transformController,
-        minScale: _minScale,
-        maxScale: _maxScale,
-        panEnabled: true,
-        scaleEnabled: true,
-        clipBehavior: Clip.hardEdge,
-        onInteractionStart: (_) => _syncPageLockFromScale(),
-        onInteractionUpdate: (_) => _syncPageLockFromScale(),
-        onInteractionEnd: _onInteractionEnd,
-        child: image,
+      child: Listener(
+        onPointerDown: _onPointerDown,
+        onPointerUp: _onPointerUp,
+        onPointerCancel: _onPointerUp,
+        child: GestureDetector(
+          onDoubleTap: () => _enterZoomMode(initialScale: 2.0),
+          behavior: HitTestBehavior.translucent,
+          child: InteractiveViewer(
+            transformationController: _transformController,
+            minScale: _minScale,
+            maxScale: _maxScale,
+            panEnabled: _isZoomed,
+            scaleEnabled: _isZoomed || _pointerCount >= 2,
+            clipBehavior: Clip.hardEdge,
+            onInteractionStart: (_) => _syncZoomFromScale(),
+            onInteractionUpdate: (_) => _syncZoomFromScale(),
+            onInteractionEnd: _onInteractionEnd,
+            child: image,
+          ),
+        ),
       ),
     );
 
@@ -367,13 +426,6 @@ class _EducationPosterImageState extends State<_EducationPosterImage> {
       ],
     );
 
-    if (widget.height == null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: layered,
-      );
-    }
-
     return ColoredBox(
       color: Colors.black,
       child: layered,
@@ -381,107 +433,197 @@ class _EducationPosterImageState extends State<_EducationPosterImage> {
   }
 }
 
-class _PosterCarousel extends StatefulWidget {
-  const _PosterCarousel({
+class _PosterTabViewer extends StatefulWidget {
+  const _PosterTabViewer({
+    super.key,
     required this.urls,
-    required this.height,
+    required this.fillScreen,
     required this.onZoomActiveChanged,
   });
 
   final List<String> urls;
-  final double height;
+  final bool fillScreen;
   final ValueChanged<bool> onZoomActiveChanged;
 
   @override
-  State<_PosterCarousel> createState() => _PosterCarouselState();
+  State<_PosterTabViewer> createState() => _PosterTabViewerState();
 }
 
-class _PosterCarouselState extends State<_PosterCarousel> {
-  late final PageController _controller;
-  final ValueNotifier<bool> _horizontalScrollLocked = ValueNotifier(false);
-  int _currentPage = 0;
+class _PosterTabViewerState extends State<_PosterTabViewer>
+    with SingleTickerProviderStateMixin {
+  static const _tabBarColor = Color(0xFF374151);
+  static const _tabIndicatorColor = Color(0xFF22D3EE);
+
+  TabController? _tabController;
+  PageController? _pageController;
+  bool _scrollLocked = false;
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _controller = PageController();
+    _syncTabController();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PosterTabViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.urls.length != widget.urls.length) {
+      _syncTabController();
+    }
   }
 
   @override
   void dispose() {
-    _horizontalScrollLocked.dispose();
-    _controller.dispose();
+    _disposeTabController();
+    _disposePageController();
     super.dispose();
   }
 
-  void _onZoomActiveChanged(bool isActive) {
-    if (_horizontalScrollLocked.value == isActive) {
+  void _disposePageController() {
+    _pageController?.dispose();
+    _pageController = null;
+  }
+
+  void _disposeTabController() {
+    _tabController?.removeListener(_onTabChanged);
+    _tabController?.dispose();
+    _tabController = null;
+  }
+
+  void _syncTabController() {
+    if (widget.urls.length <= 1) {
+      _disposeTabController();
+      _disposePageController();
+      _currentIndex = 0;
+      _scrollLocked = false;
       return;
     }
-    _horizontalScrollLocked.value = isActive;
-    widget.onZoomActiveChanged(isActive);
+
+    if (_tabController == null ||
+        _tabController!.length != widget.urls.length) {
+      _disposeTabController();
+      _disposePageController();
+      _currentIndex = 0;
+      _scrollLocked = false;
+      _tabController = TabController(length: widget.urls.length, vsync: this)
+        ..addListener(_onTabChanged);
+      _pageController = PageController();
+    }
+  }
+
+  void _onTabChanged() {
+    if (!mounted || _tabController == null) {
+      return;
+    }
+    if (_tabController!.indexIsChanging || _scrollLocked) {
+      return;
+    }
+    final index = _tabController!.index;
+    if (_pageController?.hasClients == true && mounted) {
+      final page = _pageController!.page ?? _currentIndex.toDouble();
+      if (page.round() != index) {
+        _pageController!.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
+    if (_currentIndex != index) {
+      setState(() => _currentIndex = index);
+    }
+  }
+
+  void _onPageChanged(int index) {
+    if (!mounted || _currentIndex == index) {
+      return;
+    }
+    setState(() => _currentIndex = index);
+    if (_tabController != null && _tabController!.index != index) {
+      _tabController!.animateTo(index);
+    }
+  }
+
+  void _onZoomActiveChanged(bool isActive) {
+    if (_scrollLocked == isActive) {
+      return;
+    }
+
+    void apply() {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _scrollLocked = isActive);
+      widget.onZoomActiveChanged(isActive);
+    }
+
+    if (isActive) {
+      final controller = _pageController;
+      if (controller != null && controller.hasClients) {
+        controller.jumpToPage(_currentIndex);
+      }
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => apply());
   }
 
   @override
   Widget build(BuildContext context) {
-    final pageView = ValueListenableBuilder<bool>(
-      valueListenable: _horizontalScrollLocked,
-      builder: (context, locked, _) {
-        return PageView.builder(
-          controller: _controller,
-          physics: locked
-              ? const NeverScrollableScrollPhysics()
-              : const PageScrollPhysics(),
-          itemCount: widget.urls.length,
-          onPageChanged: (index) {
-            setState(() => _currentPage = index);
-            _horizontalScrollLocked.value = false;
-            widget.onZoomActiveChanged(false);
-          },
-          itemBuilder: (context, index) => _EducationPosterImage(
-            key: ValueKey(widget.urls[index]),
-            url: widget.urls[index],
-            height: widget.height,
-            isCurrentPage: index == _currentPage,
-            onZoomActiveChanged: _onZoomActiveChanged,
-          ),
-        );
-      },
-    );
-
     if (widget.urls.length == 1) {
-      return pageView;
+      return _EducationPosterImage(
+        key: ValueKey(widget.urls.first),
+        url: widget.urls.first,
+        fillScreen: widget.fillScreen,
+        isCurrentPage: true,
+        onZoomActiveChanged: widget.onZoomActiveChanged,
+      );
     }
 
-    return Stack(
-      fit: StackFit.expand,
+    return Column(
       children: [
-        pageView,
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 16,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(widget.urls.length, (index) {
-              final isActive = index == _currentPage;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: isActive ? 14 : 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: isActive ? Colors.white : Colors.white54,
-                  borderRadius: BorderRadius.circular(999),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-              );
-            }),
+        IgnorePointer(
+          ignoring: _scrollLocked,
+          child: ColoredBox(
+            color: _tabBarColor,
+            child: TabBar(
+              controller: _tabController,
+              isScrollable: widget.urls.length > 5,
+              tabs: List.generate(
+                widget.urls.length,
+                (index) => Tab(text: 'Hal ${index + 1}'),
+              ),
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              indicatorColor: _tabIndicatorColor,
+              indicatorWeight: 3,
+              dividerColor: Colors.transparent,
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: PageView.builder(
+            controller: _pageController,
+            physics: _scrollLocked
+                ? const NeverScrollableScrollPhysics()
+                : const PageScrollPhysics(),
+            itemCount: widget.urls.length,
+            onPageChanged: _onPageChanged,
+            itemBuilder: (context, index) => _EducationPosterImage(
+              key: ValueKey(widget.urls[index]),
+              url: widget.urls[index],
+              fillScreen: widget.fillScreen,
+              isCurrentPage: index == _currentIndex,
+              onZoomActiveChanged: _onZoomActiveChanged,
+            ),
           ),
         ),
       ],

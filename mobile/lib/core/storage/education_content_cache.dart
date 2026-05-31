@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
@@ -11,6 +12,7 @@ class CachedEducationContent {
     this.excerpt,
     this.body,
     this.anjuranRulesJson,
+    this.posterUrlsJson,
     required this.fetchedAt,
   });
 
@@ -20,15 +22,29 @@ class CachedEducationContent {
   final String? excerpt;
   final String? body;
   final String? anjuranRulesJson;
+  final String? posterUrlsJson;
   final DateTime fetchedAt;
+
+  List<String> get posterUrls {
+    final raw = posterUrlsJson;
+    if (raw == null || raw.isEmpty) {
+      return const [];
+    }
+    final decoded = jsonDecode(raw);
+    if (decoded is! List) {
+      return const [];
+    }
+    return decoded.map((e) => e.toString()).where((url) => url.isNotEmpty).toList();
+  }
 }
 
 class EducationContentCache {
   static const _dbName = 'peka_stunting_cache.db';
-  static const _dbVersion = 3;
+  static const _dbVersion = 4;
   static const _contentTable = 'education_content_cache';
   static const _menusTable = 'education_taxonomy_menus_cache';
   static const _menuDetailTable = 'education_taxonomy_menu_detail_cache';
+  static const _posterFilesTable = 'poster_image_cache';
   static const staleAfter = Duration(hours: 24);
 
   Database? _db;
@@ -53,8 +69,16 @@ CREATE TABLE $_contentTable (
   excerpt TEXT,
   body TEXT,
   anjuran_rules_json TEXT,
+  poster_urls_json TEXT,
   fetched_at TEXT NOT NULL,
   PRIMARY KEY (menu_slug, item_slug)
+)
+''');
+        await db.execute('''
+CREATE TABLE $_posterFilesTable (
+  url TEXT PRIMARY KEY,
+  local_path TEXT NOT NULL,
+  fetched_at TEXT NOT NULL
 )
 ''');
         await db.execute('''
@@ -94,6 +118,18 @@ CREATE TABLE IF NOT EXISTS $_menuDetailTable (
             'ALTER TABLE $_contentTable ADD COLUMN anjuran_rules_json TEXT',
           );
         }
+        if (oldVersion < 4) {
+          await db.execute(
+            'ALTER TABLE $_contentTable ADD COLUMN poster_urls_json TEXT',
+          );
+          await db.execute('''
+CREATE TABLE IF NOT EXISTS $_posterFilesTable (
+  url TEXT PRIMARY KEY,
+  local_path TEXT NOT NULL,
+  fetched_at TEXT NOT NULL
+)
+''');
+        }
       },
     );
 
@@ -123,9 +159,64 @@ CREATE TABLE IF NOT EXISTS $_menuDetailTable (
       excerpt: row['excerpt'] as String?,
       body: row['body'] as String?,
       anjuranRulesJson: row['anjuran_rules_json'] as String?,
+      posterUrlsJson: row['poster_urls_json'] as String?,
       fetchedAt: DateTime.tryParse(row['fetched_at'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
     );
+  }
+
+  Future<String?> getPosterLocalPath(String url) async {
+    final db = await _database();
+    final rows = await db.query(
+      _posterFilesTable,
+      where: 'url = ?',
+      whereArgs: [url],
+      limit: 1,
+    );
+    if (rows.isEmpty) {
+      return null;
+    }
+    return rows.first['local_path'] as String?;
+  }
+
+  Future<void> upsertPosterFile({
+    required String url,
+    required String localPath,
+  }) async {
+    final db = await _database();
+    await db.insert(
+      _posterFilesTable,
+      {
+        'url': url,
+        'local_path': localPath,
+        'fetched_at': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deletePosterFilesNotIn(Iterable<String> urls) async {
+    final keep = urls.toSet();
+    final db = await _database();
+    final rows = await db.query(_posterFilesTable);
+    for (final row in rows) {
+      final url = row['url'] as String?;
+      if (url == null || keep.contains(url)) {
+        continue;
+      }
+      final localPath = row['local_path'] as String?;
+      if (localPath != null) {
+        final file = File(localPath);
+        if (await file.exists()) {
+          await file.delete();
+        }
+      }
+      await db.delete(
+        _posterFilesTable,
+        where: 'url = ?',
+        whereArgs: [url],
+      );
+    }
   }
 
   Future<void> upsert({
@@ -135,6 +226,7 @@ CREATE TABLE IF NOT EXISTS $_menuDetailTable (
     String? excerpt,
     String? body,
     String? anjuranRulesJson,
+    List<String> posterUrls = const [],
   }) async {
     final db = await _database();
     await db.insert(
@@ -146,6 +238,8 @@ CREATE TABLE IF NOT EXISTS $_menuDetailTable (
         'excerpt': excerpt,
         'body': body,
         'anjuran_rules_json': anjuranRulesJson,
+        'poster_urls_json':
+            posterUrls.isEmpty ? null : jsonEncode(posterUrls),
         'fetched_at': DateTime.now().toIso8601String(),
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -245,10 +339,22 @@ CREATE TABLE IF NOT EXISTS $_menuDetailTable (
 
   Future<void> clearAll() async {
     final db = await _database();
+    final posterRows = await db.query(_posterFilesTable);
+    for (final row in posterRows) {
+      final localPath = row['local_path'] as String?;
+      if (localPath == null) {
+        continue;
+      }
+      final file = File(localPath);
+      if (await file.exists()) {
+        await file.delete();
+      }
+    }
     await db.transaction((txn) async {
       await txn.delete(_contentTable);
       await txn.delete(_menusTable);
       await txn.delete(_menuDetailTable);
+      await txn.delete(_posterFilesTable);
     });
   }
 }

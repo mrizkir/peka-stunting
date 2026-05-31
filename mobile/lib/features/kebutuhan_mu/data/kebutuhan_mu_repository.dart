@@ -1,17 +1,21 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/storage/cache_providers.dart';
 import '../../../core/storage/education_content_cache.dart';
+import '../../../core/storage/poster_image_cache.dart';
 import '../kebutuhan_mu_config.dart';
 import '../models/kebutuhan_mu_models.dart';
 
 final kebutuhanMuRepositoryProvider = Provider<KebutuhanMuRepository>((ref) {
   return KebutuhanMuRepository(
     ref.read(dioProvider),
-    EducationContentCache(),
+    ref.read(educationContentCacheProvider),
+    ref.read(posterImageCacheProvider),
   );
 });
 
@@ -40,10 +44,11 @@ class KebutuhanMuTaxonomySnapshot<T> {
 }
 
 class KebutuhanMuRepository {
-  KebutuhanMuRepository(this._dio, this._cache);
+  KebutuhanMuRepository(this._dio, this._cache, this._posterCache);
 
   final Dio _dio;
   final EducationContentCache _cache;
+  final PosterImageCache _posterCache;
 
   Future<List<KebutuhanMuMenuSummary>> fetchTargetGroups() async {
     return _fetchRemoteTargetGroups();
@@ -123,7 +128,15 @@ class KebutuhanMuRepository {
     required String menuSlug,
     required String itemSlug,
   }) async {
-    return _fetchRemoteContent(menuSlug: menuSlug, itemSlug: itemSlug);
+    try {
+      return await _fetchRemoteContent(menuSlug: menuSlug, itemSlug: itemSlug);
+    } on DioException {
+      final cached = await _cache.get(menuSlug: menuSlug, itemSlug: itemSlug);
+      if (cached != null) {
+        return _fromCached(cached);
+      }
+      rethrow;
+    }
   }
 
   Stream<KebutuhanMuContentSnapshot?> watchContent({
@@ -178,7 +191,9 @@ class KebutuhanMuRepository {
         anjuranRulesJson: content.anjuranRules.isEmpty
             ? null
             : jsonEncode(content.anjuranRules),
+        posterUrls: content.posterImages,
       );
+      unawaited(_posterCache.cacheUrls(content.posterImages));
       return content;
     } on DioException catch (error) {
       rethrowApi(error);
@@ -233,7 +248,7 @@ class KebutuhanMuRepository {
       body: cached.body,
       featuredImageUrl: null,
       secondaryImageUrl: null,
-      posterImages: const [],
+      posterImages: cached.posterUrls,
       calculatorConfig: null,
       anjuranRules: anjuranRules,
     );
@@ -246,7 +261,20 @@ class KebutuhanMuRepository {
     return a.title == b.title &&
         a.excerpt == b.excerpt &&
         a.body == b.body &&
+        _posterUrlsEquals(a.posterImages, b.posterImages) &&
         _anjuranRulesEquals(a.anjuranRules, b.anjuranRules);
+  }
+
+  bool _posterUrlsEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   bool _anjuranRulesEquals(
