@@ -110,6 +110,7 @@ class KebutuhanMuContent {
     this.secondaryImageUrl,
     required this.posterImages,
     this.calculatorConfig,
+    this.anjuranRules = const [],
   });
 
   final String title;
@@ -120,6 +121,7 @@ class KebutuhanMuContent {
   final String? secondaryImageUrl;
   final List<String> posterImages;
   final Map<String, dynamic>? calculatorConfig;
+  final List<Map<String, dynamic>> anjuranRules;
 
   factory KebutuhanMuContent.fromJson(Map<String, dynamic> json) {
     final featuredImageUrl = json['featured_image_url'] as String?;
@@ -150,6 +152,10 @@ class KebutuhanMuContent {
       secondaryImageUrl: secondaryImageUrl,
       posterImages: posterImages,
       calculatorConfig: json['calculator_config'] as Map<String, dynamic>?,
+      anjuranRules: (json['anjuran_rules'] as List<dynamic>? ?? [])
+          .whereType<Map>()
+          .map((e) => e.cast<String, dynamic>())
+          .toList(),
     );
   }
 }

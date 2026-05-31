@@ -8,6 +8,7 @@ use App\Models\EducationMenu;
 use App\Models\ScreeningSubmission;
 use App\Models\User;
 use App\Support\AnemiaScreeningDefaults;
+use App\Support\CalculatorAnjuranDefaults;
 use Database\Seeders\EducationTaxonomySeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,7 +52,8 @@ class AnemiaScreeningSubmissionApiTest extends TestCase
 			->assertJsonPath('data.calculator_slug', 'cek-risiko-anemia')
 			->assertJsonPath('data.menu_slug', 'remaja-putri')
 			->assertJsonPath('data.yes_count', 1)
-			->assertJsonPath('data.category', ScreeningSubmission::CATEGORY_LOW_RISK);
+			->assertJsonPath('data.category', ScreeningSubmission::CATEGORY_LOW_RISK)
+			->assertJsonPath('data.anjuran', fn ($value) => is_string($value) && $value !== '');
 
 		$this->assertDatabaseHas('screening_submissions', [
 			'user_id' => $user->id,
@@ -98,7 +100,7 @@ class AnemiaScreeningSubmissionApiTest extends TestCase
 			->assertOk()
 			->assertJsonPath('success', true)
 			->assertJsonCount(1, 'data.items')
-			->assertJsonPath('data.items.0.category', ScreeningSubmission::CATEGORY_AT_RISK);
+			->assertJsonPath('data.items.0.category', ScreeningSubmission::CATEGORY_LOW_RISK);
 	}
 
 	private function publishAnemiaContent(string $menuSlug): EducationContent
@@ -115,6 +117,11 @@ class AnemiaScreeningSubmissionApiTest extends TestCase
 			'published_at' => now(),
 			'calculator_config' => AnemiaScreeningDefaults::calculatorConfig(),
 		]);
+
+		$content->anjuranRules()->delete();
+		foreach (CalculatorAnjuranDefaults::anemiaRules() as $rule) {
+			$content->anjuranRules()->create($rule);
+		}
 
 		return $content->fresh();
 	}

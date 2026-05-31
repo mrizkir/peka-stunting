@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -173,6 +175,9 @@ class KebutuhanMuRepository {
         title: content.title,
         excerpt: content.excerpt,
         body: content.body,
+        anjuranRulesJson: content.anjuranRules.isEmpty
+            ? null
+            : jsonEncode(content.anjuranRules),
       );
       return content;
     } on DioException catch (error) {
@@ -210,6 +215,18 @@ class KebutuhanMuRepository {
   }
 
   KebutuhanMuContent _fromCached(CachedEducationContent cached) {
+    List<Map<String, dynamic>> anjuranRules = const [];
+    final rawRules = cached.anjuranRulesJson;
+    if (rawRules != null && rawRules.isNotEmpty) {
+      final decoded = jsonDecode(rawRules);
+      if (decoded is List) {
+        anjuranRules = decoded
+            .whereType<Map>()
+            .map((e) => e.cast<String, dynamic>())
+            .toList();
+      }
+    }
+
     return KebutuhanMuContent(
       title: cached.title,
       excerpt: cached.excerpt,
@@ -218,6 +235,7 @@ class KebutuhanMuRepository {
       secondaryImageUrl: null,
       posterImages: const [],
       calculatorConfig: null,
+      anjuranRules: anjuranRules,
     );
   }
 
@@ -225,7 +243,25 @@ class KebutuhanMuRepository {
     if (a == null) {
       return false;
     }
-    return a.title == b.title && a.excerpt == b.excerpt && a.body == b.body;
+    return a.title == b.title &&
+        a.excerpt == b.excerpt &&
+        a.body == b.body &&
+        _anjuranRulesEquals(a.anjuranRules, b.anjuranRules);
+  }
+
+  bool _anjuranRulesEquals(
+    List<Map<String, dynamic>> a,
+    List<Map<String, dynamic>> b,
+  ) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (var i = 0; i < a.length; i++) {
+      if (jsonEncode(a[i]) != jsonEncode(b[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   bool _groupsEquals(

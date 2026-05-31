@@ -47,7 +47,8 @@ class LilaScreeningSubmissionApiTest extends TestCase
 			->assertJsonPath('data.category', ScreeningSubmission::CATEGORY_AT_RISK)
 			->assertJsonPath('data.category_label', 'Berisiko KEK')
 			->assertJsonPath('data.answers.age_years', 16)
-			->assertJsonPath('data.answers.lila_cm', 22.4);
+			->assertJsonPath('data.answers.lila_cm', 22.4)
+			->assertJsonPath('data.anjuran', fn ($value) => is_string($value) && $value !== '');
 
 		$this->assertDatabaseHas('screening_submissions', [
 			'user_id' => $user->id,

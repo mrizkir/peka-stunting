@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AnemiaCalculatorEvaluateController;
 use App\Http\Controllers\Api\V1\AnemiaScreeningSubmissionController;
+use App\Http\Controllers\Api\V1\BmiCalculatorEvaluateController;
 use App\Http\Controllers\Api\V1\BmiScreeningSubmissionController;
+use App\Http\Controllers\Api\V1\LilaCalculatorEvaluateController;
 use App\Http\Controllers\Api\V1\LilaScreeningSubmissionController;
+use App\Http\Controllers\Api\V1\NutritionalStatusCalculatorEvaluateController;
 use App\Http\Controllers\Api\V1\NutritionalStatusScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\AppController;
 use App\Http\Controllers\Api\V1\AuthController;
@@ -41,12 +45,24 @@ Route::prefix('v1')->group(function () {
 		Route::post('/{child}/risk-assessments', [ChildRiskAssessmentController::class, 'store'])->name('risk-assessments.store');
 	});
 
+	Route::prefix('calculators/cek-risiko-anemia')
+		->name('api.v1.calculators.anemia.')
+		->group(function () {
+			Route::post('/evaluate', [AnemiaCalculatorEvaluateController::class, 'evaluate'])->name('evaluate');
+		});
+
 	Route::middleware('auth:sanctum')
 		->prefix('screening-submissions/cek-risiko-anemia')
 		->name('api.v1.screening-submissions.anemia.')
 		->group(function () {
 			Route::get('/', [AnemiaScreeningSubmissionController::class, 'index'])->name('index');
 			Route::post('/', [AnemiaScreeningSubmissionController::class, 'store'])->name('store');
+		});
+
+	Route::prefix('calculators/cek-imt')
+		->name('api.v1.calculators.bmi.')
+		->group(function () {
+			Route::post('/evaluate', [BmiCalculatorEvaluateController::class, 'evaluate'])->name('evaluate');
 		});
 
 	Route::middleware('auth:sanctum')
@@ -56,11 +72,23 @@ Route::prefix('v1')->group(function () {
 			Route::post('/', [BmiScreeningSubmissionController::class, 'store'])->name('store');
 		});
 
+	Route::prefix('calculators/cek-lila')
+		->name('api.v1.calculators.lila.')
+		->group(function () {
+			Route::post('/evaluate', [LilaCalculatorEvaluateController::class, 'evaluate'])->name('evaluate');
+		});
+
 	Route::middleware('auth:sanctum')
 		->prefix('screening-submissions/cek-lila')
 		->name('api.v1.screening-submissions.lila.')
 		->group(function () {
 			Route::post('/', [LilaScreeningSubmissionController::class, 'store'])->name('store');
+		});
+
+	Route::prefix('calculators/periksa-status-gizi')
+		->name('api.v1.calculators.nutritional-status.')
+		->group(function () {
+			Route::post('/evaluate', [NutritionalStatusCalculatorEvaluateController::class, 'evaluate'])->name('evaluate');
 		});
 
 	Route::middleware('auth:sanctum')

@@ -7,6 +7,7 @@ use App\Models\EducationItem;
 use App\Models\EducationMenu;
 use App\Models\ScreeningSubmission;
 use App\Models\User;
+use App\Support\CalculatorAnjuranDefaults;
 use Database\Seeders\EducationTaxonomySeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,6 +56,7 @@ class NutritionalStatusScreeningSubmissionApiTest extends TestCase
 						'height_for_age_z',
 						'weight_for_age_z',
 						'weight_for_height_z',
+						'anjuran',
 					],
 				],
 			]);
@@ -77,7 +79,7 @@ class NutritionalStatusScreeningSubmissionApiTest extends TestCase
 		])->assertUnauthorized();
 	}
 
-	private function publishNutritionalStatusContent(string $menuSlug): void
+	private function publishNutritionalStatusContent(string $menuSlug): EducationContent
 	{
 		$menu = EducationMenu::query()->where('slug', $menuSlug)->firstOrFail();
 
@@ -86,7 +88,7 @@ class NutritionalStatusScreeningSubmissionApiTest extends TestCase
 			->where('slug', ScreeningSubmission::CALCULATOR_PERIKSA_STATUS_GIZI)
 			->firstOrFail();
 
-		EducationContent::query()->updateOrCreate(
+		$content = EducationContent::query()->updateOrCreate(
 			['item_id' => $item->id],
 			[
 				'title' => 'Periksa Status Gizi',
@@ -96,5 +98,12 @@ class NutritionalStatusScreeningSubmissionApiTest extends TestCase
 				'published_at' => now(),
 			],
 		);
+
+		$content->anjuranRules()->delete();
+		foreach (CalculatorAnjuranDefaults::nutritionalStatusRules() as $rule) {
+			$content->anjuranRules()->create($rule);
+		}
+
+		return $content->fresh();
 	}
 }

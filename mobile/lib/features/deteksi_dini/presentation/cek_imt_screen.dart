@@ -9,6 +9,8 @@ import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
 import '../../kebutuhan_mu/presentation/widgets/kebutuhan_mu_menu_description.dart';
 import '../data/bmi_screening_repository.dart';
 import '../domain/bmi_calculator.dart';
+import '../domain/calculator_anjuran_resolver.dart';
+import '../models/calculator_anjuran_rule.dart';
 
 const _kCekImtItemSlug = 'cek-imt';
 
@@ -36,8 +38,10 @@ class _CekImtScreenState extends ConsumerState<CekImtScreen> {
   final _formKey = GlobalKey<FormState>();
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
+  final _anjuranResolver = const CalculatorAnjuranResolver();
 
   BmiResult? _result;
+  ResolvedAnjuran? _resolvedAnjuran;
   bool _isSaving = false;
 
   @override
@@ -45,6 +49,20 @@ class _CekImtScreenState extends ConsumerState<CekImtScreen> {
     _weightController.dispose();
     _heightController.dispose();
     super.dispose();
+  }
+
+  ResolvedAnjuran? _resolveAnjuran(double bmi) {
+    final content = ref.read(cekImtContentProvider(widget.menuSlug)).valueOrNull;
+    final rules = content?.content.anjuranRules ?? const [];
+    if (rules.isEmpty) {
+      return null;
+    }
+
+    return _anjuranResolver.resolve(
+      rules: rules.map(CalculatorAnjuranRule.fromJson).toList(),
+      metric: CalculatorAnjuranRule.metricBmi,
+      value: bmi,
+    );
   }
 
   Future<void> _calculate() async {
@@ -64,6 +82,7 @@ class _CekImtScreenState extends ConsumerState<CekImtScreen> {
 
     setState(() {
       _result = nextResult;
+      _resolvedAnjuran = _resolveAnjuran(nextResult.value);
     });
 
     final isLoggedIn = ref.read(authStateProvider).valueOrNull != null;
@@ -128,6 +147,7 @@ class _CekImtScreenState extends ConsumerState<CekImtScreen> {
     _heightController.clear();
     setState(() {
       _result = null;
+      _resolvedAnjuran = null;
       _isSaving = false;
     });
   }
@@ -234,7 +254,10 @@ class _CekImtScreenState extends ConsumerState<CekImtScreen> {
           ),
           if (_result != null) ...[
             const SizedBox(height: 16),
-            _ResultCard(result: _result!),
+            _ResultCard(
+              result: _result!,
+              resolvedAnjuran: _resolvedAnjuran,
+            ),
           ],
           const SizedBox(height: 16),
           Card(
@@ -324,12 +347,38 @@ class _ImtIntroText extends ConsumerWidget {
 }
 
 class _ResultCard extends StatelessWidget {
-  const _ResultCard({required this.result});
+  const _ResultCard({
+    required this.result,
+    required this.resolvedAnjuran,
+  });
 
   final BmiResult result;
+  final ResolvedAnjuran? resolvedAnjuran;
+
+  String get _categoryLabel =>
+      resolvedAnjuran?.label ?? result.categoryLabel;
+
+  String get _anjuran =>
+      resolvedAnjuran?.anjuran ?? result.categoryDescription;
+
+  ColorHint get _colorHint {
+    final slug = resolvedAnjuran?.slug;
+    if (slug == null) {
+      return result.colorHint;
+    }
+
+    switch (slug) {
+      case 'normal':
+        return ColorHint.success;
+      case 'obese':
+        return ColorHint.danger;
+      default:
+        return ColorHint.warning;
+    }
+  }
 
   Color get _accentColor {
-    switch (result.colorHint) {
+    switch (_colorHint) {
       case ColorHint.success:
         return AppTheme.primary;
       case ColorHint.warning:
@@ -387,16 +436,23 @@ class _ResultCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                result.categoryLabel,
+                _categoryLabel,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   color: _accentColor,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
-              result.categoryDescription,
+              'Anjuran',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _anjuran,
               style: TextStyle(
                 color: Colors.grey.shade700,
                 height: 1.5,

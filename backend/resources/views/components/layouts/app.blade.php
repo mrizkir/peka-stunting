@@ -31,6 +31,18 @@
             Menu edukasi
           </a>
           @role('admin')
+            <a href="{{ route('anjuran-imt.index') }}" class="{{ request()->routeIs('anjuran-imt.*') ? 'nav-link-active' : 'nav-link' }}">
+              Anjuran IMT
+            </a>
+            <a href="{{ route('anjuran-lila.index') }}" class="{{ request()->routeIs('anjuran-lila.*') ? 'nav-link-active' : 'nav-link' }}">
+              Anjuran LILA
+            </a>
+            <a href="{{ route('anjuran-anemia.index') }}" class="{{ request()->routeIs('anjuran-anemia.*') ? 'nav-link-active' : 'nav-link' }}">
+              Anjuran Anemia
+            </a>
+            <a href="{{ route('anjuran-status-gizi.index') }}" class="{{ request()->routeIs('anjuran-status-gizi.*') ? 'nav-link-active' : 'nav-link' }}">
+              Anjuran Status Gizi
+            </a>
             <a href="{{ route('settings.splash.edit') }}" class="{{ request()->routeIs('settings.*') ? 'nav-link-active' : 'nav-link' }}">
               Splash screen
             </a>

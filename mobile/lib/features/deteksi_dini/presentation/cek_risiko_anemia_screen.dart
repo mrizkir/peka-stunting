@@ -12,6 +12,8 @@ import '../data/anemia_screening_repository.dart';
 import '../domain/anemia_calculator_config.dart';
 import '../domain/anemia_risk_calculator.dart';
 import '../domain/bmi_calculator.dart';
+import '../domain/calculator_anjuran_resolver.dart';
+import '../models/calculator_anjuran_rule.dart';
 
 const _kCekRisikoAnemiaItemSlug = 'cek-risiko-anemia';
 
@@ -120,17 +122,17 @@ class _AnemiaQuestionnaireCardState
   final _formKey = GlobalKey<FormState>();
   List<AnemiaScreeningQuestion> _questions =
       AnemiaRiskCalculator.defaultQuestions;
-  int _riskYesThreshold = AnemiaRiskCalculator.defaultRiskYesThreshold;
   Map<String, bool?> _answers = {
     for (final q in AnemiaRiskCalculator.defaultQuestions) q.id: null,
   };
   AnemiaRiskResult? _result;
+  ResolvedAnjuran? _resolvedAnjuran;
   bool _isSaving = false;
   String? _questionsSignature;
+  final _anjuranResolver = const CalculatorAnjuranResolver();
 
   void _applyQuestionnaire({
     required List<AnemiaScreeningQuestion> questions,
-    required int riskYesThreshold,
   }) {
     final signature = questions.map((q) => q.id).join('|');
     if (_questionsSignature == signature) {
@@ -140,23 +142,35 @@ class _AnemiaQuestionnaireCardState
     setState(() {
       _questionsSignature = signature;
       _questions = questions;
-      _riskYesThreshold = riskYesThreshold;
       _answers = {for (final q in questions) q.id: null};
       _result = null;
+      _resolvedAnjuran = null;
     });
   }
 
-  ({List<AnemiaScreeningQuestion> questions, int threshold}) _resolveFromContent(
+  List<AnemiaScreeningQuestion> _resolveQuestionsFromContent(
     KebutuhanMuContent? content,
   ) {
     final config = AnemiaCalculatorConfig.fromJson(content?.calculatorConfig);
     if (config != null) {
-      return (questions: config.questions, threshold: config.riskYesThreshold);
+      return config.questions;
     }
 
-    return (
-      questions: AnemiaRiskCalculator.defaultQuestions,
-      threshold: AnemiaRiskCalculator.defaultRiskYesThreshold,
+    return AnemiaRiskCalculator.defaultQuestions;
+  }
+
+  ResolvedAnjuran? _resolveAnjuran(int yesCount) {
+    final content =
+        ref.read(cekRisikoAnemiaIntroContentProvider(widget.menuSlug)).valueOrNull;
+    final rules = content?.content.anjuranRules ?? const [];
+    if (rules.isEmpty) {
+      return null;
+    }
+
+    return _anjuranResolver.resolve(
+      rules: rules.map(CalculatorAnjuranRule.fromJson).toList(),
+      metric: CalculatorAnjuranRule.metricYesCount,
+      value: yesCount.toDouble(),
     );
   }
 
@@ -172,14 +186,16 @@ class _AnemiaQuestionnaireCardState
     final result = AnemiaRiskCalculator.calculate(
       questions: _questions,
       answers: answers,
-      riskYesThreshold: _riskYesThreshold,
     );
 
     if (result == null) {
       return;
     }
 
-    setState(() => _result = result);
+    setState(() {
+      _result = result;
+      _resolvedAnjuran = _resolveAnjuran(result.yesCount);
+    });
 
     final isLoggedIn = ref.read(authStateProvider).valueOrNull != null;
     if (!isLoggedIn) {
@@ -243,6 +259,7 @@ class _AnemiaQuestionnaireCardState
     setState(() {
       _answers = {for (final q in _questions) q.id: null};
       _result = null;
+      _resolvedAnjuran = null;
       _isSaving = false;
     });
   }
@@ -252,17 +269,14 @@ class _AnemiaQuestionnaireCardState
     final contentAsync =
         ref.watch(cekRisikoAnemiaContentProvider(widget.menuSlug));
 
-    final resolved = _resolveFromContent(contentAsync.valueOrNull);
-    final signature = resolved.questions.map((q) => q.id).join('|');
+    final questions = _resolveQuestionsFromContent(contentAsync.valueOrNull);
+    final signature = questions.map((q) => q.id).join('|');
     if (_questionsSignature != signature) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) {
           return;
         }
-        _applyQuestionnaire(
-          questions: resolved.questions,
-          riskYesThreshold: resolved.threshold,
-        );
+        _applyQuestionnaire(questions: questions);
       });
     }
 
@@ -342,17 +356,19 @@ class _AnemiaQuestionnaireCardState
         ),
         if (_result != null) ...[
           const SizedBox(height: 16),
-          _AnemiaResultCard(result: _result!),
+          _AnemiaResultCard(
+            result: _result!,
+            resolvedAnjuran: _resolvedAnjuran,
+          ),
         ],
         const SizedBox(height: 16),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Interpretasi: jawaban "Ya" ≥ $_riskYesThreshold dari '
-              '${_questions.length} pertanyaan menandakan risiko anemia. '
-              'Diagnosis pasti memerlukan pemeriksaan Hb (≥ 12 g/dL dianggap '
-              'tidak anemia pada remaja putri). Hasil ini bersifat skrining awal.',
+              'Interpretasi: 0 jawaban Ya = tidak berisiko; 1–3 = risiko rendah; '
+              '4–7 = risiko sedang; > 7 = risiko tinggi. Diagnosis pasti memerlukan '
+              'pemeriksaan Hb di fasilitas kesehatan. Hasil ini bersifat skrining awal.',
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey.shade600,
@@ -471,12 +487,37 @@ class _QuestionTile extends StatelessWidget {
 }
 
 class _AnemiaResultCard extends StatelessWidget {
-  const _AnemiaResultCard({required this.result});
+  const _AnemiaResultCard({
+    required this.result,
+    required this.resolvedAnjuran,
+  });
 
   final AnemiaRiskResult result;
+  final ResolvedAnjuran? resolvedAnjuran;
+
+  String get _categoryLabel => resolvedAnjuran?.label ??
+      AnemiaRiskCalculator.fallbackCategoryLabel(result.yesCount);
+
+  String get _anjuran => resolvedAnjuran?.anjuran ??
+      AnemiaRiskCalculator.fallbackRecommendation(result.yesCount);
 
   Color get _accentColor {
-    switch (result.colorHint) {
+    final slug = resolvedAnjuran?.slug;
+    if (slug != null) {
+      switch (slug) {
+        case 'normal':
+          return AppTheme.primary;
+        case 'high_risk':
+          return const Color(0xFFDC2626);
+        case 'medium_risk':
+        case 'low_risk':
+          return const Color(0xFFD97706);
+        default:
+          return const Color(0xFFD97706);
+      }
+    }
+
+    switch (AnemiaRiskCalculator.fallbackColorHint(result.yesCount)) {
       case ColorHint.success:
         return AppTheme.primary;
       case ColorHint.warning:
@@ -526,7 +567,7 @@ class _AnemiaResultCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                result.categoryLabel,
+                _categoryLabel,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   color: _accentColor,
@@ -542,7 +583,7 @@ class _AnemiaResultCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              result.recommendation,
+              _anjuran,
               style: TextStyle(
                 color: Colors.grey.shade700,
                 height: 1.5,

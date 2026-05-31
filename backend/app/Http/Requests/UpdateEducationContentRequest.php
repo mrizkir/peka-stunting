@@ -24,16 +24,14 @@ class UpdateEducationContentRequest extends FormRequest
 			'video_url' => EducationVideoUrl::normalize($this->input('video_url')),
 		]);
 
-		if (! $this->isScreeningQuestionnaireItem()) {
-			return;
-		}
+		if ($this->isScreeningQuestionnaireItem()) {
+			$normalized = CalculatorConfigNormalizer::normalize(
+				$this->input('calculator_config'),
+			);
 
-		$normalized = CalculatorConfigNormalizer::normalize(
-			$this->input('calculator_config'),
-		);
-
-		if ($normalized !== null) {
-			$this->merge(['calculator_config' => $normalized]);
+			if ($normalized !== null) {
+				$this->merge(['calculator_config' => $normalized]);
+			}
 		}
 	}
 

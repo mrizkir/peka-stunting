@@ -66,4 +66,20 @@ class EducationItem extends Model
 	{
 		return $this->slug === 'cek-risiko-anemia';
 	}
+
+	public function hasAnjuranRules(): bool
+	{
+		return $this->anjuranMetric() !== null;
+	}
+
+	public function anjuranMetric(): ?string
+	{
+		return match ($this->slug) {
+			'cek-imt' => CalculatorAnjuranRule::METRIC_BMI,
+			'cek-lila' => CalculatorAnjuranRule::METRIC_LILA_CM,
+			'cek-risiko-anemia' => CalculatorAnjuranRule::METRIC_YES_COUNT,
+			'periksa-status-gizi' => CalculatorAnjuranRule::METRIC_Z_SCORE,
+			default => null,
+		};
+	}
 }

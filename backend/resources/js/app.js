@@ -1,6 +1,7 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
 import { createCalculatorQuestionnaire } from './forms/calculator-questionnaire';
+import { createCalculatorAnjuranRules } from './forms/calculator-anjuran-rules';
 import { createEducationBodyEditor } from './editors/education-body-editor';
 import { createRegisterForm } from './forms/register-form';
 import { createUserForm } from './forms/user-form';
@@ -8,6 +9,7 @@ import { createUsersIndex } from './pages/users-index';
 
 window.Alpine = Alpine;
 window.calculatorQuestionnaire = createCalculatorQuestionnaire;
+window.calculatorAnjuranRules = createCalculatorAnjuranRules;
 window.educationBodyEditor = createEducationBodyEditor;
 window.registerForm = createRegisterForm;
 window.userForm = createUserForm;

@@ -14,6 +14,8 @@ class ScreeningSubmissionResource extends JsonResource
 	 */
 	public function toArray(Request $request): array
 	{
+		$answers = $this->answers ?? [];
+
 		return [
 			'id' => $this->id,
 			'calculator_slug' => $this->calculator_slug,
@@ -23,6 +25,7 @@ class ScreeningSubmissionResource extends JsonResource
 			'risk_yes_threshold' => $this->risk_yes_threshold,
 			'category' => $this->category,
 			'category_label' => $this->category_label,
+			'anjuran' => $answers['anjuran'] ?? null,
 			'answers' => $this->answers,
 			'submitted_at' => $this->submitted_at?->toIso8601String(),
 		];

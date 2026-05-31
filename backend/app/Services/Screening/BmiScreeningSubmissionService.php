@@ -2,26 +2,34 @@
 
 namespace App\Services\Screening;
 
-use App\Models\EducationItem;
-use App\Models\EducationMenu;
+use App\Models\CalculatorAnjuranRule;
+use App\Models\EducationContent;
 use App\Models\ScreeningSubmission;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BmiScreeningSubmissionService
 {
+	public function __construct(
+		private readonly PublishedCalculatorContentResolver $contentResolver,
+		private readonly CalculatorAnjuranResolver $anjuranResolver,
+	) {}
+
 	public function store(
 		User $user,
 		string $menuSlug,
 		float $weightKg,
 		float $heightCm,
 	): ScreeningSubmission {
-		$item = $this->resolvePublishedBmiItem($menuSlug);
-		$result = $this->evaluate($weightKg, $heightCm);
+		$content = $this->contentResolver->resolvePublishedContent(
+			$menuSlug,
+			ScreeningSubmission::CALCULATOR_CEK_IMT,
+		);
+		$result = $this->evaluate($content, $weightKg, $heightCm);
 
 		return ScreeningSubmission::query()->create([
 			'user_id' => $user->id,
-			'education_item_id' => $item->id,
+			'education_item_id' => $content->item_id,
 			'calculator_slug' => ScreeningSubmission::CALCULATOR_CEK_IMT,
 			'menu_slug' => $menuSlug,
 			'yes_count' => 0,
@@ -33,6 +41,7 @@ class BmiScreeningSubmissionService
 				'weight_kg' => $result['weight_kg'],
 				'height_cm' => $result['height_cm'],
 				'bmi' => $result['bmi'],
+				'anjuran' => $result['anjuran'],
 			],
 			'questions_snapshot' => null,
 			'submitted_at' => now(),
@@ -40,69 +49,50 @@ class BmiScreeningSubmissionService
 	}
 
 	/**
-	 * @return array{weight_kg: float, height_cm: float, bmi: float, category: string, category_label: string}
+	 * @return array{
+	 *     weight_kg: float,
+	 *     height_cm: float,
+	 *     bmi: float,
+	 *     category: string,
+	 *     category_label: string,
+	 *     anjuran: string
+	 * }
 	 */
-	private function evaluate(float $weightKg, float $heightCm): array
+	public function evaluate(EducationContent $content, float $weightKg, float $heightCm): array
 	{
-		$heightM = $heightCm / 100;
-		$bmi = round($weightKg / ($heightM * $heightM), 1);
-
-		if ($bmi < 18.5) {
-			return [
-				'weight_kg' => $weightKg,
-				'height_cm' => $heightCm,
-				'bmi' => $bmi,
-				'category' => 'underweight',
-				'category_label' => 'Kurus',
-			];
-		}
-
-		if ($bmi < 25.0) {
-			return [
-				'weight_kg' => $weightKg,
-				'height_cm' => $heightCm,
-				'bmi' => $bmi,
-				'category' => 'normal',
-				'category_label' => 'Normal',
-			];
-		}
-
-		if ($bmi < 30.0) {
-			return [
-				'weight_kg' => $weightKg,
-				'height_cm' => $heightCm,
-				'bmi' => $bmi,
-				'category' => 'overweight',
-				'category_label' => 'Gemuk',
-			];
-		}
+		$bmi = $this->calculateBmi($weightKg, $heightCm);
+		$resolved = $this->anjuranResolver->resolve(
+			$content,
+			CalculatorAnjuranRule::METRIC_BMI,
+			$bmi,
+		);
 
 		return [
 			'weight_kg' => $weightKg,
 			'height_cm' => $heightCm,
 			'bmi' => $bmi,
-			'category' => 'obese',
-			'category_label' => 'Obesitas',
+			...$resolved->toArray(),
 		];
 	}
 
-	private function resolvePublishedBmiItem(string $menuSlug): EducationItem
+	public function evaluateByMenu(string $menuSlug, float $bmi): ResolvedAnjuran
 	{
-		$menu = EducationMenu::query()->where('slug', $menuSlug)->first();
-		if ($menu === null) {
-			throw new ModelNotFoundException('Menu edukasi tidak ditemukan.');
-		}
+		$content = $this->contentResolver->resolvePublishedContent(
+			$menuSlug,
+			ScreeningSubmission::CALCULATOR_CEK_IMT,
+		);
 
-		$item = $menu->items()
-			->where('slug', ScreeningSubmission::CALCULATOR_CEK_IMT)
-			->whereHas('content', fn ($query) => $query->published())
-			->with('content')
-			->first();
+		return $this->anjuranResolver->resolve(
+			$content,
+			CalculatorAnjuranRule::METRIC_BMI,
+			$bmi,
+		);
+	}
 
-		if ($item === null) {
-			throw new ModelNotFoundException('Konten Cek IMT tidak ditemukan atau belum dipublikasikan.');
-		}
+	public function calculateBmi(float $weightKg, float $heightCm): float
+	{
+		$heightM = $heightCm / 100;
 
-		return $item;
+		return round($weightKg / ($heightM * $heightM), 1);
 	}
 }

@@ -10,8 +10,10 @@ import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
 import '../../kebutuhan_mu/presentation/widgets/kebutuhan_mu_menu_description.dart';
 import '../data/nutritional_status_screening_repository.dart';
 import '../domain/bmi_calculator.dart';
+import '../domain/calculator_anjuran_resolver.dart';
 import '../domain/nutritional_status_calculator.dart';
 import '../domain/permenkes_z_score.dart';
+import '../models/calculator_anjuran_rule.dart';
 
 const _kPeriksaStatusGiziItemSlug = 'periksa-status-gizi';
 final _dateFormat = DateFormat('d MMM yyyy', 'id_ID');
@@ -46,13 +48,41 @@ class _PeriksaStatusGiziScreenState
   DateTime? _birthDate;
   String? _gender;
   NutritionalStatusResult? _result;
+  ResolvedAnjuran? _primaryAnjuran;
   bool _isSaving = false;
+  final _anjuranResolver = const CalculatorAnjuranResolver();
 
   @override
   void dispose() {
     _weightController.dispose();
     _heightController.dispose();
     super.dispose();
+  }
+
+  ResolvedAnjuran? _resolveAnjuran(double z, String indicator) {
+    final content =
+        ref.read(periksaStatusGiziContentProvider(widget.menuSlug)).valueOrNull;
+    final rules = content?.content.anjuranRules ?? const [];
+    if (rules.isEmpty) {
+      return null;
+    }
+
+    return _anjuranResolver.resolve(
+      rules: rules.map(CalculatorAnjuranRule.fromJson).toList(),
+      metric: CalculatorAnjuranRule.metricZScore,
+      value: z,
+      indicator: indicator,
+    );
+  }
+
+  void _resolveAllAnjurans(NutritionalStatusResult result) {
+    final minZ = [
+      result.heightForAge.zScore,
+      result.weightForAge.zScore,
+      result.weightForHeight.zScore,
+    ].reduce((a, b) => a < b ? a : b);
+
+    _primaryAnjuran = _resolveAnjuran(minZ, CalculatorAnjuranRule.indicatorPrimary);
   }
 
   Future<void> _pickBirthDate() async {
@@ -102,7 +132,10 @@ class _PeriksaStatusGiziScreenState
       return;
     }
 
-    setState(() => _result = nextResult);
+    setState(() {
+      _result = nextResult;
+      _resolveAllAnjurans(nextResult);
+    });
 
     final isLoggedIn = ref.read(authStateProvider).valueOrNull != null;
     if (!isLoggedIn) {
@@ -164,6 +197,7 @@ class _PeriksaStatusGiziScreenState
       _weightController.clear();
       _heightController.clear();
       _result = null;
+      _primaryAnjuran = null;
       _isSaving = false;
     });
   }
@@ -322,15 +356,54 @@ class _PeriksaStatusGiziScreenState
             const SizedBox(height: 12),
             _ResultCard(
               result: _result!.heightForAge,
+              resolvedAnjuran: _resolveAnjuran(
+                _result!.heightForAge.zScore,
+                CalculatorAnjuranRule.indicatorHeightForAge,
+              ),
             ),
             const SizedBox(height: 12),
             _ResultCard(
               result: _result!.weightForAge,
+              resolvedAnjuran: _resolveAnjuran(
+                _result!.weightForAge.zScore,
+                CalculatorAnjuranRule.indicatorWeightForAge,
+              ),
             ),
             const SizedBox(height: 12),
             _ResultCard(
               result: _result!.weightForHeight,
+              resolvedAnjuran: _resolveAnjuran(
+                _result!.weightForHeight.zScore,
+                CalculatorAnjuranRule.indicatorWeightForHeight,
+              ),
             ),
+            if (_primaryAnjuran != null) ...[
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Anjuran utama',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _primaryAnjuran!.anjuran,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
           const SizedBox(height: 16),
           Card(
@@ -426,9 +499,16 @@ class _StatusGiziIntroText extends ConsumerWidget {
 }
 
 class _ResultCard extends StatelessWidget {
-  const _ResultCard({required this.result});
+  const _ResultCard({
+    required this.result,
+    required this.resolvedAnjuran,
+  });
 
   final ZScoreAssessment result;
+  final ResolvedAnjuran? resolvedAnjuran;
+
+  String get _categoryLabel =>
+      resolvedAnjuran?.label ?? result.categoryLabel;
 
   Color get _accentColor {
     switch (result.colorHint) {
@@ -446,37 +526,53 @@ class _ResultCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              flex: 2,
-              child: Text(
-                result.indicatorLabel,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Z-score: ${result.zScore.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: _accentColor,
-                    ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    result.indicatorLabel,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    result.categoryLabel,
-                    textAlign: TextAlign.right,
-                    style: TextStyle(color: Colors.grey.shade700),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Z-score: ${result.zScore.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: _accentColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _categoryLabel,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+            if (resolvedAnjuran != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                resolvedAnjuran!.anjuran,
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  height: 1.45,
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ],
         ),
       ),

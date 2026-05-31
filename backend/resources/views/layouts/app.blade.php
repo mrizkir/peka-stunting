@@ -27,12 +27,25 @@
           <a href="{{ url('/') }}" class="{{ request()->is('/') ? 'nav-link-active' : 'nav-link' }}">
             Dashboard
           </a>
-          <a href="{{ route('education.index') }}" class="{{ request()->routeIs('education.index') ? 'nav-link-active' : 'nav-link' }}">
+          <a href="{{ route('education.index') }}" class="{{ request()->routeIs('education.*') ? 'nav-link-active' : 'nav-link' }}">
             Menu edukasi
           </a>
-          <a href="{{ route('education.show') }}" class="{{ request()->routeIs('education.show') ? 'nav-link-active' : 'nav-link' }}">
-            Detail konten
-          </a>
+          @auth
+            @role('admin')
+              <a href="{{ route('anjuran-imt.index') }}" class="{{ request()->routeIs('anjuran-imt.*') ? 'nav-link-active' : 'nav-link' }}">
+                Anjuran IMT
+              </a>
+              <a href="{{ route('anjuran-lila.index') }}" class="{{ request()->routeIs('anjuran-lila.*') ? 'nav-link-active' : 'nav-link' }}">
+                Anjuran LILA
+              </a>
+              <a href="{{ route('anjuran-anemia.index') }}" class="{{ request()->routeIs('anjuran-anemia.*') ? 'nav-link-active' : 'nav-link' }}">
+                Anjuran Anemia
+              </a>
+              <a href="{{ route('anjuran-status-gizi.index') }}" class="{{ request()->routeIs('anjuran-status-gizi.*') ? 'nav-link-active' : 'nav-link' }}">
+                Anjuran Status Gizi
+              </a>
+            @endrole
+          @endauth
           <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'nav-link-active' : 'nav-link' }}">
             Kelola user
           </a>

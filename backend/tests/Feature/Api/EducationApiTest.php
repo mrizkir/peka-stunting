@@ -104,6 +104,89 @@ class EducationApiTest extends TestCase
 			->assertJsonPath('data.type', 'calculator');
 	}
 
+	public function test_calculator_content_returns_anjuran_rules_for_cek_imt(): void
+	{
+		$this->publishContent('remaja-putri', 'cek-imt');
+		$content = EducationItem::query()
+			->whereHas('menu', fn ($q) => $q->where('slug', 'remaja-putri'))
+			->where('slug', 'cek-imt')
+			->firstOrFail()
+			->content;
+
+		$content->anjuranRules()->delete();
+		foreach (\App\Support\CalculatorAnjuranDefaults::bmiRules() as $rule) {
+			$content->anjuranRules()->create($rule);
+		}
+
+		$this->getJson('/api/v1/education/menus/remaja-putri/contents/cek-imt')
+			->assertOk()
+			->assertJsonPath('data.type', 'calculator')
+			->assertJsonCount(4, 'data.anjuran_rules')
+			->assertJsonPath('data.anjuran_rules.1.label', 'Gemuk');
+	}
+
+	public function test_calculator_content_returns_anjuran_rules_for_cek_lila(): void
+	{
+		$this->publishContent('remaja-putri', 'cek-lila');
+		$content = EducationItem::query()
+			->whereHas('menu', fn ($q) => $q->where('slug', 'remaja-putri'))
+			->where('slug', 'cek-lila')
+			->firstOrFail()
+			->content;
+
+		$content->anjuranRules()->delete();
+		foreach (\App\Support\CalculatorAnjuranDefaults::lilaRules() as $rule) {
+			$content->anjuranRules()->create($rule);
+		}
+
+		$this->getJson('/api/v1/education/menus/remaja-putri/contents/cek-lila')
+			->assertOk()
+			->assertJsonPath('data.type', 'calculator')
+			->assertJsonCount(2, 'data.anjuran_rules')
+			->assertJsonPath('data.anjuran_rules.0.label', 'Normal')
+			->assertJsonPath('data.anjuran_rules.0.metric', 'lila_cm');
+	}
+
+	public function test_calculator_content_returns_anjuran_rules_for_cek_anemia(): void
+	{
+		$this->publishContent('remaja-putri', 'cek-risiko-anemia');
+		$content = EducationItem::query()
+			->whereHas('menu', fn ($q) => $q->where('slug', 'remaja-putri'))
+			->where('slug', 'cek-risiko-anemia')
+			->firstOrFail()
+			->content;
+
+		$content->anjuranRules()->delete();
+		foreach (\App\Support\CalculatorAnjuranDefaults::anemiaRules() as $rule) {
+			$content->anjuranRules()->create($rule);
+		}
+
+		$this->getJson('/api/v1/education/menus/remaja-putri/contents/cek-risiko-anemia')
+			->assertOk()
+			->assertJsonCount(4, 'data.anjuran_rules')
+			->assertJsonPath('data.anjuran_rules.0.metric', 'yes_count');
+	}
+
+	public function test_calculator_content_returns_anjuran_rules_for_status_gizi(): void
+	{
+		$this->publishContent('bayi-dan-balita', 'periksa-status-gizi');
+		$content = EducationItem::query()
+			->whereHas('menu', fn ($q) => $q->where('slug', 'bayi-dan-balita'))
+			->where('slug', 'periksa-status-gizi')
+			->firstOrFail()
+			->content;
+
+		$content->anjuranRules()->delete();
+		foreach (\App\Support\CalculatorAnjuranDefaults::nutritionalStatusRules() as $rule) {
+			$content->anjuranRules()->create($rule);
+		}
+
+		$this->getJson('/api/v1/education/menus/bayi-dan-balita/contents/periksa-status-gizi')
+			->assertOk()
+			->assertJsonPath('data.anjuran_rules.0.metric', 'z_score')
+			->assertJsonPath('data.anjuran_rules.0.indicator', 'height_for_age');
+	}
+
 	public function test_calculator_content_returns_questionnaire_config(): void
 	{
 		$config = AnemiaScreeningDefaults::calculatorConfig();

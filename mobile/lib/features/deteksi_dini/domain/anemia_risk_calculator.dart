@@ -11,68 +11,17 @@ class AnemiaScreeningQuestion {
   final String text;
 }
 
-enum AnemiaRiskCategory {
-  atRisk,
-  lowRisk,
-}
-
 class AnemiaRiskResult {
   const AnemiaRiskResult({
     required this.yesCount,
     required this.totalQuestions,
-    required this.category,
   });
 
   final int yesCount;
   final int totalQuestions;
-  final AnemiaRiskCategory category;
-
-  String get categoryLabel {
-    switch (category) {
-      case AnemiaRiskCategory.atRisk:
-        return 'Anda berisiko mengalami anemia';
-      case AnemiaRiskCategory.lowRisk:
-        return 'Risiko anemia relatif rendah';
-    }
-  }
-
-  String get recommendation {
-    switch (category) {
-      case AnemiaRiskCategory.atRisk:
-        return 'Berdasarkan jawaban Anda, terdapat beberapa gejala atau '
-            'faktor risiko anemia. Anemia dapat menghambat konsentrasi, '
-            'menurunkan daya tahan tubuh, dan memengaruhi pertumbuhan. '
-            'Segera lakukan pemeriksaan kadar hemoglobin (Hb) di Puskesmas '
-            'atau fasilitas kesehatan. Minum Tablet Tambah Darah (TTD) '
-            'secara rutin sesuai anjuran, perbanyak makanan sumber zat besi '
-            '(daging, ikan, telur, hati, kacang-kacangan, sayur hijau), '
-            'jangan melewatkan sarapan, dan konsultasikan keluhan Anda ke '
-            'tenaga kesehatan.';
-      case AnemiaRiskCategory.lowRisk:
-        return 'Gejala dan faktor risiko anemia yang Anda laporkan masih '
-            'terbatas. Pertahankan pola makan bergizi (termasuk protein '
-            'dan zat besi), sarapan setiap hari, minum Tablet Tambah Darah '
-            '(TTD) bila Anda remaja putri yang mendapat program TTD, '
-            'aktivitas fisik rutin, dan pemeriksaan kesehatan berkala. '
-            'Jika keluhan seperti mudah lelah atau pucat muncul, segera '
-            'periksakan diri ke fasilitas kesehatan.';
-    }
-  }
-
-  ColorHint get colorHint {
-    switch (category) {
-      case AnemiaRiskCategory.atRisk:
-        return ColorHint.danger;
-      case AnemiaRiskCategory.lowRisk:
-        return ColorHint.success;
-    }
-  }
 }
 
 class AnemiaRiskCalculator {
-  /// Jumlah jawaban "Ya" minimum untuk dikategorikan berisiko.
-  static const int defaultRiskYesThreshold = 3;
-
   /// Fallback bila backend belum mengirim kuesioner.
   static const List<AnemiaScreeningQuestion> defaultQuestions = [
     AnemiaScreeningQuestion(
@@ -146,7 +95,6 @@ class AnemiaRiskCalculator {
   static AnemiaRiskResult? calculate({
     required List<AnemiaScreeningQuestion> questions,
     required Map<String, bool> answers,
-    int riskYesThreshold = defaultRiskYesThreshold,
   }) {
     if (questions.isEmpty || answers.length != questions.length) {
       return null;
@@ -163,9 +111,51 @@ class AnemiaRiskCalculator {
     return AnemiaRiskResult(
       yesCount: yesCount,
       totalQuestions: questions.length,
-      category: yesCount >= riskYesThreshold
-          ? AnemiaRiskCategory.atRisk
-          : AnemiaRiskCategory.lowRisk,
     );
+  }
+
+  /// Teks anjuran fallback bila rules CMS belum tersedia di cache.
+  static String fallbackRecommendation(int yesCount) {
+    if (yesCount == 0) {
+      return 'Selamat kondisi Anda normal. Langkah selanjutnya adalah mempertahankan '
+          'kondisi tersebut agar cadangan zat besi dalam tubuh tetap terjaga selama '
+          'masa pertumbuhan.';
+    }
+    if (yesCount > 7) {
+      return 'Segera ke Puskesmas atau Fasilitas Kesehatan lainnya: Status risiko '
+          'tinggi memerlukan pemeriksaan laboratorium untuk memastikan kadar Hb.';
+    }
+    if (yesCount >= 4) {
+      return 'Perkuat asupan zat besi, hindari teh/kopi saat makan, konsumsi buah '
+          'kaya vitamin C, dan rutin minum TTD 1 tablet seminggu sekali. Lakukan '
+          'pemeriksaan Hb di fasilitas kesehatan bila keluhan berlanjut.';
+    }
+    return 'Perkuat asupan zat besi dengan lauk hewani dan sayuran hijau setiap hari.';
+  }
+
+  static ColorHint fallbackColorHint(int yesCount) {
+    if (yesCount == 0) {
+      return ColorHint.success;
+    }
+    if (yesCount > 7) {
+      return ColorHint.danger;
+    }
+    if (yesCount >= 4) {
+      return ColorHint.warning;
+    }
+    return ColorHint.warning;
+  }
+
+  static String fallbackCategoryLabel(int yesCount) {
+    if (yesCount == 0) {
+      return 'Tidak ada resiko Anemia';
+    }
+    if (yesCount > 7) {
+      return 'Resiko Tinggi Anemia';
+    }
+    if (yesCount >= 4) {
+      return 'Risiko Sedang Anemia';
+    }
+    return 'Risiko Rendah Anemia';
   }
 }

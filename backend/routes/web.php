@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\AnjuranAnemiaController;
+use App\Http\Controllers\AnjuranStatusGiziController;
+use App\Http\Controllers\AnjuranImtController;
+use App\Http\Controllers\AnjuranLilaController;
 use App\Http\Controllers\AppBrandingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
@@ -17,6 +21,30 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
   Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+  Route::middleware('role:admin')->prefix('anjuran-imt')->name('anjuran-imt.')->group(function () {
+    Route::get('/', [AnjuranImtController::class, 'index'])->name('index');
+    Route::get('/{menu:slug}', [AnjuranImtController::class, 'edit'])->name('edit');
+    Route::put('/{menu:slug}', [AnjuranImtController::class, 'update'])->name('update');
+  });
+
+  Route::middleware('role:admin')->prefix('anjuran-lila')->name('anjuran-lila.')->group(function () {
+    Route::get('/', [AnjuranLilaController::class, 'index'])->name('index');
+    Route::get('/{menu:slug}', [AnjuranLilaController::class, 'edit'])->name('edit');
+    Route::put('/{menu:slug}', [AnjuranLilaController::class, 'update'])->name('update');
+  });
+
+  Route::middleware('role:admin')->prefix('anjuran-anemia')->name('anjuran-anemia.')->group(function () {
+    Route::get('/', [AnjuranAnemiaController::class, 'index'])->name('index');
+    Route::get('/{menu:slug}', [AnjuranAnemiaController::class, 'edit'])->name('edit');
+    Route::put('/{menu:slug}', [AnjuranAnemiaController::class, 'update'])->name('update');
+  });
+
+  Route::middleware('role:admin')->prefix('anjuran-status-gizi')->name('anjuran-status-gizi.')->group(function () {
+    Route::get('/', [AnjuranStatusGiziController::class, 'index'])->name('index');
+    Route::get('/{menu:slug}', [AnjuranStatusGiziController::class, 'edit'])->name('edit');
+    Route::put('/{menu:slug}', [AnjuranStatusGiziController::class, 'update'])->name('update');
+  });
 
   Route::prefix('education')->name('education.')->group(function () {
     Route::get('/', [EducationController::class, 'index'])->name('index');

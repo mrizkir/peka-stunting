@@ -5,9 +5,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
 import '../data/lila_screening_repository.dart';
 import '../domain/bmi_calculator.dart';
+import '../domain/calculator_anjuran_resolver.dart';
 import '../domain/lila_calculator.dart';
+import '../models/calculator_anjuran_rule.dart';
+
+const _kCekLilaItemSlug = 'cek-lila';
+
+final cekLilaContentProvider =
+    StreamProvider.family<KebutuhanMuContentSnapshot?, String>((ref, menuSlug) {
+  return ref.read(kebutuhanMuRepositoryProvider).watchContent(
+        menuSlug: menuSlug,
+        itemSlug: _kCekLilaItemSlug,
+      );
+});
 
 const _measurementSteps = [
   'Sediakan pita ukur (meteran kain/plastik yang fleksibel) atau pakai '
@@ -42,13 +55,29 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
   final _lilaController = TextEditingController();
 
   LilaResult? _result;
+  ResolvedAnjuran? _resolvedAnjuran;
   bool _isSaving = false;
+  final _anjuranResolver = const CalculatorAnjuranResolver();
 
   @override
   void dispose() {
     _ageController.dispose();
     _lilaController.dispose();
     super.dispose();
+  }
+
+  ResolvedAnjuran? _resolveAnjuran(double lilaCm) {
+    final content = ref.read(cekLilaContentProvider(widget.menuSlug)).valueOrNull;
+    final rules = content?.content.anjuranRules ?? const [];
+    if (rules.isEmpty) {
+      return null;
+    }
+
+    return _anjuranResolver.resolve(
+      rules: rules.map(CalculatorAnjuranRule.fromJson).toList(),
+      metric: CalculatorAnjuranRule.metricLilaCm,
+      value: lilaCm,
+    );
   }
 
   Future<void> _calculate() async {
@@ -65,6 +94,7 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
 
     setState(() {
       _result = nextResult;
+      _resolvedAnjuran = _resolveAnjuran(nextResult.valueCm);
     });
 
     final isLoggedIn = ref.read(authStateProvider).valueOrNull != null;
@@ -129,6 +159,7 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
     _lilaController.clear();
     setState(() {
       _result = null;
+      _resolvedAnjuran = null;
       _isSaving = false;
     });
   }
@@ -267,7 +298,10 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
           ),
           if (_result != null) ...[
             const SizedBox(height: 16),
-            _LilaResultCard(result: _result!),
+            _LilaResultCard(
+              result: _result!,
+              resolvedAnjuran: _resolvedAnjuran,
+            ),
           ],
           const SizedBox(height: 16),
           Card(
@@ -330,11 +364,33 @@ class _StepRow extends StatelessWidget {
 }
 
 class _LilaResultCard extends StatelessWidget {
-  const _LilaResultCard({required this.result});
+  const _LilaResultCard({
+    required this.result,
+    required this.resolvedAnjuran,
+  });
 
   final LilaResult result;
+  final ResolvedAnjuran? resolvedAnjuran;
+
+  String get _categoryLabel =>
+      resolvedAnjuran?.label ?? result.categoryLabel;
+
+  String get _anjuran =>
+      resolvedAnjuran?.anjuran ?? result.recommendation;
 
   Color get _accentColor {
+    final slug = resolvedAnjuran?.slug;
+    if (slug != null) {
+      switch (slug) {
+        case 'normal':
+          return AppTheme.primary;
+        case 'at_risk':
+          return const Color(0xFFDC2626);
+        default:
+          return const Color(0xFFD97706);
+      }
+    }
+
     switch (result.colorHint) {
       case ColorHint.success:
         return AppTheme.primary;
@@ -393,7 +449,7 @@ class _LilaResultCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                result.categoryLabel,
+                _categoryLabel,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   color: _accentColor,
@@ -409,7 +465,7 @@ class _LilaResultCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              result.recommendation,
+              _anjuran,
               style: TextStyle(
                 color: Colors.grey.shade700,
                 height: 1.5,

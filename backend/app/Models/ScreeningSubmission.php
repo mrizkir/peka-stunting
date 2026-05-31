@@ -18,6 +18,10 @@ class ScreeningSubmission extends Model
 
 	public const CATEGORY_NORMAL = 'normal';
 
+	public const CATEGORY_MEDIUM_RISK = 'medium_risk';
+
+	public const CATEGORY_HIGH_RISK = 'high_risk';
+
 	protected $fillable = [
 		'user_id',
 		'education_item_id',
@@ -86,7 +90,13 @@ class ScreeningSubmission extends Model
 	public function resultBadgeTone(): string
 	{
 		return match ($this->category) {
-			self::CATEGORY_AT_RISK, 'obese', 'underweight', 'need_follow_up', 'risk' => 'danger',
+			self::CATEGORY_AT_RISK,
+			self::CATEGORY_HIGH_RISK,
+			'obese',
+			'underweight',
+			'need_follow_up',
+			'risk' => 'danger',
+			self::CATEGORY_MEDIUM_RISK,
 			'overweight' => 'warning',
 			default => 'success',
 		};

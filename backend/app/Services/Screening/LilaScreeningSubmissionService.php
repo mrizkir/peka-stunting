@@ -2,15 +2,17 @@
 
 namespace App\Services\Screening;
 
-use App\Models\EducationItem;
-use App\Models\EducationMenu;
+use App\Models\CalculatorAnjuranRule;
+use App\Models\EducationContent;
 use App\Models\ScreeningSubmission;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class LilaScreeningSubmissionService
 {
-	private const NORMAL_MINIMUM_CM = 23.5;
+	public function __construct(
+		private readonly PublishedCalculatorContentResolver $contentResolver,
+		private readonly CalculatorAnjuranResolver $anjuranResolver,
+	) {}
 
 	public function store(
 		User $user,
@@ -18,12 +20,15 @@ class LilaScreeningSubmissionService
 		int $ageYears,
 		float $lilaCm,
 	): ScreeningSubmission {
-		$item = $this->resolvePublishedLilaItem($menuSlug);
-		$result = $this->evaluate($ageYears, $lilaCm);
+		$content = $this->contentResolver->resolvePublishedContent(
+			$menuSlug,
+			ScreeningSubmission::CALCULATOR_CEK_LILA,
+		);
+		$result = $this->evaluate($content, $ageYears, $lilaCm);
 
 		return ScreeningSubmission::query()->create([
 			'user_id' => $user->id,
-			'education_item_id' => $item->id,
+			'education_item_id' => $content->item_id,
 			'calculator_slug' => ScreeningSubmission::CALCULATOR_CEK_LILA,
 			'menu_slug' => $menuSlug,
 			'yes_count' => 0,
@@ -34,6 +39,7 @@ class LilaScreeningSubmissionService
 			'answers' => [
 				'age_years' => $result['age_years'],
 				'lila_cm' => $result['lila_cm'],
+				'anjuran' => $result['anjuran'],
 			],
 			'questions_snapshot' => null,
 			'submitted_at' => now(),
@@ -41,40 +47,41 @@ class LilaScreeningSubmissionService
 	}
 
 	/**
-	 * @return array{age_years: int, lila_cm: float, category: string, category_label: string}
+	 * @return array{
+	 *     age_years: int,
+	 *     lila_cm: float,
+	 *     category: string,
+	 *     category_label: string,
+	 *     anjuran: string
+	 * }
 	 */
-	private function evaluate(int $ageYears, float $lilaCm): array
+	public function evaluate(EducationContent $content, int $ageYears, float $lilaCm): array
 	{
 		$roundedLila = round($lilaCm, 1);
-		$atRisk = $roundedLila < self::NORMAL_MINIMUM_CM;
+		$resolved = $this->anjuranResolver->resolve(
+			$content,
+			CalculatorAnjuranRule::METRIC_LILA_CM,
+			$roundedLila,
+		);
 
 		return [
 			'age_years' => $ageYears,
 			'lila_cm' => $roundedLila,
-			'category' => $atRisk
-				? ScreeningSubmission::CATEGORY_AT_RISK
-				: ScreeningSubmission::CATEGORY_NORMAL,
-			'category_label' => $atRisk ? 'Berisiko KEK' : 'Normal',
+			...$resolved->toArray(),
 		];
 	}
 
-	private function resolvePublishedLilaItem(string $menuSlug): EducationItem
+	public function evaluateByMenu(string $menuSlug, float $lilaCm): ResolvedAnjuran
 	{
-		$menu = EducationMenu::query()->where('slug', $menuSlug)->first();
-		if ($menu === null) {
-			throw new ModelNotFoundException('Menu edukasi tidak ditemukan.');
-		}
+		$content = $this->contentResolver->resolvePublishedContent(
+			$menuSlug,
+			ScreeningSubmission::CALCULATOR_CEK_LILA,
+		);
 
-		$item = $menu->items()
-			->where('slug', ScreeningSubmission::CALCULATOR_CEK_LILA)
-			->whereHas('content', fn ($query) => $query->published())
-			->with('content')
-			->first();
-
-		if ($item === null) {
-			throw new ModelNotFoundException('Konten Cek LILA tidak ditemukan atau belum dipublikasikan.');
-		}
-
-		return $item;
+		return $this->anjuranResolver->resolve(
+			$content,
+			CalculatorAnjuranRule::METRIC_LILA_CM,
+			round($lilaCm, 1),
+		);
 	}
 }

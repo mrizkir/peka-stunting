@@ -27,27 +27,17 @@ void main() {
       );
     });
 
-    test('classifies low risk when fewer than 3 yes answers', () {
+    test('counts yes answers', () {
       final result = AnemiaRiskCalculator.calculate(
         questions: _questions,
         answers: _withYes(['fatigue_5l', 'dizziness_headache']),
       );
       expect(result, isNotNull);
       expect(result!.yesCount, 2);
-      expect(result.category, AnemiaRiskCategory.lowRisk);
-      expect(result.categoryLabel, 'Risiko anemia relatif rendah');
+      expect(result.totalQuestions, 14);
     });
 
-    test('classifies at risk when 3 or more yes answers', () {
-      final result = AnemiaRiskCalculator.calculate(
-        questions: _questions,
-        answers: _withYes(['fatigue_5l', 'dizziness_headache', 'concentration']),
-      );
-      expect(result!.category, AnemiaRiskCategory.atRisk);
-      expect(result.categoryLabel, 'Anda berisiko mengalami anemia');
-    });
-
-    test('classifies at risk when all answers are yes', () {
+    test('counts all yes answers', () {
       final result = AnemiaRiskCalculator.calculate(
         questions: _questions,
         answers: {
@@ -55,16 +45,6 @@ void main() {
         },
       );
       expect(result!.yesCount, 14);
-      expect(result.category, AnemiaRiskCategory.atRisk);
-    });
-
-    test('respects custom risk threshold from backend config', () {
-      final result = AnemiaRiskCalculator.calculate(
-        questions: _questions,
-        answers: _withYes(['fatigue_5l', 'dizziness_headache']),
-        riskYesThreshold: 2,
-      );
-      expect(result!.category, AnemiaRiskCategory.atRisk);
     });
   });
 }

@@ -2,15 +2,20 @@
 
 namespace App\Services\Screening;
 
-use App\Models\EducationItem;
-use App\Models\EducationMenu;
+use App\Models\CalculatorAnjuranRule;
+use App\Models\EducationContent;
 use App\Models\ScreeningSubmission;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class NutritionalStatusScreeningSubmissionService
 {
+	public function __construct(
+		private readonly PublishedCalculatorContentResolver $contentResolver,
+		private readonly NutritionalStatusEvaluationService $evaluationService,
+		private readonly CalculatorAnjuranResolver $anjuranResolver,
+	) {}
+
 	public function store(
 		User $user,
 		string $menuSlug,
@@ -20,32 +25,27 @@ class NutritionalStatusScreeningSubmissionService
 		?Carbon $birthDate = null,
 		?string $gender = null,
 	): ScreeningSubmission {
-		$item = $this->resolvePublishedItem($menuSlug);
+		$content = $this->contentResolver->resolvePublishedContent(
+			$menuSlug,
+			ScreeningSubmission::CALCULATOR_PERIKSA_STATUS_GIZI,
+		);
 		$gender = $gender ?? 'L';
-		$result = $this->evaluate($ageMonths, $gender, $weightKg, $heightCm);
+		$result = $this->evaluate($content, $ageMonths, $gender, $weightKg, $heightCm);
 
 		return ScreeningSubmission::query()->create([
 			'user_id' => $user->id,
-			'education_item_id' => $item->id,
+			'education_item_id' => $content->item_id,
 			'calculator_slug' => ScreeningSubmission::CALCULATOR_PERIKSA_STATUS_GIZI,
 			'menu_slug' => $menuSlug,
 			'yes_count' => 0,
 			'total_questions' => 0,
 			'risk_yes_threshold' => 0,
-			'category' => $result['primary_category'],
-			'category_label' => $result['primary_category_label'],
+			'category' => $result['category'],
+			'category_label' => $result['category_label'],
 			'answers' => [
 				'birth_date' => $birthDate?->toDateString(),
 				'gender' => $gender,
-				'age_months' => $result['age_months'],
-				'weight_kg' => round($weightKg, 2),
-				'height_cm' => round($heightCm, 1),
-				'height_for_age_z' => $result['height_for_age_z'],
-				'height_for_age_label' => $result['height_for_age_label'],
-				'weight_for_age_z' => $result['weight_for_age_z'],
-				'weight_for_age_label' => $result['weight_for_age_label'],
-				'weight_for_height_z' => $result['weight_for_height_z'],
-				'weight_for_height_label' => $result['weight_for_height_label'],
+				...$result['answers'],
 			],
 			'questions_snapshot' => null,
 			'submitted_at' => now(),
@@ -54,82 +54,98 @@ class NutritionalStatusScreeningSubmissionService
 
 	/**
 	 * @return array{
-	 *     age_months: int,
-	 *     height_for_age_z: float,
-	 *     height_for_age_label: string,
-	 *     weight_for_age_z: float,
-	 *     weight_for_age_label: string,
-	 *     weight_for_height_z: float,
-	 *     weight_for_height_label: string,
-	 *     primary_category: string,
-	 *     primary_category_label: string
+	 *     category: string,
+	 *     category_label: string,
+	 *     answers: array<string, mixed>
 	 * }
 	 */
-	private function evaluate(
+	public function evaluate(
+		EducationContent $content,
 		int $ageMonths,
 		string $gender,
 		float $weightKg,
 		float $heightCm,
 	): array {
-		$ageMonths = max(0, min(60, $ageMonths));
+		$metrics = $this->evaluationService->evaluate($ageMonths, $gender, $weightKg, $heightCm);
 
-		$hfaRef = PermenkesReferenceTables::heightForAge($ageMonths, $gender);
-		$wfaRef = PermenkesReferenceTables::weightForAge($ageMonths, $gender);
-		$wfhRef = PermenkesReferenceTables::weightForHeight($heightCm, $gender);
+		$hfaAnjuran = $this->anjuranResolver->resolve(
+			$content,
+			CalculatorAnjuranRule::METRIC_Z_SCORE,
+			$metrics['height_for_age_z'],
+			CalculatorAnjuranRule::INDICATOR_HEIGHT_FOR_AGE,
+		);
+		$wfaAnjuran = $this->anjuranResolver->resolve(
+			$content,
+			CalculatorAnjuranRule::METRIC_Z_SCORE,
+			$metrics['weight_for_age_z'],
+			CalculatorAnjuranRule::INDICATOR_WEIGHT_FOR_AGE,
+		);
+		$wfhAnjuran = $this->anjuranResolver->resolve(
+			$content,
+			CalculatorAnjuranRule::METRIC_Z_SCORE,
+			$metrics['weight_for_height_z'],
+			CalculatorAnjuranRule::INDICATOR_WEIGHT_FOR_HEIGHT,
+		);
 
-		if ($hfaRef === null || $wfaRef === null || $wfhRef === null) {
-			throw new \InvalidArgumentException('Data acuan tidak ditemukan untuk input ini.');
-		}
-
-		$hfaZ = round(PermenkesZScore::calculate($heightCm, $hfaRef[0], $hfaRef[1], $hfaRef[2]), 2);
-		$wfaZ = round(PermenkesZScore::calculate($weightKg, $wfaRef[0], $wfaRef[1], $wfaRef[2]), 2);
-		$wfhZ = round(PermenkesZScore::calculate($weightKg, $wfhRef[0], $wfhRef[1], $wfhRef[2]), 2);
-
-		$hfaLabel = PermenkesZScore::categorizeHeightForAge($hfaZ);
-		$wfaLabel = PermenkesZScore::categorizeWeightForAge($wfaZ);
-		$wfhLabel = PermenkesZScore::categorizeWeightForHeight($wfhZ);
-
-		$primaryCategory = 'normal';
-		$primaryLabel = $wfhLabel;
-		if ($hfaZ < -2 || $wfaZ < -2 || $wfhZ < -2) {
-			$primaryCategory = 'need_follow_up';
-			$primaryLabel = collect([$hfaLabel, $wfaLabel, $wfhLabel])
-				->first(fn (string $label) => ! str_contains(strtolower($label), 'normal')
-					&& ! str_contains(strtolower($label), 'baik'));
-		} elseif ($hfaZ < -1 || $wfaZ > 1 || $wfhZ > 1) {
-			$primaryCategory = 'risk';
-		}
+		$minZ = min(
+			$metrics['height_for_age_z'],
+			$metrics['weight_for_age_z'],
+			$metrics['weight_for_height_z'],
+		);
+		$primaryAnjuran = $this->anjuranResolver->resolve(
+			$content,
+			CalculatorAnjuranRule::METRIC_Z_SCORE,
+			$minZ,
+			CalculatorAnjuranRule::INDICATOR_PRIMARY,
+		);
 
 		return [
-			'age_months' => $ageMonths,
-			'height_for_age_z' => $hfaZ,
-			'height_for_age_label' => $hfaLabel,
-			'weight_for_age_z' => $wfaZ,
-			'weight_for_age_label' => $wfaLabel,
-			'weight_for_height_z' => $wfhZ,
-			'weight_for_height_label' => $wfhLabel,
-			'primary_category' => $primaryCategory,
-			'primary_category_label' => $primaryLabel,
+			'category' => $metrics['primary_category'],
+			'category_label' => $metrics['primary_category_label'],
+			'answers' => [
+				'age_months' => $metrics['age_months'],
+				'weight_kg' => round($weightKg, 2),
+				'height_cm' => round($heightCm, 1),
+				'height_for_age_z' => $metrics['height_for_age_z'],
+				'height_for_age_label' => $metrics['height_for_age_label'],
+				'height_for_age_anjuran' => $hfaAnjuran->anjuran,
+				'weight_for_age_z' => $metrics['weight_for_age_z'],
+				'weight_for_age_label' => $metrics['weight_for_age_label'],
+				'weight_for_age_anjuran' => $wfaAnjuran->anjuran,
+				'weight_for_height_z' => $metrics['weight_for_height_z'],
+				'weight_for_height_label' => $metrics['weight_for_height_label'],
+				'weight_for_height_anjuran' => $wfhAnjuran->anjuran,
+				'anjuran' => $primaryAnjuran->anjuran,
+			],
 		];
 	}
 
-	private function resolvePublishedItem(string $menuSlug): EducationItem
-	{
-		$menu = EducationMenu::query()->where('slug', $menuSlug)->first();
-		if ($menu === null) {
-			throw new ModelNotFoundException('Menu edukasi tidak ditemukan.');
-		}
+	/**
+	 * @return array<string, mixed>
+	 */
+	public function evaluateByMenu(
+		string $menuSlug,
+		int $ageMonths,
+		string $gender,
+		float $weightKg,
+		float $heightCm,
+	): array {
+		$content = $this->contentResolver->resolvePublishedContent(
+			$menuSlug,
+			ScreeningSubmission::CALCULATOR_PERIKSA_STATUS_GIZI,
+		);
 
-		$item = $menu->items()
-			->where('slug', ScreeningSubmission::CALCULATOR_PERIKSA_STATUS_GIZI)
-			->whereHas('content', fn ($query) => $query->published())
-			->with('content')
-			->first();
+		$metrics = $this->evaluationService->evaluate($ageMonths, $gender, $weightKg, $heightCm);
+		$evaluated = $this->evaluate($content, $ageMonths, $gender, $weightKg, $heightCm);
 
-		if ($item === null) {
-			throw new ModelNotFoundException('Konten Periksa Status Gizi tidak ditemukan atau belum dipublikasikan.');
-		}
-
-		return $item;
+		return [
+			...$metrics,
+			'category' => $evaluated['category'],
+			'category_label' => $evaluated['category_label'],
+			'anjuran' => $evaluated['answers']['anjuran'],
+			'height_for_age_anjuran' => $evaluated['answers']['height_for_age_anjuran'],
+			'weight_for_age_anjuran' => $evaluated['answers']['weight_for_age_anjuran'],
+			'weight_for_height_anjuran' => $evaluated['answers']['weight_for_height_anjuran'],
+		];
 	}
 }

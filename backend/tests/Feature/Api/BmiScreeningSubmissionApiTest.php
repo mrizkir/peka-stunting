@@ -7,6 +7,7 @@ use App\Models\EducationItem;
 use App\Models\EducationMenu;
 use App\Models\ScreeningSubmission;
 use App\Models\User;
+use App\Support\CalculatorAnjuranDefaults;
 use Database\Seeders\EducationTaxonomySeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -46,7 +47,8 @@ class BmiScreeningSubmissionApiTest extends TestCase
 			->assertJsonPath('data.menu_slug', 'remaja-putri')
 			->assertJsonPath('data.category', 'normal')
 			->assertJsonPath('data.category_label', 'Normal')
-			->assertJsonPath('data.answers.bmi', 20.3);
+			->assertJsonPath('data.answers.bmi', 20.3)
+			->assertJsonPath('data.anjuran', fn ($value) => is_string($value) && $value !== '');
 
 		$this->assertDatabaseHas('screening_submissions', [
 			'user_id' => $user->id,
@@ -81,6 +83,11 @@ class BmiScreeningSubmissionApiTest extends TestCase
 			'status' => EducationContent::STATUS_PUBLISHED,
 			'published_at' => now(),
 		]);
+
+		$content->anjuranRules()->delete();
+		foreach (CalculatorAnjuranDefaults::bmiRules() as $rule) {
+			$content->anjuranRules()->create($rule);
+		}
 
 		return $content->fresh();
 	}

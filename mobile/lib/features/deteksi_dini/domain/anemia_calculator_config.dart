@@ -45,7 +45,7 @@ class AnemiaCalculatorConfig {
         : int.tryParse(threshold?.toString() ?? '');
 
     return AnemiaCalculatorConfig(
-      riskYesThreshold: parsedThreshold ?? AnemiaRiskCalculator.defaultRiskYesThreshold,
+      riskYesThreshold: parsedThreshold ?? 3,
       questions: questions,
     );
   }

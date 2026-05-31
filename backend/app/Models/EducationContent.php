@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -65,6 +66,12 @@ class EducationContent extends Model implements HasMedia
 	public function item(): BelongsTo
 	{
 		return $this->belongsTo(EducationItem::class, 'item_id');
+	}
+
+	public function anjuranRules(): HasMany
+	{
+		return $this->hasMany(CalculatorAnjuranRule::class, 'education_content_id')
+			->orderBy('sort_order');
 	}
 
 	public function updatedBy(): BelongsTo

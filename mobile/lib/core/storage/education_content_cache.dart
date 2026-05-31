@@ -10,6 +10,7 @@ class CachedEducationContent {
     required this.title,
     this.excerpt,
     this.body,
+    this.anjuranRulesJson,
     required this.fetchedAt,
   });
 
@@ -18,12 +19,13 @@ class CachedEducationContent {
   final String title;
   final String? excerpt;
   final String? body;
+  final String? anjuranRulesJson;
   final DateTime fetchedAt;
 }
 
 class EducationContentCache {
   static const _dbName = 'peka_stunting_cache.db';
-  static const _dbVersion = 2;
+  static const _dbVersion = 3;
   static const _contentTable = 'education_content_cache';
   static const _menusTable = 'education_taxonomy_menus_cache';
   static const _menuDetailTable = 'education_taxonomy_menu_detail_cache';
@@ -50,6 +52,7 @@ CREATE TABLE $_contentTable (
   title TEXT NOT NULL,
   excerpt TEXT,
   body TEXT,
+  anjuran_rules_json TEXT,
   fetched_at TEXT NOT NULL,
   PRIMARY KEY (menu_slug, item_slug)
 )
@@ -86,6 +89,11 @@ CREATE TABLE IF NOT EXISTS $_menuDetailTable (
 )
 ''');
         }
+        if (oldVersion < 3) {
+          await db.execute(
+            'ALTER TABLE $_contentTable ADD COLUMN anjuran_rules_json TEXT',
+          );
+        }
       },
     );
 
@@ -114,6 +122,7 @@ CREATE TABLE IF NOT EXISTS $_menuDetailTable (
       title: row['title'] as String,
       excerpt: row['excerpt'] as String?,
       body: row['body'] as String?,
+      anjuranRulesJson: row['anjuran_rules_json'] as String?,
       fetchedAt: DateTime.tryParse(row['fetched_at'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
     );
@@ -125,6 +134,7 @@ CREATE TABLE IF NOT EXISTS $_menuDetailTable (
     required String title,
     String? excerpt,
     String? body,
+    String? anjuranRulesJson,
   }) async {
     final db = await _database();
     await db.insert(
@@ -135,6 +145,7 @@ CREATE TABLE IF NOT EXISTS $_menuDetailTable (
         'title': title,
         'excerpt': excerpt,
         'body': body,
+        'anjuran_rules_json': anjuranRulesJson,
         'fetched_at': DateTime.now().toIso8601String(),
       },
       conflictAlgorithm: ConflictAlgorithm.replace,

@@ -87,6 +87,13 @@ class EducationApiPresenter
 			'calculator_config' => $item->hasScreeningQuestionnaire()
 				? $content->calculator_config
 				: null,
+			'anjuran_rules' => ($metric = $item->anjuranMetric()) !== null
+				? $content->anjuranRules
+					->where('metric', $metric)
+					->map(fn ($rule) => $rule->toApiArray())
+					->values()
+					->all()
+				: null,
 			'status' => $content->status,
 			'published_at' => $content->published_at?->toIso8601String(),
 			'type' => $item->isCalculator() ? 'calculator' : 'content',
