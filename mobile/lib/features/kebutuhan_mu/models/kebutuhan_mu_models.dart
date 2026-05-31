@@ -105,6 +105,7 @@ class KebutuhanMuContent {
     required this.title,
     required this.excerpt,
     required this.body,
+    this.videoUrl,
     this.featuredImageUrl,
     this.secondaryImageUrl,
     required this.posterImages,
@@ -114,6 +115,7 @@ class KebutuhanMuContent {
   final String title;
   final String? excerpt;
   final String? body;
+  final String? videoUrl;
   final String? featuredImageUrl;
   final String? secondaryImageUrl;
   final List<String> posterImages;
@@ -122,6 +124,7 @@ class KebutuhanMuContent {
   factory KebutuhanMuContent.fromJson(Map<String, dynamic> json) {
     final featuredImageUrl = json['featured_image_url'] as String?;
     final secondaryImageUrl = json['secondary_image_url'] as String?;
+    final videoUrl = json['video_url'] as String?;
     final posterImages = (json['poster_images'] as List<dynamic>? ?? [])
         .map((e) => e.toString())
         .where((url) => url.trim().isNotEmpty)
@@ -140,6 +143,9 @@ class KebutuhanMuContent {
       title: json['title'] as String,
       excerpt: json['excerpt'] as String?,
       body: json['body'] as String?,
+      videoUrl: videoUrl != null && videoUrl.trim().isNotEmpty
+          ? videoUrl.trim()
+          : null,
       featuredImageUrl: featuredImageUrl,
       secondaryImageUrl: secondaryImageUrl,
       posterImages: posterImages,

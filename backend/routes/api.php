@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AnemiaScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\BmiScreeningSubmissionController;
+use App\Http\Controllers\Api\V1\LilaScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\AppController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ChildController;
@@ -18,6 +19,7 @@ Route::prefix('v1')->group(function () {
 		Route::middleware('auth:sanctum')->group(function () {
 			Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 			Route::get('/me', [AuthController::class, 'me'])->name('me');
+			Route::delete('/account', [AuthController::class, 'destroyAccount'])->name('account.destroy');
 		});
 	});
 
@@ -51,5 +53,12 @@ Route::prefix('v1')->group(function () {
 		->name('api.v1.screening-submissions.bmi.')
 		->group(function () {
 			Route::post('/', [BmiScreeningSubmissionController::class, 'store'])->name('store');
+		});
+
+	Route::middleware('auth:sanctum')
+		->prefix('screening-submissions/cek-lila')
+		->name('api.v1.screening-submissions.lila.')
+		->group(function () {
+			Route::post('/', [LilaScreeningSubmissionController::class, 'store'])->name('store');
 		});
 });

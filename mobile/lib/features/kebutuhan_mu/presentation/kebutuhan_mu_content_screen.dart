@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../deteksi_dini/presentation/cek_imt_screen.dart';
 import '../../deteksi_dini/presentation/cek_lila_screen.dart';
 import '../../deteksi_dini/presentation/cek_risiko_anemia_screen.dart';
+import '../../../core/widgets/education_video_player.dart';
 import '../data/kebutuhan_mu_repository.dart';
 import '../kebutuhan_mu_mock_data.dart';
 import '../models/kebutuhan_mu_models.dart';
@@ -143,6 +144,7 @@ class _ContentWithPostersState extends State<_ContentWithPosters> {
     final content = widget.content;
     final posterUrls = content.posterImages;
     final hasPoster = posterUrls.isNotEmpty;
+    final hasVideo = content.videoUrl != null;
     final hasBodyText = content.body?.trim().isNotEmpty ?? false;
     final hasExcerpt = content.excerpt?.trim().isNotEmpty ?? false;
     final lockVerticalScroll = _posterPointerActive || _posterZoomed;
@@ -173,7 +175,7 @@ class _ContentWithPostersState extends State<_ContentWithPosters> {
           padding: const EdgeInsets.all(20),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              if (!hasPoster && !hasExcerpt && !hasBodyText)
+              if (!hasPoster && !hasVideo && !hasExcerpt && !hasBodyText)
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
                   child: Card(
@@ -190,6 +192,10 @@ class _ContentWithPostersState extends State<_ContentWithPosters> {
                     ),
                   ),
                 ),
+              if (hasVideo) ...[
+                EducationVideoPlayer(videoUrl: content.videoUrl!),
+                const SizedBox(height: 16),
+              ],
               if (hasExcerpt) ...[
                 const SizedBox(height: 12),
                 Text(

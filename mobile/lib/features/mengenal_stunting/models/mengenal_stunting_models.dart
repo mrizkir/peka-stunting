@@ -58,19 +58,26 @@ class MengenalStuntingContent {
     required this.title,
     required this.excerpt,
     required this.body,
+    this.videoUrl,
     this.featuredImageUrl,
   });
 
   final String title;
   final String? excerpt;
   final String? body;
+  final String? videoUrl;
   final String? featuredImageUrl;
 
   factory MengenalStuntingContent.fromJson(Map<String, dynamic> json) {
+    final videoUrl = json['video_url'] as String?;
+
     return MengenalStuntingContent(
       title: json['title'] as String,
       excerpt: json['excerpt'] as String?,
       body: json['body'] as String?,
+      videoUrl: videoUrl != null && videoUrl.trim().isNotEmpty
+          ? videoUrl.trim()
+          : null,
       featuredImageUrl: json['featured_image_url'] as String?,
     );
   }

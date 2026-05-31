@@ -6,6 +6,7 @@ use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
 use App\Support\CalculatorConfigNormalizer;
+use App\Support\EducationVideoUrl;
 use App\Support\UploadSizeLimit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -19,6 +20,10 @@ class UpdateEducationContentRequest extends FormRequest
 
 	protected function prepareForValidation(): void
 	{
+		$this->merge([
+			'video_url' => EducationVideoUrl::normalize($this->input('video_url')),
+		]);
+
 		if (! $this->isScreeningQuestionnaireItem()) {
 			return;
 		}
@@ -40,6 +45,7 @@ class UpdateEducationContentRequest extends FormRequest
 		$rules = [
 			'title' => ['required', 'string', 'max:255'],
 			'excerpt' => ['nullable', 'string', 'max:1000'],
+			'video_url' => ['nullable', 'string', 'max:2048', 'url'],
 			'body' => ['nullable', 'string'],
 			'status' => ['required', Rule::in([
 				EducationContent::STATUS_DRAFT,
@@ -105,6 +111,7 @@ class UpdateEducationContentRequest extends FormRequest
 		return [
 			'title' => 'judul konten',
 			'excerpt' => 'ringkasan',
+			'video_url' => 'link video',
 			'body' => 'isi konten',
 			'status' => 'status',
 			'poster_images' => 'daftar poster',

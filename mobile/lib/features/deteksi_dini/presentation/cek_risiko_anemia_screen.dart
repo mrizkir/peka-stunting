@@ -384,44 +384,12 @@ class _AnemiaIntroText extends ConsumerWidget {
       final content = snapshot?.content;
       final excerpt = content?.excerpt?.trim();
       if (excerpt != null && excerpt.isNotEmpty) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(excerpt, style: introStyle),
-            if (snapshot?.isFromCache == true) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Konten tersimpan (offline).',
-                style: TextStyle(
-                  color: Colors.amber.shade900,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ],
-        );
+        return Text(excerpt, style: introStyle);
       }
 
       final body = content?.body?.trim();
       if (body != null && body.isNotEmpty) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            KebutuhanMuMenuDescription(description: body),
-            if (snapshot?.isFromCache == true) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Konten tersimpan (offline).',
-                style: TextStyle(
-                  color: Colors.amber.shade900,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ],
-        );
+        return KebutuhanMuMenuDescription(description: body);
       }
 
       return null;

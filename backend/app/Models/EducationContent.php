@@ -29,6 +29,7 @@ class EducationContent extends Model implements HasMedia
 		'item_id',
 		'title',
 		'excerpt',
+		'video_url',
 		'body',
 		'calculator_config',
 		'status',

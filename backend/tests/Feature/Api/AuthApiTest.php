@@ -126,4 +126,49 @@ class AuthApiTest extends TestCase
 
 		$this->assertSame(0, $user->fresh()->tokens()->count());
 	}
+
+	public function test_user_can_delete_own_account(): void
+	{
+		$user = User::factory()->create();
+		$user->assignRole('user');
+		Sanctum::actingAs($user);
+
+		$this->deleteJson('/api/v1/auth/account')
+			->assertOk()
+			->assertJsonPath('success', true)
+			->assertJsonPath('data.message', 'Akun berhasil dihapus.');
+
+		$this->assertDatabaseMissing('users', ['id' => $user->id]);
+	}
+
+	public function test_kader_can_delete_own_account(): void
+	{
+		$user = User::factory()->create();
+		$user->assignRole('kader');
+		Sanctum::actingAs($user);
+
+		$this->deleteJson('/api/v1/auth/account')
+			->assertOk()
+			->assertJsonPath('success', true);
+
+		$this->assertDatabaseMissing('users', ['id' => $user->id]);
+	}
+
+	public function test_admin_cannot_delete_account_via_api(): void
+	{
+		$user = User::factory()->create();
+		$user->assignRole('admin');
+		Sanctum::actingAs($user);
+
+		$this->deleteJson('/api/v1/auth/account')
+			->assertForbidden()
+			->assertJsonPath('success', false);
+
+		$this->assertDatabaseHas('users', ['id' => $user->id]);
+	}
+
+	public function test_guest_cannot_delete_account(): void
+	{
+		$this->deleteJson('/api/v1/auth/account')->assertUnauthorized();
+	}
 }

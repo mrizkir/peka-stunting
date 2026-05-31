@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../data/lila_screening_repository.dart';
 import '../domain/bmi_calculator.dart';
 import '../domain/lila_calculator.dart';
 
@@ -20,7 +24,7 @@ const _measurementSteps = [
       '(tidak miring).',
 ];
 
-class CekLilaScreen extends StatefulWidget {
+class CekLilaScreen extends ConsumerStatefulWidget {
   const CekLilaScreen({
     super.key,
     required this.menuSlug,
@@ -29,15 +33,16 @@ class CekLilaScreen extends StatefulWidget {
   final String menuSlug;
 
   @override
-  State<CekLilaScreen> createState() => _CekLilaScreenState();
+  ConsumerState<CekLilaScreen> createState() => _CekLilaScreenState();
 }
 
-class _CekLilaScreenState extends State<CekLilaScreen> {
+class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
   final _formKey = GlobalKey<FormState>();
   final _ageController = TextEditingController();
   final _lilaController = TextEditingController();
 
   LilaResult? _result;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -46,22 +51,86 @@ class _CekLilaScreenState extends State<CekLilaScreen> {
     super.dispose();
   }
 
-  void _calculate() {
+  Future<void> _calculate() async {
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
 
+    final age = int.parse(_ageController.text.trim());
     final lila = double.parse(_lilaController.text.replaceAll(',', '.'));
+    final nextResult = LilaCalculator.calculate(circumferenceCm: lila);
+    if (nextResult == null) {
+      return;
+    }
 
     setState(() {
-      _result = LilaCalculator.calculate(circumferenceCm: lila);
+      _result = nextResult;
     });
+
+    final isLoggedIn = ref.read(authStateProvider).valueOrNull != null;
+    if (!isLoggedIn) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Hasil ditampilkan. Login untuk menyimpan riwayat LILA.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      await ref.read(lilaScreeningRepositoryProvider).submit(
+            menuSlug: widget.menuSlug,
+            ageYears: age,
+            lilaCm: lila,
+          );
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Hasil LILA berhasil disimpan.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.displayMessage),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal menyimpan hasil LILA. Periksa koneksi lalu coba lagi.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   void _reset() {
     _ageController.clear();
     _lilaController.clear();
-    setState(() => _result = null);
+    setState(() {
+      _result = null;
+      _isSaving = false;
+    });
   }
 
   @override
@@ -175,8 +244,14 @@ class _CekLilaScreenState extends State<CekLilaScreen> {
                     ),
                     const SizedBox(height: 20),
                     FilledButton(
-                      onPressed: _calculate,
-                      child: const Text('Klik Hasil'),
+                      onPressed: _isSaving ? null : _calculate,
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Klik Hasil'),
                     ),
                     if (_result != null) ...[
                       const SizedBox(height: 12),

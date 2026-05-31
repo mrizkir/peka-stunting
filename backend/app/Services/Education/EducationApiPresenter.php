@@ -82,6 +82,7 @@ class EducationApiPresenter
 			'id' => $content->id,
 			'title' => $content->title,
 			'excerpt' => $content->excerpt,
+			'video_url' => $content->video_url,
 			'body' => $this->bodySanitizer->sanitize($content->body),
 			'calculator_config' => $item->hasScreeningQuestionnaire()
 				? $content->calculator_config

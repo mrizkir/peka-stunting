@@ -13,6 +13,9 @@ class UserModel {
   final String? phone;
   final List<String> roles;
 
+  bool get canDeleteAccount =>
+      roles.contains('kader') || roles.contains('user');
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as int,

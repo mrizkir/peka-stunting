@@ -87,21 +87,6 @@ class KebutuhanMuMenuScreen extends ConsumerWidget {
 
                 return Column(
                   children: [
-                    if (snapshot?.isFromCache == true)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Konten tersimpan (offline).',
-                            style: TextStyle(
-                              color: Colors.amber.shade900,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
                     for (var i = 0; i < detail.sections.length; i++) ...[
                       if (i > 0) const SizedBox(height: 12),
                       _buildSectionTile(

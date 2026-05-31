@@ -101,5 +101,15 @@ class AuthRepository {
     }
   }
 
+  Future<void> deleteAccount() async {
+    try {
+      await _dio.delete('/auth/account');
+    } on DioException catch (error) {
+      rethrowApi(error);
+    } finally {
+      await _tokenStorage.clearToken();
+    }
+  }
+
   Future<String?> currentToken() => _tokenStorage.readToken();
 }

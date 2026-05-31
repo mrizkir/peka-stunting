@@ -36,9 +36,85 @@ class ScreeningSubmissionAdminTest extends TestCase
 
 		$response
 			->assertOk()
-			->assertSee('Jawaban Cek Risiko Anemia')
+			->assertSee('Riwayat Skrining Aplikasi')
 			->assertSee($submission->user->name)
 			->assertSee($submission->category_label);
+	}
+
+	public function test_admin_can_view_lila_submission_in_index(): void
+	{
+		$admin = User::factory()->create();
+		$admin->assignRole('admin');
+
+		$user = User::factory()->create();
+		$user->assignRole('kader');
+
+		$menu = EducationMenu::query()->where('slug', 'remaja-putri')->firstOrFail();
+		$item = EducationItem::query()
+			->where('menu_id', $menu->id)
+			->where('slug', ScreeningSubmission::CALCULATOR_CEK_LILA)
+			->firstOrFail();
+
+		$submission = ScreeningSubmission::query()->create([
+			'user_id' => $user->id,
+			'education_item_id' => $item->id,
+			'calculator_slug' => ScreeningSubmission::CALCULATOR_CEK_LILA,
+			'menu_slug' => 'remaja-putri',
+			'yes_count' => 0,
+			'total_questions' => 0,
+			'risk_yes_threshold' => 0,
+			'category' => ScreeningSubmission::CATEGORY_AT_RISK,
+			'category_label' => 'Berisiko KEK',
+			'answers' => ['age_years' => 16, 'lila_cm' => 22.4],
+			'questions_snapshot' => null,
+			'submitted_at' => now(),
+		]);
+
+		$this->actingAs($admin)
+			->get(route('screening-submissions.index', [
+				'calculator_slug' => ScreeningSubmission::CALCULATOR_CEK_LILA,
+			]))
+			->assertOk()
+			->assertSee('Cek LILA')
+			->assertSee('Berisiko KEK')
+			->assertSee('Usia 16 th · LILA 22.4 cm');
+	}
+
+	public function test_admin_can_view_lila_submission_detail(): void
+	{
+		$admin = User::factory()->create();
+		$admin->assignRole('admin');
+
+		$user = User::factory()->create(['email' => 'lila@example.com']);
+		$user->assignRole('kader');
+
+		$menu = EducationMenu::query()->where('slug', 'remaja-putri')->firstOrFail();
+		$item = EducationItem::query()
+			->where('menu_id', $menu->id)
+			->where('slug', ScreeningSubmission::CALCULATOR_CEK_LILA)
+			->firstOrFail();
+
+		$submission = ScreeningSubmission::query()->create([
+			'user_id' => $user->id,
+			'education_item_id' => $item->id,
+			'calculator_slug' => ScreeningSubmission::CALCULATOR_CEK_LILA,
+			'menu_slug' => 'remaja-putri',
+			'yes_count' => 0,
+			'total_questions' => 0,
+			'risk_yes_threshold' => 0,
+			'category' => ScreeningSubmission::CATEGORY_AT_RISK,
+			'category_label' => 'Berisiko KEK',
+			'answers' => ['age_years' => 16, 'lila_cm' => 22.4],
+			'questions_snapshot' => null,
+			'submitted_at' => now(),
+		]);
+
+		$this->actingAs($admin)
+			->get(route('screening-submissions.show', $submission))
+			->assertOk()
+			->assertSee('Detail Cek LILA')
+			->assertSee('lila@example.com')
+			->assertSee('22,4');
 	}
 
 	public function test_admin_can_view_screening_submission_detail(): void

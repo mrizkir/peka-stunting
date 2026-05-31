@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/education_video_player.dart';
 import '../data/mengenal_stunting_repository.dart';
 import '../models/mengenal_stunting_models.dart';
 import 'widgets/mengenal_stunting_body_html.dart';
@@ -78,6 +79,10 @@ class MengenalStuntingContentScreen extends ConsumerWidget {
                   ),
                 ),
               if (content.featuredImageUrl != null) const SizedBox(height: 16),
+              if (content.videoUrl != null) ...[
+                EducationVideoPlayer(videoUrl: content.videoUrl!),
+                const SizedBox(height: 16),
+              ],
               Text(
                 content.title,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(

@@ -2,7 +2,7 @@
   title="Detail Konten"
   eyebrow="CMS Edukasi"
   :heading="$content['title']"
-  description="Kelola judul, ringkasan, isi, status, dan galeri poster konten edukasi."
+  description="Kelola judul, ringkasan, link video, isi, status, dan galeri poster konten edukasi."
 >
   <x-slot:headerActions>
     <a href="{{ route('education.menus.show', $content['menu_slug']) }}" class="inline-flex items-center justify-center rounded-md bg-base-100 px-4 py-2.5 text-sm font-semibold text-base-content ring-1 ring-inset ring-base-300 hover:bg-base-200">Kembali</a>
@@ -81,6 +81,48 @@
                 (artikel baca vs form hitung). Untuk mengedit judul, ringkasan, isi, status, dan gambar, gunakan field di bawah.
               </p>
             </div>
+          </div>
+
+          <div>
+            <x-ui.input
+              label="Link video (opsional)"
+              name="video_url"
+              type="url"
+              :value="old('video_url', $content['video_url'] ?? '')"
+              :readonly="! $canEdit"
+              placeholder="https://www.youtube.com/watch?v=..."
+              hint="URL video eksternal (mis. YouTube). Ditampilkan di aplikasi mobile bersama poster dan teks. Kosongkan jika tidak ada video."
+            />
+            @error('video_url')
+              <p class="text-error mt-2 text-sm">{{ $message }}</p>
+            @enderror
+            @php
+              $previewVideoUrl = old('video_url', $content['video_url'] ?? '');
+              $previewVideoEmbed = \App\Support\EducationVideoUrl::youtubeEmbedUrl($previewVideoUrl);
+            @endphp
+            @if (filled($previewVideoUrl))
+              <div class="mt-4 rounded-xl border border-base-300 bg-base-200/30 p-4">
+                <p class="text-base-content/70 mb-3 text-xs font-medium uppercase tracking-wide">Pratinjau video</p>
+                @if ($previewVideoEmbed)
+                  <div class="aspect-video overflow-hidden rounded-lg bg-black">
+                    <iframe
+                      src="{{ $previewVideoEmbed }}"
+                      title="Pratinjau video konten"
+                      class="h-full w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                @else
+                  <p class="text-base-content/60 text-sm">
+                    Link tersimpan. Pratinjau embed hanya untuk YouTube; di aplikasi mobile link tetap bisa dibuka.
+                  </p>
+                  <a href="{{ $previewVideoUrl }}" target="_blank" rel="noopener noreferrer" class="text-primary mt-2 inline-block text-sm font-medium hover:underline">
+                    {{ $previewVideoUrl }}
+                  </a>
+                @endif
+              </div>
+            @endif
           </div>
 
           <div>
@@ -173,6 +215,17 @@
 
       <x-ui.card title="Preview Konten" description="Area ini menampilkan gaya baca yang lebih dekat dengan tampilan pengguna akhir.">
         <div class="prose prose-slate max-w-none">
+          @if (filled($previewVideoUrl ?? null) && filled($previewVideoEmbed ?? null))
+            <div class="not-prose mb-4 aspect-video overflow-hidden rounded-xl bg-black">
+              <iframe
+                src="{{ $previewVideoEmbed }}"
+                title="Pratinjau video konten"
+                class="h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+              ></iframe>
+            </div>
+          @endif
           @if (! empty($content['gallery_images']))
             @foreach ($content['gallery_images'] as $galleryImage)
               <img src="{{ $galleryImage['url'] }}" alt="" class="mb-4 max-h-56 rounded-xl object-cover">

@@ -4,6 +4,11 @@ class AppTheme {
   static const Color primary = Color(0xFF059669);
   static const Color primaryDark = Color(0xFF047857);
 
+  static const Color profileCardBackground = Color(0xFFE8F4FC);
+  static const Color kebutuhanMuCardBackground = Color(0xFFF97316);
+  static const Color infoAppCardBackground = Color(0xFFD1FAE5);
+  static const double homeCardRadius = 22;
+
   static ThemeData light() {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: primary,

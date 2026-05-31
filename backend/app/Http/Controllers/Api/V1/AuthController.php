@@ -75,4 +75,24 @@ class AuthController extends Controller
 	{
 		return ApiResponse::success((new UserResource($request->user()))->resolve($request));
 	}
+
+	public function destroyAccount(Request $request): JsonResponse
+	{
+		$user = $request->user();
+
+		if ($user->hasRole('admin')) {
+			return ApiResponse::error('Akun admin tidak dapat dihapus dari aplikasi.', 403);
+		}
+
+		if (! $user->hasAnyRole(['kader', 'user'])) {
+			return ApiResponse::error('Role akun tidak diizinkan untuk penghapusan mandiri.', 403);
+		}
+
+		$user->tokens()->delete();
+		$user->delete();
+
+		return ApiResponse::success([
+			'message' => 'Akun berhasil dihapus.',
+		]);
+	}
 }

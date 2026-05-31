@@ -309,25 +309,6 @@ class _ImtIntroText extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   child: KebutuhanMuMenuDescription(description: body),
                 ),
-              if (snapshot?.isFromCache == true)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    border: Border(
-                      top: BorderSide(color: Colors.amber.shade200),
-                    ),
-                  ),
-                  child: Text(
-                    'Konten tersimpan (offline).',
-                    style: TextStyle(
-                      color: Colors.amber.shade900,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

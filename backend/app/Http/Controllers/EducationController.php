@@ -8,6 +8,7 @@ use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
 use App\Support\AnemiaScreeningDefaults;
+use App\Support\EducationVideoUrl;
 use App\Support\CalculatorConfigNormalizer;
 use App\Support\EducationBodySanitizer;
 use Illuminate\Http\UploadedFile;
@@ -103,6 +104,7 @@ class EducationController extends Controller
 		$educationContent->update([
 			'title' => $validated['title'],
 			'excerpt' => $validated['excerpt'] ?? null,
+			'video_url' => EducationVideoUrl::normalize($validated['video_url'] ?? null),
 			'body' => $this->bodySanitizer->sanitize($validated['body'] ?? null),
 			'calculator_config' => $educationItem->hasScreeningQuestionnaire()
 				? CalculatorConfigNormalizer::normalize(
@@ -169,6 +171,7 @@ class EducationController extends Controller
 			'status' => ucfirst($educationContent->status),
 			'status_raw' => $educationContent->status,
 			'summary' => $educationContent->excerpt ?? '',
+			'video_url' => $educationContent->video_url ?? '',
 			'body' => $educationContent->body ?? '',
 			'calculator_config' => $educationItem->hasScreeningQuestionnaire()
 				? ($educationContent->calculator_config

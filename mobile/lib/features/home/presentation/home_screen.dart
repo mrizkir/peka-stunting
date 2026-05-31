@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/menu_tile.dart';
+import 'widgets/home_colored_menu_card.dart';
+import 'widgets/home_featured_menu_card.dart';
+import 'widgets/home_profile_card.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -30,49 +32,32 @@ class HomeScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Halo, ${user?.name ?? 'Pengguna'}',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    user?.roles.join(', ') ?? '',
-                    style: TextStyle(color: Colors.grey.shade600),
-                  ),
-                ],
-              ),
-            ),
+          HomeProfileCard(
+            name: user?.name ?? 'Pengguna',
+            rolesLabel: user?.roles.join(', ') ?? '',
           ),
           const SizedBox(height: 16),
-          MenuTile(
-            imageAsset: 'assets/images/icon_mengenal_stunting.png',
+          HomeFeaturedMenuCard(
             title: 'Mengenal Stunting',
             subtitle: 'Baca materi edukasi sesuai kelompok sasaran.',
-            color: AppTheme.primary,
+            imageAsset: 'assets/images/icon_mengenal_stunting.png',
             onTap: () => context.push('/mengenal-stunting'),
           ),
           const SizedBox(height: 12),
-          MenuTile(
+          HomeColoredMenuCard(
             icon: Icons.checklist_outlined,
             title: 'Kebutuhanmu',
             subtitle: 'Pilih kelompok sasaran sesuai kebutuhan Anda.',
-            color: const Color(0xFF0EA5E9),
+            backgroundColor: AppTheme.kebutuhanMuCardBackground,
             onTap: () => context.push('/kebutuhan-mu'),
           ),
           const SizedBox(height: 12),
-          MenuTile(
+          HomeColoredMenuCard(
             imageAsset: 'assets/images/info_aplikasi.png',
             title: 'Info Aplikasi',
             subtitle: 'Tentang aplikasi PEKA Stunting.',
-            color: const Color(0xFF6366F1),
+            backgroundColor: AppTheme.infoAppCardBackground,
+            foregroundColor: const Color(0xFF0F172A),
             onTap: () => context.push('/app-info'),
           ),
         ],

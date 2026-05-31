@@ -62,6 +62,7 @@ class EducationApiTest extends TestCase
 			'title' => 'Pengertian Stunting',
 			'excerpt' => 'Ringkasan singkat',
 			'body' => 'Isi lengkap konten.',
+			'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
 		]);
 
 		$response = $this->getJson('/api/v1/education/menus/mengenal-stunting/contents/pengertian');
@@ -72,6 +73,7 @@ class EducationApiTest extends TestCase
 			->assertJsonPath('data.title', 'Pengertian Stunting')
 			->assertJsonPath('data.excerpt', 'Ringkasan singkat')
 			->assertJsonPath('data.body', 'Isi lengkap konten.')
+			->assertJsonPath('data.video_url', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')
 			->assertJsonPath('data.poster_images', [])
 			->assertJsonPath('data.status', 'published')
 			->assertJsonPath('data.menu.slug', 'mengenal-stunting');

@@ -1,13 +1,13 @@
 <x-layouts.app
-  title="Jawaban Skrining"
+  title="Riwayat Skrining"
   eyebrow="Deteksi Dini"
-  heading="Jawaban Cek Risiko Anemia"
-  description="Riwayat pengisian kuesioner skrining anemia dari pengguna aplikasi mobile."
+  heading="Riwayat Skrining Aplikasi"
+  description="Hasil skrining dari pengguna aplikasi mobile: anemia, IMT, dan LILA."
 >
   <x-ui.card>
     <form method="GET" action="{{ route('screening-submissions.index') }}" class="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-      <div class="flex flex-1 flex-col gap-3 sm:flex-row sm:items-end">
-        <div class="flex-1">
+      <div class="flex flex-1 flex-col gap-3 sm:flex-row sm:items-end sm:flex-wrap">
+        <div class="min-w-48 flex-1">
           <label for="q" class="mb-1 block text-sm text-base-content/70">Cari pengguna</label>
           <input
             id="q"
@@ -17,6 +17,16 @@
             placeholder="Nama, email, atau no. HP"
             class="input input-bordered w-full"
           >
+        </div>
+
+        <div>
+          <label for="calculator_slug" class="mb-1 block text-sm text-base-content/70">Jenis skrining</label>
+          <select id="calculator_slug" name="calculator_slug" class="select select-bordered w-full min-w-48">
+            <option value="">Semua jenis</option>
+            @foreach ($calculatorOptions as $slug => $label)
+              <option value="{{ $slug }}" @selected($calculatorSlug === $slug)>{{ $label }}</option>
+            @endforeach
+          </select>
         </div>
 
         <div>
@@ -41,7 +51,7 @@
 
       <div class="flex gap-2">
         <x-ui.button type="submit">Terapkan filter</x-ui.button>
-        @if ($search !== '' || $menuSlug !== '')
+        @if ($search !== '' || $menuSlug !== '' || $calculatorSlug !== '')
           <a href="{{ route('screening-submissions.index') }}">
             <x-ui.button type="button" variant="secondary">Reset</x-ui.button>
           </a>
@@ -50,7 +60,7 @@
     </form>
 
     <p class="mb-4 text-sm text-base-content/70">
-      Menampilkan {{ $submissions->firstItem() ?? 0 }}–{{ $submissions->lastItem() ?? 0 }} dari {{ $submissions->total() }} jawaban.
+      Menampilkan {{ $submissions->firstItem() ?? 0 }}–{{ $submissions->lastItem() ?? 0 }} dari {{ $submissions->total() }} submission.
     </p>
 
     <div class="overflow-x-auto">
@@ -59,9 +69,10 @@
           <tr>
             <th>Tanggal</th>
             <th>Pengguna</th>
+            <th>Jenis</th>
             <th>Menu</th>
             <th>Hasil</th>
-            <th>Jawaban Ya</th>
+            <th>Detail input</th>
             <th class="text-right">Aksi</th>
           </tr>
         </thead>
@@ -69,7 +80,6 @@
           @forelse ($submissions as $submission)
             @php
               $menuName = $menuOptions[$submission->menu_slug] ?? $submission->menu_slug;
-              $isAtRisk = $submission->category === \App\Models\ScreeningSubmission::CATEGORY_AT_RISK;
             @endphp
             <tr>
               <td class="whitespace-nowrap text-sm">
@@ -79,15 +89,20 @@
                 <p class="font-medium">{{ $submission->user?->name ?? '—' }}</p>
                 <p class="text-sm text-base-content/60">{{ $submission->user?->email ?? '—' }}</p>
               </td>
+              <td class="whitespace-nowrap text-sm">{{ $submission->calculatorLabel() }}</td>
               <td>{{ $menuName }}</td>
               <td>
-                <x-ui.badge :tone="$isAtRisk ? 'danger' : 'success'">
+                <x-ui.badge :tone="$submission->resultBadgeTone()">
                   {{ $submission->category_label }}
                 </x-ui.badge>
               </td>
-              <td class="whitespace-nowrap">
-                {{ $submission->yes_count }} / {{ $submission->total_questions }}
-                <span class="text-base-content/50 text-xs">(ambang ≥ {{ $submission->risk_yes_threshold }})</span>
+              <td class="text-sm text-base-content/80">
+                @if ($submission->isQuestionnaire())
+                  {{ $submission->yes_count }} / {{ $submission->total_questions }} Ya
+                  <span class="text-base-content/50 text-xs">(ambang ≥ {{ $submission->risk_yes_threshold }})</span>
+                @else
+                  {{ $submission->measurementSummary() ?? '—' }}
+                @endif
               </td>
               <td class="text-right">
                 <a href="{{ route('screening-submissions.show', $submission) }}" class="btn btn-sm btn-ghost">
@@ -97,8 +112,8 @@
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="py-10 text-center text-sm text-base-content/60">
-                Belum ada jawaban skrining yang tersimpan.
+              <td colspan="7" class="py-10 text-center text-sm text-base-content/60">
+                Belum ada hasil skrining yang tersimpan.
               </td>
             </tr>
           @endforelse

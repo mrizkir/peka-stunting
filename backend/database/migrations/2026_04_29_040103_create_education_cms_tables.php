@@ -38,6 +38,7 @@ return new class extends Migration
             $table->foreignId('item_id')->unique()->constrained('education_items')->cascadeOnDelete();
             $table->string('title');
             $table->text('excerpt')->nullable();
+            $table->string('video_url', 2048)->nullable();
             $table->longText('body')->nullable();
             $table->enum('status', ['draft', 'published'])->default('draft');
             $table->timestamp('published_at')->nullable();

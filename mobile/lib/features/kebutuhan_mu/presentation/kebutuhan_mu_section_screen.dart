@@ -64,17 +64,6 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
                 '${section.items.length} materi tersedia.',
                 style: TextStyle(color: Colors.grey.shade700),
               ),
-              if (snapshot?.isFromCache == true) ...[
-                const SizedBox(height: 6),
-                Text(
-                  'Konten tersimpan (offline).',
-                  style: TextStyle(
-                    color: Colors.amber.shade900,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
               const SizedBox(height: 16),
               if (section.items.isEmpty)
                 const Text('Materi akan ditambahkan.')
