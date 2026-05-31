@@ -21,7 +21,7 @@ class DashboardController extends Controller
 		$educationMenus = $menus->map(fn (EducationMenu $menu) => [
 			'title' => $menu->name,
 			'slug' => $menu->slug,
-			'description' => $this->menuDescription($menu->slug),
+			'description' => $menu->description ?? '',
 			'items_count' => $menu->leaf_items_count,
 		]);
 
@@ -60,16 +60,4 @@ class DashboardController extends Controller
 		));
 	}
 
-	private function menuDescription(string $slug): string
-	{
-		return match ($slug) {
-			'mengenal-stunting' => 'Konten dasar untuk memahami stunting dan dampaknya.',
-			'remaja-putri' => 'Deteksi dini dan upaya kesehatan untuk remaja putri.',
-			'calon-pengantin' => 'Persiapan kesehatan sebelum kehamilan dan 1000 HPK.',
-			'ibu-hamil' => 'Panduan pemeriksaan, nutrisi, dan pencegahan risiko.',
-			'ibu-nifas-dan-menyusui' => 'Materi laktasi, gizi, dan pemulihan ibu pasca persalinan.',
-			'bayi-dan-balita' => 'Pemantauan status gizi, ASI, MPASI, dan imunisasi.',
-			default => '',
-		};
-	}
 }

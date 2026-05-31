@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:html/dom.dart' as dom;
 
 /// Renders sanitized HTML (headings, lists, emphasis).
 class MengenalStuntingBodyHtml extends StatelessWidget {
@@ -30,6 +31,27 @@ class MengenalStuntingBodyHtml extends StatelessWidget {
     'i',
   };
 
+  /// Tag yang memicu widget gagal (ikon ❌ / X di Android).
+  static const _blockedTags = {
+    'img',
+    'svg',
+    'video',
+    'audio',
+    'iframe',
+    'object',
+    'embed',
+    'picture',
+    'source',
+    'script',
+    'style',
+    'link',
+    'meta',
+    'form',
+    'input',
+    'button',
+    'a',
+  };
+
   @override
   Widget build(BuildContext context) {
     final body = html?.trim() ?? '';
@@ -50,13 +72,33 @@ class MengenalStuntingBodyHtml extends StatelessWidget {
       body,
       textStyle: baseStyle,
       customStylesBuilder: _stylesForElement,
+      customWidgetBuilder: _blockUnsupportedElement,
+      onErrorBuilder: (context, element, error) {
+        final fallback = element.text.trim();
+        if (fallback.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Text(
+          fallback,
+          style: baseStyle,
+        );
+      },
     );
   }
 
+  static Widget? _blockUnsupportedElement(dom.Element element) {
+    final tag = element.localName?.toLowerCase();
+    if (tag != null && _blockedTags.contains(tag)) {
+      return const SizedBox.shrink();
+    }
+
+    return null;
+  }
+
   Map<String, String>? _stylesForElement(dynamic element) {
-    final tag = element.localName as String?;
+    final tag = (element.localName as String?)?.toLowerCase();
     if (tag == null || !_allowedTags.contains(tag)) {
-      return {'display': 'none'};
+      return null;
     }
 
     final styles = <String, String>{};

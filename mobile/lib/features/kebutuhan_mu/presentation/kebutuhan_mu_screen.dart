@@ -8,8 +8,9 @@ import '../data/kebutuhan_mu_repository.dart';
 import '../models/kebutuhan_mu_models.dart';
 
 final kebutuhanMuGroupsProvider =
-    FutureProvider<List<KebutuhanMuMenuSummary>>((ref) {
-  return ref.read(kebutuhanMuRepositoryProvider).fetchTargetGroups();
+    StreamProvider<KebutuhanMuTaxonomySnapshot<List<KebutuhanMuMenuSummary>>?>(
+        (ref) {
+  return ref.read(kebutuhanMuRepositoryProvider).watchTargetGroups();
 });
 
 class KebutuhanMuScreen extends ConsumerWidget {
@@ -78,7 +79,8 @@ class KebutuhanMuScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             children: [Text(error.toString())],
           ),
-          data: (groups) {
+          data: (snapshot) {
+            final groups = snapshot?.data ?? const <KebutuhanMuMenuSummary>[];
             final tiles = groups.isEmpty
                 ? _fallbackGroups
                     .asMap()
@@ -115,6 +117,17 @@ class KebutuhanMuScreen extends ConsumerWidget {
                   'Pilih kelompok sasaran sesuai kebutuhan Anda.',
                   style: TextStyle(color: Colors.grey.shade700),
                 ),
+                if (snapshot?.isFromCache == true) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'Konten tersimpan (offline).',
+                    style: TextStyle(
+                      color: Colors.amber.shade900,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 ...tiles,
               ],

@@ -45,6 +45,17 @@ class EducationApiTest extends TestCase
 			->assertJsonPath('data.items.0.slug', 'pengertian');
 	}
 
+	public function test_menu_show_returns_menu_description(): void
+	{
+		$response = $this->getJson('/api/v1/education/menus/remaja-putri');
+
+		$response
+			->assertOk()
+			->assertJsonPath('data.description', fn ($value) => is_string($value)
+				&& str_contains($value, 'Hai Remaja Putri, Selamat Datang...')
+				&& str_contains($value, 'Pergi menjaring ke Pulau Penyengat,'));
+	}
+
 	public function test_content_show_returns_published_content(): void
 	{
 		$this->publishContent('mengenal-stunting', 'pengertian', [

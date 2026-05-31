@@ -70,19 +70,26 @@ class KebutuhanMuMenuDetail {
   KebutuhanMuMenuDetail({
     required this.name,
     required this.slug,
+    this.description,
     required this.sections,
     required this.items,
   });
 
   final String name;
   final String slug;
+  final String? description;
   final List<KebutuhanMuSection> sections;
   final List<KebutuhanMuItem> items;
 
   factory KebutuhanMuMenuDetail.fromJson(Map<String, dynamic> json) {
+    final description = json['description'] as String?;
+
     return KebutuhanMuMenuDetail(
       name: json['name'] as String,
       slug: json['slug'] as String,
+      description: description != null && description.trim().isNotEmpty
+          ? description.trim()
+          : null,
       sections: (json['sections'] as List<dynamic>? ?? [])
           .map((e) => KebutuhanMuSection.fromJson(e as Map<String, dynamic>))
           .toList(),

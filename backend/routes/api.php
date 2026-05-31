@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AnemiaScreeningSubmissionController;
+use App\Http\Controllers\Api\V1\BmiScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\AppController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ChildController;
@@ -43,5 +44,12 @@ Route::prefix('v1')->group(function () {
 		->group(function () {
 			Route::get('/', [AnemiaScreeningSubmissionController::class, 'index'])->name('index');
 			Route::post('/', [AnemiaScreeningSubmissionController::class, 'store'])->name('store');
+		});
+
+	Route::middleware('auth:sanctum')
+		->prefix('screening-submissions/cek-imt')
+		->name('api.v1.screening-submissions.bmi.')
+		->group(function () {
+			Route::post('/', [BmiScreeningSubmissionController::class, 'store'])->name('store');
 		});
 });

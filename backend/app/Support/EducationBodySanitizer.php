@@ -18,6 +18,11 @@ class EducationBodySanitizer
 	private const TEXT_ALIGN = ['left', 'right', 'center', 'justify'];
 
 	/** @var list<string> */
+	private const INLINE_BLOCK_PARENTS = [
+		'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th',
+	];
+
+	/** @var list<string> */
 	private const REMOVE_ENTIRELY = [
 		'script', 'style', 'iframe', 'object', 'embed', 'link', 'meta',
 		'img', 'a', 'video', 'audio', 'form', 'input', 'button', 'svg',
@@ -83,6 +88,19 @@ class EducationBodySanitizer
 			}
 
 			if (! in_array($tag, self::ALLOWED, true)) {
+				if ($tag === 'span' && $this->replaceSpanWithSemantic($child)) {
+					$this->cleanNode($node);
+
+					continue;
+				}
+
+				if ($tag === 'div') {
+					$this->convertDivLineBreak($child);
+					$this->cleanNode($node);
+
+					continue;
+				}
+
 				$this->unwrapElement($child);
 				$this->cleanNode($node);
 
@@ -129,6 +147,90 @@ class EducationBodySanitizer
 		}
 
 		return strtolower($matches[1]);
+	}
+
+	private function replaceSpanWithSemantic(DOMElement $span): bool
+	{
+		$style = $span->getAttribute('style');
+		$bold = $this->isBoldStyle($style);
+		$italic = $this->isItalicStyle($style);
+
+		if (! $bold && ! $italic) {
+			return false;
+		}
+
+		$document = $span->ownerDocument;
+		if ($document === null) {
+			return false;
+		}
+
+		$replacement = $document->createElement($bold && $italic ? 'strong' : ($bold ? 'strong' : 'em'));
+
+		if ($bold && $italic) {
+			$em = $document->createElement('em');
+			while ($span->firstChild !== null) {
+				$em->appendChild($span->firstChild);
+			}
+			$replacement->appendChild($em);
+		} else {
+			while ($span->firstChild !== null) {
+				$replacement->appendChild($span->firstChild);
+			}
+		}
+
+		$span->parentNode?->replaceChild($replacement, $span);
+
+		return true;
+	}
+
+	private function isBoldStyle(string $style): bool
+	{
+		return preg_match('/font-weight\s*:\s*(bold|[6-9]00)/i', $style) === 1;
+	}
+
+	private function isItalicStyle(string $style): bool
+	{
+		return preg_match('/font-style\s*:\s*italic/i', $style) === 1;
+	}
+
+	private function convertDivLineBreak(DOMElement $div): void
+	{
+		$parent = $div->parentNode;
+		$parentTag = $parent instanceof DOMElement
+			? strtolower($parent->tagName)
+			: null;
+
+		if ($parentTag !== null && in_array($parentTag, self::INLINE_BLOCK_PARENTS, true)) {
+			$document = $div->ownerDocument;
+			if ($document === null) {
+				return;
+			}
+
+			$break = $document->createElement('br');
+			while ($div->firstChild !== null) {
+				$parent->insertBefore($div->firstChild, $div);
+			}
+			$parent->insertBefore($break, $div);
+			$parent->removeChild($div);
+
+			return;
+		}
+
+		$document = $div->ownerDocument;
+		if ($document === null) {
+			return;
+		}
+
+		$paragraph = $document->createElement('p');
+		while ($div->firstChild !== null) {
+			$paragraph->appendChild($div->firstChild);
+		}
+
+		if (! $paragraph->hasChildNodes()) {
+			$paragraph->appendChild($document->createElement('br'));
+		}
+
+		$div->parentNode?->replaceChild($paragraph, $div);
 	}
 
 	private function unwrapElement(DOMElement $element): void

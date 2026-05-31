@@ -6,6 +6,7 @@ use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
 use App\Support\CalculatorConfigNormalizer;
+use App\Support\UploadSizeLimit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -45,7 +46,7 @@ class UpdateEducationContentRequest extends FormRequest
 				EducationContent::STATUS_PUBLISHED,
 			])],
 			'poster_images' => ['nullable', 'array'],
-			'poster_images.*' => ['image', 'mimes:jpeg,png,webp', 'max:2048'],
+			'poster_images.*' => ['image', 'mimes:jpeg,png,webp', 'max:'.UploadSizeLimit::POSTER_IMAGE_MAX_KILOBYTES],
 			'remove_poster_images' => ['sometimes', 'boolean'],
 			'remove_gallery_image_ids' => ['nullable', 'array'],
 			'remove_gallery_image_ids.*' => ['integer'],
@@ -90,6 +91,7 @@ class UpdateEducationContentRequest extends FormRequest
 			'max' => ':attribute maksimal :max karakter.',
 			'image' => ':attribute harus berupa gambar.',
 			'mimes' => ':attribute harus berformat jpeg, png, atau webp.',
+			'poster_images.*.max' => ':attribute tidak boleh lebih dari '.UploadSizeLimit::posterImageMaxLabel().'.',
 			'in' => ':attribute tidak valid.',
 			'calculator_config.questions.*.id.regex' => 'ID pertanyaan hanya boleh huruf kecil, angka, strip, dan garis bawah.',
 		];

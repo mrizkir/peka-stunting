@@ -18,9 +18,17 @@ export function createEducationBodyEditor(config = {}) {
             editor.innerHTML = sanitizePastedHtml(this.initialHtml) || '';
 
             try {
-                document.execCommand('styleWithCSS', false, true);
+                // false → bold/italic memakai <b>/<i>, bukan <span style="..."> yang hilang saat disimpan.
+                document.execCommand('styleWithCSS', false, false);
             } catch (_error) {
                 // Browser lama: tetap pakai perintah justify*.
+            }
+
+            try {
+                // Enter → <p> baru, bukan <div> yang hilang saat disanitasi.
+                document.execCommand('defaultParagraphSeparator', false, 'p');
+            } catch (_error) {
+                //
             }
 
             const remember = () => this.saveSelection();
@@ -131,7 +139,7 @@ export function createEducationBodyEditor(config = {}) {
 
         sync() {
             if (this.$refs.bodyInput && this.$refs.editor) {
-                this.$refs.bodyInput.value = this.$refs.editor.innerHTML;
+                this.$refs.bodyInput.value = sanitizePastedHtml(this.$refs.editor.innerHTML);
             }
         },
     };

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ScreeningSubmission extends Model
 {
 	public const CALCULATOR_CEK_RISIKO_ANEMIA = 'cek-risiko-anemia';
+	public const CALCULATOR_CEK_IMT = 'cek-imt';
 
 	public const CATEGORY_AT_RISK = 'at_risk';
 

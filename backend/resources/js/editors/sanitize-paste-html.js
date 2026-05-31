@@ -12,8 +12,12 @@ const REMOVE = new Set([
 const TEXT_ALIGN = new Set(['left', 'right', 'center', 'justify']);
 
 const UNWRAP = new Set([
-    'div', 'span', 'section', 'article', 'header', 'footer', 'main',
+    'section', 'article', 'header', 'footer', 'main',
     'figure', 'figcaption', 'aside', 'nav', 'table', 'tbody', 'thead', 'tr', 'td', 'th',
+]);
+
+const INLINE_BLOCK_PARENTS = new Set([
+    'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th',
 ]);
 
 function escapeHtml(text) {
@@ -59,6 +63,91 @@ function unwrapElement(element) {
     parent.removeChild(element);
 }
 
+function isBoldStyle(style) {
+    return /font-weight\s*:\s*(bold|[6-9]00)/i.test(style || '');
+}
+
+function isItalicStyle(style) {
+    return /font-style\s*:\s*italic/i.test(style || '');
+}
+
+function replaceSpanWithSemantic(span) {
+    const style = span.getAttribute('style') || '';
+    const bold = isBoldStyle(style);
+    const italic = isItalicStyle(style);
+
+    if (! bold && ! italic) {
+        unwrapElement(span);
+
+        return;
+    }
+
+    const doc = span.ownerDocument;
+    let replacement;
+
+    if (bold && italic) {
+        replacement = doc.createElement('strong');
+        const em = doc.createElement('em');
+        while (span.firstChild) {
+            em.appendChild(span.firstChild);
+        }
+        replacement.appendChild(em);
+    } else if (bold) {
+        replacement = doc.createElement('strong');
+        while (span.firstChild) {
+            replacement.appendChild(span.firstChild);
+        }
+    } else {
+        replacement = doc.createElement('em');
+        while (span.firstChild) {
+            replacement.appendChild(span.firstChild);
+        }
+    }
+
+    span.parentNode?.replaceChild(replacement, span);
+}
+
+function normalizeSpanOrUnwrap(child) {
+    if (child.tagName.toLowerCase() === 'span') {
+        replaceSpanWithSemantic(child);
+
+        return;
+    }
+
+    unwrapElement(child);
+}
+
+/**
+ * Enter di contenteditable sering menghasilkan <div>; ubah ke <p> atau <br> agar baris baru tersimpan.
+ */
+function convertDivLineBreak(div) {
+    const parent = div.parentNode;
+    const parentTag = parent?.tagName?.toLowerCase();
+
+    if (parentTag && INLINE_BLOCK_PARENTS.has(parentTag)) {
+        const br = div.ownerDocument.createElement('br');
+        while (div.firstChild) {
+            parent.insertBefore(div.firstChild, div);
+        }
+        parent.insertBefore(br, div);
+        parent.removeChild(div);
+
+        return;
+    }
+
+    const doc = div.ownerDocument;
+    const paragraph = doc.createElement('p');
+    while (div.firstChild) {
+        paragraph.appendChild(div.firstChild);
+    }
+
+    if (! paragraph.hasChildNodes()) {
+        paragraph.appendChild(doc.createElement('br'));
+    }
+
+    div.parentNode?.replaceChild(paragraph, div);
+}
+
 function normalizeNode(node) {
     if (! node.hasChildNodes()) {
         return;
@@ -80,6 +169,18 @@ function normalizeNode(node) {
 
         if (REMOVE.has(tag)) {
             child.remove();
+            continue;
+        }
+
+        if (tag === 'span') {
+            normalizeSpanOrUnwrap(child);
+            normalizeNode(node);
+            continue;
+        }
+
+        if (tag === 'div') {
+            convertDivLineBreak(child);
+            normalizeNode(node);
             continue;
         }
 

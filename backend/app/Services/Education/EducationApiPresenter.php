@@ -65,6 +65,7 @@ class EducationApiPresenter
 			'name' => $menu->name,
 			'slug' => $menu->slug,
 			'sort_order' => $menu->sort_order,
+			'description' => $menu->description,
 			'sections' => $sections,
 			'items' => $items,
 		];

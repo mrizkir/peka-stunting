@@ -7,7 +7,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
 import '../../kebutuhan_mu/kebutuhan_mu_config.dart';
 import '../../kebutuhan_mu/models/kebutuhan_mu_models.dart';
-import '../../mengenal_stunting/presentation/widgets/mengenal_stunting_body_html.dart';
+import '../../kebutuhan_mu/presentation/widgets/kebutuhan_mu_menu_description.dart';
 import '../data/anemia_screening_repository.dart';
 import '../domain/anemia_calculator_config.dart';
 import '../domain/anemia_risk_calculator.dart';
@@ -25,6 +25,14 @@ final cekRisikoAnemiaContentProvider =
   } catch (_) {
     return null;
   }
+});
+
+final cekRisikoAnemiaIntroContentProvider =
+    StreamProvider.family<KebutuhanMuContentSnapshot?, String>((ref, menuSlug) {
+  return ref.read(kebutuhanMuRepositoryProvider).watchContent(
+        menuSlug: menuSlug,
+        itemSlug: _kCekRisikoAnemiaItemSlug,
+      );
 });
 
 class CekRisikoAnemiaScreen extends ConsumerStatefulWidget {
@@ -370,17 +378,50 @@ class _AnemiaIntroText extends ConsumerWidget {
       height: 1.5,
     );
 
-    final contentAsync = ref.watch(cekRisikoAnemiaContentProvider(menuSlug));
+    final contentAsync = ref.watch(cekRisikoAnemiaIntroContentProvider(menuSlug));
 
-    Widget? introFromContent(KebutuhanMuContent? content) {
+    Widget? introFromSnapshot(KebutuhanMuContentSnapshot? snapshot) {
+      final content = snapshot?.content;
       final excerpt = content?.excerpt?.trim();
       if (excerpt != null && excerpt.isNotEmpty) {
-        return Text(excerpt, style: introStyle);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(excerpt, style: introStyle),
+            if (snapshot?.isFromCache == true) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Konten tersimpan (offline).',
+                style: TextStyle(
+                  color: Colors.amber.shade900,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        );
       }
 
       final body = content?.body?.trim();
       if (body != null && body.isNotEmpty) {
-        return MengenalStuntingBodyHtml(html: body);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            KebutuhanMuMenuDescription(description: body),
+            if (snapshot?.isFromCache == true) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Konten tersimpan (offline).',
+                style: TextStyle(
+                  color: Colors.amber.shade900,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        );
       }
 
       return null;
@@ -389,7 +430,7 @@ class _AnemiaIntroText extends ConsumerWidget {
     return contentAsync.when(
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
-      data: (content) => introFromContent(content) ?? const SizedBox.shrink(),
+      data: (snapshot) => introFromSnapshot(snapshot) ?? const SizedBox.shrink(),
     );
   }
 }

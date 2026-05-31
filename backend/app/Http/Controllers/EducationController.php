@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateEducationContentRequest;
+use App\Http\Requests\UpdateEducationMenuRequest;
 use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
@@ -42,10 +43,30 @@ class EducationController extends Controller
 			'menu' => [
 				'slug' => $menu->slug,
 				'title' => $menu->name,
-				'description' => $this->menuDescription($menu->slug),
+				'description' => $menu->description ?? '',
 				'sections' => $this->buildSections($rootItems),
 			],
+			'canEdit' => auth()->user()?->hasRole('admin') ?? false,
 		]);
+	}
+
+	public function updateMenu(
+		UpdateEducationMenuRequest $request,
+		EducationMenu $menu,
+	): RedirectResponse {
+		$validated = $request->validated();
+
+		$description = $validated['description'] ?? null;
+
+		$menu->update([
+			'description' => filled($description)
+				? $this->bodySanitizer->sanitize($description)
+				: null,
+		]);
+
+		return redirect()
+			->route('education.menus.show', $menu)
+			->with('success', 'Deskripsi menu berhasil disimpan.');
 	}
 
 	public function showContent(EducationMenu $menu, string $item): View
@@ -210,19 +231,6 @@ class EducationController extends Controller
 			'type' => $item->isCalculator() ? 'Kalkulator' : 'Konten',
 			'status' => ucfirst($item->content?->status ?? EducationContent::STATUS_DRAFT),
 		];
-	}
-
-	private function menuDescription(string $slug): string
-	{
-		return match ($slug) {
-			'mengenal-stunting' => 'Konten dasar untuk memahami stunting dan dampaknya.',
-			'remaja-putri' => 'Deteksi dini dan upaya pencegahan stunting untuk remaja putri.',
-			'calon-pengantin' => 'Persiapan kesehatan sebelum kehamilan dan 1000 HPK.',
-			'ibu-hamil' => 'Panduan pemeriksaan, nutrisi, dan pencegahan risiko.',
-			'ibu-nifas-dan-menyusui' => 'Materi laktasi, gizi, dan pemulihan ibu pasca persalinan.',
-			'bayi-dan-balita' => 'Pemantauan status gizi, ASI, MPASI, dan imunisasi.',
-			default => '',
-		};
 	}
 
 	private function normalizedUploadFileName(?UploadedFile $file): string

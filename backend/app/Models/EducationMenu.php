@@ -16,6 +16,7 @@ class EducationMenu extends Model
 		'name',
 		'slug',
 		'sort_order',
+		'description',
 	];
 
 	protected function casts(): array

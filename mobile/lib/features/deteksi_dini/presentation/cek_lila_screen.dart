@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../kebutuhan_mu/kebutuhan_mu_config.dart';
 import '../domain/bmi_calculator.dart';
 import '../domain/lila_calculator.dart';
 
@@ -35,15 +34,14 @@ class CekLilaScreen extends StatefulWidget {
 
 class _CekLilaScreenState extends State<CekLilaScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _ageController = TextEditingController();
   final _lilaController = TextEditingController();
 
   LilaResult? _result;
 
-  String get _groupLabel =>
-      KebutuhanMuConfig.groupTitles[widget.menuSlug] ?? 'Kebutuhanmu';
-
   @override
   void dispose() {
+    _ageController.dispose();
     _lilaController.dispose();
     super.dispose();
   }
@@ -61,6 +59,7 @@ class _CekLilaScreenState extends State<CekLilaScreen> {
   }
 
   void _reset() {
+    _ageController.clear();
     _lilaController.clear();
     setState(() => _result = null);
   }
@@ -74,13 +73,6 @@ class _CekLilaScreenState extends State<CekLilaScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text(
-            _groupLabel,
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 14,
-            ),
-          ),
           const SizedBox(height: 8),
           Text(
             'LILA (Lingkar Lengan Atas) adalah ukuran lingkar lengan bagian '
@@ -128,6 +120,29 @@ class _CekLilaScreenState extends State<CekLilaScreen> {
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _ageController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      decoration: const InputDecoration(
+                        labelText: 'Usia (Tahun)',
+                        hintText: 'Contoh: 16',
+                        suffixText: 'tahun',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Masukkan usia';
+                        }
+                        final n = int.tryParse(value.trim());
+                        if (n == null || n <= 0 || n > 120) {
+                          return 'Usia tidak valid (1-120 tahun)';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 12),
                     TextFormField(

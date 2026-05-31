@@ -128,7 +128,10 @@
                   accept="image/jpeg,image/png,image/webp"
                   class="bg-base-100 border-base-300 text-base-content focus:border-primary focus:ring-primary/15 block w-full rounded-md border px-4 py-3 text-sm shadow-sm outline-none transition focus:ring-4"
                 >
-                <span class="text-base-content/55 mt-2 block text-xs">Upload beberapa poster sekaligus untuk swipe di aplikasi mobile. JPEG, PNG, atau WebP. Maks. 2 MB per file.</span>
+                <span class="text-base-content/55 mt-2 block text-xs">
+                  Upload beberapa poster sekaligus untuk swipe di aplikasi mobile. JPEG, PNG, atau WebP.
+                  {{ \App\Support\UploadSizeLimit::posterImageUploadHint() }}
+                </span>
               </label>
               @error('poster_images')
                 <p class="text-error mt-2 text-sm">{{ $message }}</p>

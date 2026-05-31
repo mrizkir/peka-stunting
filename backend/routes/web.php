@@ -21,6 +21,9 @@ Route::middleware('auth')->group(function () {
   Route::prefix('education')->name('education.')->group(function () {
     Route::get('/', [EducationController::class, 'index'])->name('index');
     Route::get('/{menu:slug}', [EducationController::class, 'showMenu'])->name('menus.show');
+    Route::put('/{menu:slug}', [EducationController::class, 'updateMenu'])
+      ->name('menus.update')
+      ->middleware('role:admin');
     Route::get('/{menu:slug}/{item}', [EducationController::class, 'showContent'])->name('contents.show');
     Route::put('/{menu:slug}/{item}', [EducationController::class, 'updateContent'])
       ->name('contents.update')

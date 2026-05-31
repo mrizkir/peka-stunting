@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/menu_tile.dart';
+import '../data/kebutuhan_mu_repository.dart';
 import '../kebutuhan_mu_config.dart';
-import '../kebutuhan_mu_mock_data.dart';
+import '../models/kebutuhan_mu_models.dart';
+import 'widgets/kebutuhan_mu_menu_description.dart';
 
-class KebutuhanMuMenuScreen extends StatelessWidget {
+final kebutuhanMuMenuDetailProvider =
+    StreamProvider.family<KebutuhanMuTaxonomySnapshot<KebutuhanMuMenuDetail>?, String>(
+        (ref, menuSlug) {
+  return ref.read(kebutuhanMuRepositoryProvider).watchMenuDetail(menuSlug);
+});
+
+class KebutuhanMuMenuScreen extends ConsumerWidget {
   const KebutuhanMuMenuScreen({
     super.key,
     required this.menuSlug,
@@ -14,57 +23,129 @@ class KebutuhanMuMenuScreen extends StatelessWidget {
 
   final String menuSlug;
 
-  String get _groupTitle =>
-      KebutuhanMuConfig.groupTitles[menuSlug] ?? 'Kebutuhanmu';
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final menuDetailAsync = ref.watch(kebutuhanMuMenuDetailProvider(menuSlug));
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_groupTitle),
+        title: Text(
+          menuDetailAsync.maybeWhen(
+            data: (snapshot) =>
+                snapshot?.data.name ??
+                KebutuhanMuConfig.groupTitles[menuSlug] ??
+                'Kebutuhanmu',
+            orElse: () => KebutuhanMuConfig.groupTitles[menuSlug] ?? 'Kebutuhanmu',
+          ),
+        ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          for (var i = 0; i < KebutuhanMuConfig.sections.length; i++) ...[
-            if (i > 0) const SizedBox(height: 12),
-            _buildSectionTile(
-              context,
-              config: KebutuhanMuConfig.sections[i],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(kebutuhanMuMenuDetailProvider(menuSlug));
+          await ref.read(kebutuhanMuMenuDetailProvider(menuSlug).future);
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          children: [
+            menuDetailAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.only(bottom: 16),
+                child: LinearProgressIndicator(),
+              ),
+              error: (error, _) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  'Deskripsi menu belum dapat dimuat: $error',
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+              ),
+              data: (detail) {
+                final detailData = detail?.data;
+                final description =
+                    detailData?.description ?? _fallbackDescription(menuSlug);
+                if (description == null) {
+                  return const SizedBox.shrink();
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: KebutuhanMuMenuDescription(
+                    description: description,
+                  ),
+                );
+              },
+            ),
+            menuDetailAsync.when(
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (snapshot) {
+                final detail = snapshot?.data;
+                if (detail == null || detail.sections.isEmpty) {
+                  return const Text('Section belum tersedia.');
+                }
+
+                return Column(
+                  children: [
+                    if (snapshot?.isFromCache == true)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Konten tersimpan (offline).',
+                            style: TextStyle(
+                              color: Colors.amber.shade900,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    for (var i = 0; i < detail.sections.length; i++) ...[
+                      if (i > 0) const SizedBox(height: 12),
+                      _buildSectionTile(
+                        context,
+                        section: detail.sections[i],
+                      ),
+                    ],
+                  ],
+                );
+              },
             ),
           ],
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildSectionTile(
     BuildContext context, {
-    required KebutuhanMuSectionConfig config,
+    required KebutuhanMuSection section,
   }) {
-    final style = _sectionStyle(config.iconName);
-    final itemCount = KebutuhanMuMockData.itemsForSection(config.slug).length;
+    final style = _sectionStyle(section.slug);
+    final itemCount = section.items.length;
     final subtitle = itemCount > 0
         ? '$itemCount materi'
-        : config.subtitle;
+        : 'Materi akan ditambahkan.';
 
     return MenuTile(
       icon: style.icon,
-      title: config.title,
+      title: section.name,
       subtitle: subtitle,
       color: style.color,
-      onTap: () => context.push('/kebutuhan-mu/$menuSlug/${config.slug}'),
+      onTap: () => context.push('/kebutuhan-mu/$menuSlug/${section.slug}'),
     );
   }
 
-  _SectionTileStyle _sectionStyle(String iconName) {
-    switch (iconName) {
-      case 'deteksi':
+  _SectionTileStyle _sectionStyle(String sectionSlug) {
+    switch (sectionSlug) {
+      case KebutuhanMuConfig.deteksiDiniSlug:
         return _SectionTileStyle(
           icon: Icons.monitor_heart_outlined,
           color: const Color(0xFF0EA5E9),
         );
-      case 'upaya':
+      case KebutuhanMuConfig.upayaPencegahanSlug:
         return _SectionTileStyle(
           icon: Icons.health_and_safety_outlined,
           color: AppTheme.primary,
@@ -74,6 +155,18 @@ class KebutuhanMuMenuScreen extends StatelessWidget {
           icon: Icons.article_outlined,
           color: const Color(0xFF6366F1),
         );
+    }
+  }
+
+  String? _fallbackDescription(String slug) {
+    switch (slug) {
+      case 'remaja-putri':
+        return 'Hai Remaja Putri, Selamat Datang...\n\n'
+            'Remaja putri sebagai calon ibu yang menentukan kesehatan '
+            'generasi masa depan sangat penting lho melakukan deteksi dini '
+            'dan pencegahan stunting.';
+      default:
+        return null;
     }
   }
 }

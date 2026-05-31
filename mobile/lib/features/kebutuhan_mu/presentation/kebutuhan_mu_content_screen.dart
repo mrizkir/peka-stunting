@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../deteksi_dini/presentation/cek_imt_screen.dart';
 import '../../deteksi_dini/presentation/cek_lila_screen.dart';
 import '../../deteksi_dini/presentation/cek_risiko_anemia_screen.dart';
-import '../../mengenal_stunting/presentation/widgets/mengenal_stunting_body_html.dart';
 import '../data/kebutuhan_mu_repository.dart';
 import '../kebutuhan_mu_mock_data.dart';
 import '../models/kebutuhan_mu_models.dart';
+import 'widgets/kebutuhan_mu_menu_description.dart';
 
 typedef KebutuhanMuContentArgs = ({String menuSlug, String itemSlug});
 
@@ -202,7 +202,7 @@ class _ContentWithPostersState extends State<_ContentWithPosters> {
               ],
               if (hasBodyText) ...[
                 const SizedBox(height: 16),
-                MengenalStuntingBodyHtml(html: content.body),
+                KebutuhanMuMenuDescription(description: content.body!),
               ],
               const SizedBox(height: 24),
             ]),

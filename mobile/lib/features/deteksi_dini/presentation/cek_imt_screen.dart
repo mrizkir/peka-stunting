@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../kebutuhan_mu/kebutuhan_mu_config.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
+import '../../kebutuhan_mu/presentation/widgets/kebutuhan_mu_menu_description.dart';
+import '../data/bmi_screening_repository.dart';
 import '../domain/bmi_calculator.dart';
 
-class CekImtScreen extends StatefulWidget {
+const _kCekImtItemSlug = 'cek-imt';
+
+final cekImtContentProvider =
+    StreamProvider.family<KebutuhanMuContentSnapshot?, String>((ref, menuSlug) {
+  return ref.read(kebutuhanMuRepositoryProvider).watchContent(
+        menuSlug: menuSlug,
+        itemSlug: _kCekImtItemSlug,
+      );
+});
+
+class CekImtScreen extends ConsumerStatefulWidget {
   const CekImtScreen({
     super.key,
     required this.menuSlug,
@@ -14,18 +29,16 @@ class CekImtScreen extends StatefulWidget {
   final String menuSlug;
 
   @override
-  State<CekImtScreen> createState() => _CekImtScreenState();
+  ConsumerState<CekImtScreen> createState() => _CekImtScreenState();
 }
 
-class _CekImtScreenState extends State<CekImtScreen> {
+class _CekImtScreenState extends ConsumerState<CekImtScreen> {
   final _formKey = GlobalKey<FormState>();
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
 
   BmiResult? _result;
-
-  String get _groupLabel =>
-      KebutuhanMuConfig.groupTitles[widget.menuSlug] ?? 'Kebutuhanmu';
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -34,26 +47,89 @@ class _CekImtScreenState extends State<CekImtScreen> {
     super.dispose();
   }
 
-  void _calculate() {
+  Future<void> _calculate() async {
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
 
     final weight = double.parse(_weightController.text.replaceAll(',', '.'));
     final height = double.parse(_heightController.text.replaceAll(',', '.'));
+    final nextResult = BmiCalculator.calculate(
+      weightKg: weight,
+      heightCm: height,
+    );
+    if (nextResult == null) {
+      return;
+    }
 
     setState(() {
-      _result = BmiCalculator.calculate(
-        weightKg: weight,
-        heightCm: height,
-      );
+      _result = nextResult;
     });
+
+    final isLoggedIn = ref.read(authStateProvider).valueOrNull != null;
+    if (!isLoggedIn) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Hasil ditampilkan. Login untuk menyimpan riwayat IMT.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      await ref.read(bmiScreeningRepositoryProvider).submit(
+            menuSlug: widget.menuSlug,
+            weightKg: weight,
+            heightCm: height,
+          );
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Hasil IMT berhasil disimpan.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.displayMessage),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal menyimpan hasil IMT. Periksa koneksi lalu coba lagi.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   void _reset() {
     _weightController.clear();
     _heightController.clear();
-    setState(() => _result = null);
+    setState(() {
+      _result = null;
+      _isSaving = false;
+    });
   }
 
   @override
@@ -65,19 +141,8 @@ class _CekImtScreenState extends State<CekImtScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text(
-            _groupLabel,
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 14,
-            ),
-          ),
           const SizedBox(height: 4),
-          Text(
-            'Hitung Indeks Massa Tubuh (IMT) dari berat badan (kg) dan '
-            'tinggi badan (CM).',
-            style: TextStyle(color: Colors.grey.shade700, height: 1.4),
-          ),
+          _ImtIntroText(menuSlug: widget.menuSlug),
           const SizedBox(height: 20),
           Card(
             child: Padding(
@@ -146,8 +211,14 @@ class _CekImtScreenState extends State<CekImtScreen> {
                     ),
                     const SizedBox(height: 20),
                     FilledButton(
-                      onPressed: _calculate,
-                      child: const Text('Hitung IMT'),
+                      onPressed: _isSaving ? null : _calculate,
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Hitung IMT'),
                     ),
                     if (_result != null) ...[
                       const SizedBox(height: 12),
@@ -182,6 +253,91 @@ class _CekImtScreenState extends State<CekImtScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ImtIntroText extends ConsumerWidget {
+  const _ImtIntroText({required this.menuSlug});
+
+  final String menuSlug;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final introStyle = TextStyle(
+      color: Colors.grey.shade700,
+      height: 1.4,
+    );
+
+    final contentAsync = ref.watch(cekImtContentProvider(menuSlug));
+
+    Widget introFromSnapshot(KebutuhanMuContentSnapshot? snapshot) {
+      final content = snapshot?.content;
+      final excerpt = content?.excerpt?.trim();
+      final body = content?.body?.trim();
+      final hasExcerpt = excerpt != null && excerpt.isNotEmpty;
+      final hasBody = body != null && body.isNotEmpty;
+
+      if (!hasExcerpt && !hasBody) {
+        return const SizedBox.shrink();
+      }
+
+      return Card(
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (hasExcerpt)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                  child: Text(excerpt, style: introStyle),
+                ),
+              if (hasBody)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: KebutuhanMuMenuDescription(description: body),
+                ),
+              if (snapshot?.isFromCache == true)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    border: Border(
+                      top: BorderSide(color: Colors.amber.shade200),
+                    ),
+                  ),
+                  child: Text(
+                    'Konten tersimpan (offline).',
+                    style: TextStyle(
+                      color: Colors.amber.shade900,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return contentAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: introFromSnapshot,
     );
   }
 }

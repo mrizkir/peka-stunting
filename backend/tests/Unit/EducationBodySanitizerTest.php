@@ -68,4 +68,38 @@ class EducationBodySanitizerTest extends TestCase
 		$this->assertStringContainsString('text-align: right', $result);
 		$this->assertStringNotContainsString('align=', $result);
 	}
+
+	public function test_converts_span_inline_styles_to_semantic_tags(): void
+	{
+		$html = '<p><span style="font-weight: bold">Tebal</span> dan '
+			.'<span style="font-style: italic">miring</span></p>';
+
+		$result = $this->sanitizer->sanitize($html);
+
+		$this->assertStringContainsString('<strong>Tebal</strong>', $result);
+		$this->assertStringContainsString('<em>miring</em>', $result);
+		$this->assertStringNotContainsString('<span', $result);
+	}
+
+	public function test_converts_div_line_breaks_to_paragraphs(): void
+	{
+		$html = '<div>Baris satu</div><div>Baris dua</div>';
+
+		$result = $this->sanitizer->sanitize($html);
+
+		$this->assertStringContainsString('<p>Baris satu</p>', $result);
+		$this->assertStringContainsString('<p>Baris dua</p>', $result);
+		$this->assertStringNotContainsString('<div', $result);
+	}
+
+	public function test_keeps_br_inside_paragraph(): void
+	{
+		$html = '<p>Baris satu<br>Baris dua</p>';
+
+		$result = $this->sanitizer->sanitize($html);
+
+		$this->assertStringContainsString('<br>', $result);
+		$this->assertStringContainsString('Baris satu', $result);
+		$this->assertStringContainsString('Baris dua', $result);
+	}
 }
