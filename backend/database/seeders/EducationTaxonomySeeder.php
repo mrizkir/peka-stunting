@@ -62,6 +62,11 @@ class EducationTaxonomySeeder extends Seeder
           'status' => EducationContent::STATUS_DRAFT,
         ];
 
+        if ($slug === 'info-aplikasi') {
+          $attributes['title'] = 'Info Aplikasi';
+          $attributes['excerpt'] = 'Aplikasi kader untuk edukasi stunting.';
+        }
+
         if ($slug === 'cek-risiko-anemia') {
           $attributes['excerpt'] = 'Anemia pada remaja adalah kondisi ketika kadar hemoglobin (Hb) dalam darah rendah, sehingga tubuh kekurangan oksigen. Ini sering terjadi karena kekurangan zat besi, asupan gizi yang kurang, atau pola makan tidak seimbang. Distribusi oksigen ke jaringan terganggu mengakibatkan pertumbuhan tulang dan otot jadi tidak optimal sehingga resiko stunting meningkat.';
           $attributes['calculator_config'] = AnemiaScreeningDefaults::calculatorConfig();
@@ -71,6 +76,16 @@ class EducationTaxonomySeeder extends Seeder
           ['item_id' => $item->id],
           $attributes,
         );
+
+        if ($slug === 'info-aplikasi') {
+          $updates = [];
+          if (blank($content->excerpt)) {
+            $updates['excerpt'] = $attributes['excerpt'];
+          }
+          if ($updates !== []) {
+            $content->update($updates);
+          }
+        }
 
         if ($slug === 'cek-risiko-anemia') {
           $updates = [];
@@ -94,6 +109,14 @@ class EducationTaxonomySeeder extends Seeder
   private function taxonomy(): array
   {
     return [
+      [
+        'slug' => 'info-aplikasi',
+        'name' => 'Info Aplikasi',
+        'description' => 'Tentang aplikasi PEKA Stunting.',
+        'items' => [
+          ['name' => 'Info Aplikasi', 'slug' => 'info-aplikasi'],
+        ],
+      ],
       [
         'slug' => 'mengenal-stunting',
         'name' => 'Mengenal Stunting',

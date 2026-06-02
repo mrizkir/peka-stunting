@@ -43,8 +43,11 @@
             <a href="{{ route('anjuran-status-gizi.index') }}" class="{{ request()->routeIs('anjuran-status-gizi.*') ? 'nav-link-active' : 'nav-link' }}">
               Anjuran Status Gizi
             </a>
-            <a href="{{ route('settings.splash.edit') }}" class="{{ request()->routeIs('settings.*') ? 'nav-link-active' : 'nav-link' }}">
+            <a href="{{ route('settings.splash.edit') }}" class="{{ request()->routeIs('settings.splash.*') ? 'nav-link-active' : 'nav-link' }}">
               Splash screen
+            </a>
+            <a href="{{ route('settings.app-info.edit') }}" class="{{ request()->routeIs('settings.app-info.*') ? 'nav-link-active' : 'nav-link' }}">
+              Info aplikasi
             </a>
             <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'nav-link-active' : 'nav-link' }}">
               Kelola user

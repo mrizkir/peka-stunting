@@ -10,6 +10,7 @@ class EducationMenuDescriptions
 	public static function defaults(): array
 	{
 		return [
+			'info-aplikasi' => 'Tentang aplikasi PEKA Stunting.',
 			'mengenal-stunting' => 'Konten dasar untuk memahami stunting dan dampaknya.',
 			'remaja-putri' => implode("\n\n", [
 				implode("\n", [

@@ -28,7 +28,7 @@ class EducationApiTest extends TestCase
 		$response
 			->assertOk()
 			->assertJsonPath('success', true)
-			->assertJsonCount(6, 'data');
+			->assertJsonCount(7, 'data');
 	}
 
 	public function test_menu_show_excludes_unpublished_contents(): void

@@ -7,24 +7,24 @@ use App\Http\Requests\UpdateEducationMenuRequest;
 use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
+use App\Services\Education\EducationContentUpdateService;
 use App\Support\AnemiaScreeningDefaults;
-use App\Support\EducationVideoUrl;
-use App\Support\CalculatorConfigNormalizer;
+use App\Support\AppInfoContentConfig;
 use App\Support\EducationBodySanitizer;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class EducationController extends Controller
 {
 	public function __construct(
 		private readonly EducationBodySanitizer $bodySanitizer,
+		private readonly EducationContentUpdateService $contentUpdater,
 	) {}
 
 	public function index(): View
 	{
 		$menus = EducationMenu::query()
+			->where('slug', '!=', AppInfoContentConfig::MENU_SLUG)
 			->withCount([
 				'items as leaf_items_count' => fn ($query) => $query->whereHas('content'),
 			])
@@ -34,8 +34,12 @@ class EducationController extends Controller
 		return view('education.menus', compact('menus'));
 	}
 
-	public function showMenu(EducationMenu $menu): View
+	public function showMenu(EducationMenu $menu): View|RedirectResponse
 	{
+		if ($menu->slug === AppInfoContentConfig::MENU_SLUG) {
+			return redirect()->route('settings.app-info.edit');
+		}
+
 		$rootItems = $menu->rootItems()
 			->with(['children.content', 'content'])
 			->get();
@@ -70,8 +74,12 @@ class EducationController extends Controller
 			->with('success', 'Deskripsi menu berhasil disimpan.');
 	}
 
-	public function showContent(EducationMenu $menu, string $item): View
+	public function showContent(EducationMenu $menu, string $item): View|RedirectResponse
 	{
+		if ($menu->slug === AppInfoContentConfig::MENU_SLUG) {
+			return redirect()->route('settings.app-info.edit');
+		}
+
 		$educationItem = $this->resolveContentItem($menu, $item);
 		$educationContent = $educationItem->content;
 
@@ -88,57 +96,27 @@ class EducationController extends Controller
 		EducationMenu $menu,
 		string $item,
 	): RedirectResponse {
+		if ($menu->slug === AppInfoContentConfig::MENU_SLUG) {
+			return redirect()->route('settings.app-info.edit');
+		}
+
 		$educationItem = $this->resolveContentItem($menu, $item);
 		$educationContent = $educationItem->content;
 
 		$validated = $request->validated();
-		$status = $validated['status'];
 
-		$publishedAt = $educationContent->published_at;
-		if ($status === EducationContent::STATUS_PUBLISHED && $publishedAt === null) {
-			$publishedAt = now();
-		} elseif ($status === EducationContent::STATUS_DRAFT) {
-			$publishedAt = null;
-		}
-
-		$educationContent->update([
-			'title' => $validated['title'],
-			'excerpt' => $validated['excerpt'] ?? null,
-			'video_url' => EducationVideoUrl::normalize($validated['video_url'] ?? null),
-			'body' => $this->bodySanitizer->sanitize($validated['body'] ?? null),
-			'calculator_config' => $educationItem->hasScreeningQuestionnaire()
-				? CalculatorConfigNormalizer::normalize(
-					$validated['calculator_config'] ?? null,
-				)
-				: $educationContent->calculator_config,
-			'status' => $status,
-			'published_at' => $publishedAt,
-			'updated_by' => $request->user()->id,
-		]);
-
-		if ($request->boolean('remove_poster_images')) {
-			$educationContent->clearMediaCollection(EducationContent::MEDIA_COLLECTION_GALLERY);
-		}
-
-		$removeGalleryImageIds = collect($validated['remove_gallery_image_ids'] ?? [])
-			->map(fn ($id) => (int) $id)
-			->filter(fn ($id) => $id > 0)
-			->all();
-		if ($removeGalleryImageIds !== []) {
-			$educationContent
-				->posterGallery()
-				->whereIn('id', $removeGalleryImageIds)
-				->each
-				->delete();
-		}
-
-		$galleryFiles = $request->file('poster_images', []);
-		foreach ($galleryFiles as $galleryFile) {
-			$educationContent
-				->addMedia($galleryFile)
-				->usingFileName($this->normalizedUploadFileName($galleryFile))
-				->toMediaCollection(EducationContent::MEDIA_COLLECTION_GALLERY);
-		}
+		$this->contentUpdater->update(
+			educationItem: $educationItem,
+			educationContent: $educationContent,
+			validated: $validated,
+			updatedByUserId: $request->user()->id,
+			posterFiles: $request->file('poster_images', []),
+			removeAllPosters: $request->boolean('remove_poster_images'),
+			removeGalleryImageIds: collect($validated['remove_gallery_image_ids'] ?? [])
+				->map(fn ($id) => (int) $id)
+				->filter(fn ($id) => $id > 0)
+				->all(),
+		);
 
 		return redirect()
 			->route('education.contents.show', [
@@ -234,32 +212,5 @@ class EducationController extends Controller
 			'type' => $item->isCalculator() ? 'Kalkulator' : 'Konten',
 			'status' => ucfirst($item->content?->status ?? EducationContent::STATUS_DRAFT),
 		];
-	}
-
-	private function normalizedUploadFileName(?UploadedFile $file): string
-	{
-		$originalName = pathinfo($file?->getClientOriginalName() ?? '', PATHINFO_FILENAME);
-		$baseName = Str::of($originalName)
-			->ascii()
-			->lower()
-			->replaceMatches('/[^a-z0-9]+/', '_')
-			->trim('_')
-			->value();
-
-		if ($baseName === '') {
-			$baseName = 'file';
-		}
-
-		$extension = Str::of($file?->getClientOriginalExtension() ?: ($file?->extension() ?? 'jpg'))
-			->ascii()
-			->lower()
-			->replaceMatches('/[^a-z0-9]+/', '')
-			->value();
-
-		if ($extension === '') {
-			$extension = 'jpg';
-		}
-
-		return $baseName.'.'.$extension;
 	}
 }

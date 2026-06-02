@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
+use App\Support\AppInfoContentConfig;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -12,6 +13,7 @@ class DashboardController extends Controller
 	public function index(): View
 	{
 		$menus = EducationMenu::query()
+			->where('slug', '!=', AppInfoContentConfig::MENU_SLUG)
 			->withCount([
 				'items as leaf_items_count' => fn ($query) => $query->whereHas('content'),
 			])
@@ -30,16 +32,23 @@ class DashboardController extends Controller
 			->latest('updated_at')
 			->limit(5)
 			->get()
-			->map(fn (EducationContent $content) => [
-				'title' => $content->title,
-				'menu' => $content->item->menu->name,
-				'status' => ucfirst($content->status),
-				'updated_at' => $content->updated_at?->diffForHumans() ?? '-',
-				'url' => route('education.contents.show', [
-					'menu' => $content->item->menu->slug,
-					'item' => $content->item->slug,
-				]),
-			]);
+			->map(function (EducationContent $content) {
+				$menuSlug = $content->item->menu->slug;
+				$itemSlug = $content->item->slug;
+
+				return [
+					'title' => $content->title,
+					'menu' => $content->item->menu->name,
+					'status' => ucfirst($content->status),
+					'updated_at' => $content->updated_at?->diffForHumans() ?? '-',
+					'url' => $menuSlug === AppInfoContentConfig::MENU_SLUG
+						? route('settings.app-info.edit')
+						: route('education.contents.show', [
+							'menu' => $menuSlug,
+							'item' => $itemSlug,
+						]),
+				];
+			});
 
 		$publishedCount = EducationContent::query()->published()->count();
 		$calculatorCount = EducationItem::query()
