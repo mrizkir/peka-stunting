@@ -2,7 +2,10 @@ class KebutuhanMuConfig {
   KebutuhanMuConfig._();
 
   /// Menu edukasi yang bukan bagian "Pilih Kebutuhanmu".
-  static const excludedMenuSlug = 'mengenal-stunting';
+  static const excludedMenuSlugs = {
+    'mengenal-stunting',
+    'info-aplikasi',
+  };
 
   static const deteksiDiniSlug = 'deteksi-dini';
   static const upayaPencegahanSlug = 'upaya-pencegahan-stunting';

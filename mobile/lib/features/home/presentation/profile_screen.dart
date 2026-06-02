@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/storage/education_content_cache.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -13,7 +14,66 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  final _cache = EducationContentCache();
   bool _isDeleting = false;
+  bool _clearing = false;
+
+  Future<void> _clearCache() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Clear Cache'),
+          content: const Text(
+            'Cache konten dan taksonomi akan dihapus. '
+            'Aplikasi akan mengambil ulang data dari server.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    setState(() => _clearing = true);
+    try {
+      await _cache.clearAll();
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cache berhasil dihapus.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal menghapus cache. Coba lagi.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _clearing = false);
+      }
+    }
+  }
 
   Future<void> _confirmDeleteAccount() async {
     final confirmed = await showDialog<bool>(
@@ -114,6 +174,45 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             label: 'Role',
                             value: user.roles.join(', '),
                           ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Penyimpanan',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Hapus cache konten dan taksonomi jika data tampak '
+                          'tidak terbaru.',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            height: 1.4,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          onPressed: _clearing ? null : _clearCache,
+                          icon: _clearing
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.cleaning_services_outlined),
+                          label: Text(_clearing ? 'Menghapus...' : 'Clear Cache'),
+                        ),
                       ],
                     ),
                   ),

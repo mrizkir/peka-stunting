@@ -45,7 +45,7 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           HomeColoredMenuCard(
-            icon: Icons.checklist_outlined,
+            imageAsset: 'assets/images/icon_kebutuhan_mu.png',
             title: 'Kebutuhanmu',
             subtitle: 'Pilih kelompok sasaran sesuai kebutuhan Anda.',
             backgroundColor: AppTheme.kebutuhanMuCardBackground,

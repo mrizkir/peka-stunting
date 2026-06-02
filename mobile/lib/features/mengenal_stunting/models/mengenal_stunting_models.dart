@@ -60,6 +60,8 @@ class MengenalStuntingContent {
     required this.body,
     this.videoUrl,
     this.featuredImageUrl,
+    this.secondaryImageUrl,
+    required this.posterImages,
   });
 
   final String title;
@@ -67,9 +69,26 @@ class MengenalStuntingContent {
   final String? body;
   final String? videoUrl;
   final String? featuredImageUrl;
+  final String? secondaryImageUrl;
+  final List<String> posterImages;
 
   factory MengenalStuntingContent.fromJson(Map<String, dynamic> json) {
+    final featuredImageUrl = json['featured_image_url'] as String?;
+    final secondaryImageUrl = json['secondary_image_url'] as String?;
     final videoUrl = json['video_url'] as String?;
+    final posterImages = (json['poster_images'] as List<dynamic>? ?? [])
+        .map((e) => e.toString())
+        .where((url) => url.trim().isNotEmpty)
+        .toList();
+
+    if (posterImages.isEmpty) {
+      if (featuredImageUrl != null && featuredImageUrl.trim().isNotEmpty) {
+        posterImages.add(featuredImageUrl);
+      }
+      if (secondaryImageUrl != null && secondaryImageUrl.trim().isNotEmpty) {
+        posterImages.add(secondaryImageUrl);
+      }
+    }
 
     return MengenalStuntingContent(
       title: json['title'] as String,
@@ -78,7 +97,9 @@ class MengenalStuntingContent {
       videoUrl: videoUrl != null && videoUrl.trim().isNotEmpty
           ? videoUrl.trim()
           : null,
-      featuredImageUrl: json['featured_image_url'] as String?,
+      featuredImageUrl: featuredImageUrl,
+      secondaryImageUrl: secondaryImageUrl,
+      posterImages: posterImages,
     );
   }
 }

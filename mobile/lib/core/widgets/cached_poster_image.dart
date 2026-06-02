@@ -87,31 +87,38 @@ class _CachedPosterImageState extends ConsumerState<CachedPosterImage> {
     }
 
     if (_localPath != null) {
-      return Image.file(
+      return _buildImage(Image.file(
         File(_localPath!),
         fit: widget.fit,
-        width: widget.fit == BoxFit.cover ? double.infinity : null,
-        height: widget.fit == BoxFit.cover ? double.infinity : null,
         gaplessPlayback: widget.gaplessPlayback,
         errorBuilder: (context, error, stackTrace) {
           return widget.errorBuilder?.call(context, error, stackTrace) ??
               _defaultError(context, error);
         },
-      );
+      ));
     }
 
-    return Image.network(
+    return _buildImage(Image.network(
       widget.url,
       fit: widget.fit,
-      width: widget.fit == BoxFit.cover ? double.infinity : null,
-      height: widget.fit == BoxFit.cover ? double.infinity : null,
       gaplessPlayback: widget.gaplessPlayback,
       loadingBuilder: widget.loadingBuilder,
       errorBuilder: (context, error, stackTrace) {
         return widget.errorBuilder?.call(context, error, stackTrace) ??
             _defaultError(context, error);
       },
-    );
+    ));
+  }
+
+  Widget _buildImage(Widget image) {
+    switch (widget.fit) {
+      case BoxFit.cover:
+        return SizedBox.expand(child: image);
+      case BoxFit.fitWidth:
+        return SizedBox(width: double.infinity, child: image);
+      default:
+        return image;
+    }
   }
 
   Widget _defaultError(BuildContext context, Object error) {

@@ -66,7 +66,7 @@ class KebutuhanMuRepository {
       cachedSnapshot = KebutuhanMuTaxonomySnapshot(
         data: cached.items
             .map(KebutuhanMuMenuSummary.fromJson)
-            .where((menu) => menu.slug != KebutuhanMuConfig.excludedMenuSlug)
+            .where((menu) => !KebutuhanMuConfig.excludedMenuSlugs.contains(menu.slug))
             .toList(),
         isFromCache: true,
         fetchedAt: cached.fetchedAt,
@@ -211,7 +211,7 @@ class KebutuhanMuRepository {
       await _cache.upsertMenus(normalized);
       return normalized
           .map(KebutuhanMuMenuSummary.fromJson)
-          .where((menu) => menu.slug != KebutuhanMuConfig.excludedMenuSlug)
+          .where((menu) => !KebutuhanMuConfig.excludedMenuSlugs.contains(menu.slug))
           .toList();
     } on DioException catch (error) {
       rethrowApi(error);

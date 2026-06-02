@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/education_poster_viewer.dart';
 import '../../../core/widgets/education_video_player.dart';
 import '../data/mengenal_stunting_repository.dart';
 import '../models/mengenal_stunting_models.dart';
@@ -60,51 +61,82 @@ class MengenalStuntingContentScreen extends ConsumerWidget {
               Text(error.toString()),
               const SizedBox(height: 16),
               const Text(
-                'Tarik ke bawah atau ketuk ikon refresh untuk coba lagi.',
+                'Pastikan konten sudah dipublikasikan di CMS '
+                '(Kelola edukasi) dan URL API benar. Tarik ke bawah '
+                'atau ketuk refresh untuk coba lagi.',
               ),
             ],
           ),
-          data: (content) => ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
+          data: (content) {
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return _ContentWithPosters(
+                  content: content,
+                  posterHeight: constraints.maxHeight,
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ContentWithPosters extends StatelessWidget {
+  const _ContentWithPosters({
+    required this.content,
+    required this.posterHeight,
+  });
+
+  final MengenalStuntingContent content;
+  final double posterHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasVideo = content.videoUrl != null;
+    final hasExcerpt = content.excerpt?.trim().isNotEmpty ?? false;
+    final hasBodyText = content.body?.trim().isNotEmpty ?? false;
+
+    return EducationPosterContentLayout(
+      posterUrls: content.posterImages,
+      posterHeight: posterHeight,
+      emptyState: Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: Card(
+          child: Padding(
             padding: const EdgeInsets.all(20),
-            children: [
-              if (content.featuredImageUrl != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    content.featuredImageUrl!,
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              if (content.featuredImageUrl != null) const SizedBox(height: 16),
-              if (content.videoUrl != null) ...[
-                EducationVideoPlayer(videoUrl: content.videoUrl!),
-                const SizedBox(height: 16),
-              ],
-              Text(
-                content.title,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+            child: Text(
+              'Belum ada poster atau teks. Unggah galeri poster '
+              'di halaman CMS untuk materi ini.',
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                height: 1.5,
               ),
-              if (content.excerpt != null && content.excerpt!.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Text(
-                  content.excerpt!,
-                  style: TextStyle(
-                    color: Colors.grey.shade700,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              MengenalStuntingBodyHtml(html: content.body),
-            ],
+            ),
           ),
         ),
       ),
+      contentChildren: [
+        if (hasVideo) ...[
+          EducationVideoPlayer(videoUrl: content.videoUrl!),
+          const SizedBox(height: 16),
+        ],
+        if (hasExcerpt) ...[
+          const SizedBox(height: 12),
+          Text(
+            content.excerpt!,
+            style: TextStyle(
+              color: Colors.grey.shade700,
+              fontSize: 16,
+            ),
+          ),
+        ],
+        if (hasBodyText) ...[
+          const SizedBox(height: 16),
+          MengenalStuntingBodyHtml(html: content.body!),
+        ],
+      ],
     );
   }
 }
