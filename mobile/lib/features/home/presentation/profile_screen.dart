@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/storage/education_content_cache.dart';
+import '../../../core/utils/profile_image_picker.dart';
 import '../../../core/widgets/profile_avatar.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -69,6 +71,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       return;
     }
 
+    // Tunggu bottom sheet selesai ditutup sebelum membuka picker native.
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    if (!mounted) {
+      return;
+    }
+
     switch (action) {
       case 'gallery':
         await _pickAndUploadPhoto(ImageSource.gallery);
@@ -80,12 +88,48 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _pickAndUploadPhoto(ImageSource source) async {
-    final picked = await ImagePicker().pickImage(
-      source: source,
-      maxWidth: 1024,
-      maxHeight: 1024,
-      imageQuality: 85,
-    );
+    XFile? picked;
+    try {
+      picked = source == ImageSource.gallery
+          ? await ProfileImagePicker.pickFromGallery()
+          : await ProfileImagePicker.pickFromCamera();
+    } on GalleryPermissionDeniedException {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Izin galeri diperlukan untuk memilih foto profil.',
+          ),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Pengaturan',
+            onPressed: ProfileImagePicker.openSettings,
+          ),
+        ),
+      );
+      return;
+    } on PlatformException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(ProfileImagePicker.messageForError(error, source)),
+          behavior: SnackBarBehavior.floating,
+          action: error.code == 'photo_access_denied' ||
+                  error.code == 'no_valid_image_uri' ||
+                  error.code == 'missing_valid_image_uri'
+              ? SnackBarAction(
+                  label: 'Pengaturan',
+                  onPressed: ProfileImagePicker.openSettings,
+                )
+              : null,
+        ),
+      );
+      return;
+    }
 
     if (picked == null || !mounted) {
       return;

@@ -20,6 +20,9 @@ class AppShell extends StatelessWidget {
         final navTheme = NavigationBarTheme.of(context);
         final indicatorColor =
             navTheme.indicatorColor ?? colorScheme.secondaryContainer;
+        final location = router.state.matchedLocation;
+        final isHomeSelected = location == '/';
+        final isProfileSelected = location == '/profile';
 
         return PopScope(
           canPop: navigationShell.currentIndex == 0,
@@ -40,18 +43,15 @@ class AppShell extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _NavIconButton(
-                      selected: navigationShell.currentIndex == 0,
+                      selected: isHomeSelected,
                       indicatorColor: indicatorColor,
                       icon: Icons.home_outlined,
                       selectedIcon: Icons.home,
                       tooltip: 'Home',
-                      onTap: () => navigationShell.goBranch(
-                        0,
-                        initialLocation: navigationShell.currentIndex == 0,
-                      ),
+                      onTap: () => navigationShell.goBranch(0, initialLocation: true),
                     ),
                     _NavIconButton(
-                      selected: navigationShell.currentIndex == 1,
+                      selected: isProfileSelected,
                       indicatorColor: indicatorColor,
                       icon: Icons.person_outline,
                       selectedIcon: Icons.person,
