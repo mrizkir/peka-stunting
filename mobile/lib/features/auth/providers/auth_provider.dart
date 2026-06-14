@@ -70,4 +70,29 @@ class AuthNotifier extends AsyncNotifier<UserModel?> {
     await ref.read(authRepositoryProvider).deleteAccount();
     state = const AsyncData(null);
   }
+
+  Future<void> uploadProfilePhoto(String filePath) async {
+    final user = await ref.read(authRepositoryProvider).uploadProfilePhoto(filePath);
+    state = AsyncData(user);
+  }
+
+  Future<void> deleteProfilePhoto() async {
+    final user = await ref.read(authRepositoryProvider).deleteProfilePhoto();
+    state = AsyncData(user);
+  }
+
+  /// Muat ulang profil dari server tanpa menampilkan loading penuh.
+  Future<void> refreshUser() async {
+    final token = await ref.read(authRepositoryProvider).currentToken();
+    if (token == null || token.isEmpty) {
+      return;
+    }
+
+    try {
+      final user = await ref.read(authRepositoryProvider).me();
+      state = AsyncData(user);
+    } catch (_) {
+      // Pertahankan data lama jika refresh gagal (offline, dll).
+    }
+  }
 }

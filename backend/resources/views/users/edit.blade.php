@@ -8,6 +8,7 @@
 		<form
 			action="{{ route('users.update', $user) }}"
 			method="POST"
+			enctype="multipart/form-data"
 			x-ref="userForm"
 			x-data="window.userForm(
 				{
@@ -36,7 +37,11 @@
 		>
 			@csrf
 			@method('PUT')
-			@include('users._form', ['submitLabel' => 'Perbarui user', 'user' => $user])
+			@include('users._form', [
+				'submitLabel' => 'Perbarui user',
+				'user' => $user,
+				'profilePhotoUrl' => $profilePhotoUrl ?? null,
+			])
 		</form>
 	</x-ui.card>
 </x-layouts.app>

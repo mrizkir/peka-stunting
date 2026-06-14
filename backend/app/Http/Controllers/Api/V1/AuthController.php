@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
+use App\Http\Requests\Api\UploadProfilePhotoRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
+use App\Services\UserProfileService;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,6 +17,10 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+	public function __construct(
+		private readonly UserProfileService $userProfile,
+	) {}
+
 	public function register(RegisterRequest $request): JsonResponse
 	{
 		$validated = $request->validated();
@@ -74,6 +80,22 @@ class AuthController extends Controller
 	public function me(Request $request): JsonResponse
 	{
 		return ApiResponse::success((new UserResource($request->user()))->resolve($request));
+	}
+
+	public function updateProfilePhoto(UploadProfilePhotoRequest $request): JsonResponse
+	{
+		$user = $request->user();
+		$this->userProfile->updateProfilePhoto($user, $request->file('profile_photo'));
+
+		return ApiResponse::success((new UserResource($user->fresh()))->resolve($request));
+	}
+
+	public function destroyProfilePhoto(Request $request): JsonResponse
+	{
+		$user = $request->user();
+		$this->userProfile->deleteProfilePhoto($user);
+
+		return ApiResponse::success((new UserResource($user->fresh()))->resolve($request));
 	}
 
 	public function destroyAccount(Request $request): JsonResponse

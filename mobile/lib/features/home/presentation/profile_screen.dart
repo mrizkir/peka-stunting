@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/storage/education_content_cache.dart';
+import '../../../core/widgets/profile_avatar.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -17,6 +19,158 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _cache = EducationContentCache();
   bool _isDeleting = false;
   bool _clearing = false;
+  bool _uploadingPhoto = false;
+
+  Future<void> _showPhotoOptions() async {
+    final user = ref.read(authStateProvider).valueOrNull;
+    if (user == null || _uploadingPhoto) {
+      return;
+    }
+
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Pilih dari galeri'),
+                onTap: () => Navigator.of(context).pop('gallery'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: const Text('Ambil foto'),
+                onTap: () => Navigator.of(context).pop('camera'),
+              ),
+              if (user.profilePhotoUrl != null)
+                ListTile(
+                  leading: Icon(
+                    Icons.delete_outline,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  title: Text(
+                    'Hapus foto profil',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  onTap: () => Navigator.of(context).pop('delete'),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted || action == null) {
+      return;
+    }
+
+    switch (action) {
+      case 'gallery':
+        await _pickAndUploadPhoto(ImageSource.gallery);
+      case 'camera':
+        await _pickAndUploadPhoto(ImageSource.camera);
+      case 'delete':
+        await _deletePhoto();
+    }
+  }
+
+  Future<void> _pickAndUploadPhoto(ImageSource source) async {
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+
+    if (picked == null || !mounted) {
+      return;
+    }
+
+    setState(() => _uploadingPhoto = true);
+    try {
+      await ref
+          .read(authStateProvider.notifier)
+          .uploadProfilePhoto(picked.path);
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Foto profil berhasil diperbarui.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.displayMessage),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal mengunggah foto profil. Coba lagi.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _uploadingPhoto = false);
+      }
+    }
+  }
+
+  Future<void> _deletePhoto() async {
+    setState(() => _uploadingPhoto = true);
+    try {
+      await ref.read(authStateProvider.notifier).deleteProfilePhoto();
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Foto profil dihapus.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.displayMessage),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal menghapus foto profil. Coba lagi.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _uploadingPhoto = false);
+      }
+    }
+  }
 
   Future<void> _clearCache() async {
     final confirmed = await showDialog<bool>(
@@ -146,24 +300,74 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Kembali',
+          onPressed: () => StatefulNavigationShell.of(context).goBranch(
+            0,
+            initialLocation: false,
+          ),
+        ),
         title: const Text('Profil'),
       ),
       body: user == null
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                Card(
+          : RefreshIndicator(
+              onRefresh: () =>
+                  ref.read(authStateProvider.notifier).refreshUser(),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                children: [
+                  Card(
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          user.name,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            ProfileAvatar(
+                              name: user.name,
+                              profilePhotoUrl: user.profilePhotoUrl,
+                              radius: 48,
+                              showEditBadge: !_uploadingPhoto,
+                              onTap: _uploadingPhoto ? null : _showPhotoOptions,
+                            ),
+                            if (_uploadingPhoto)
+                              const SizedBox(
+                                width: 96,
+                                height: 96,
+                                child: CircularProgressIndicator(strokeWidth: 3),
                               ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Ketuk foto untuk mengganti',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tarik ke bawah untuk memperbarui profil',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            user.name,
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
                         ),
                         const SizedBox(height: 16),
                         _InfoRow(label: 'Email', value: user.email),
@@ -260,6 +464,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ],
               ],
+            ),
             ),
     );
   }

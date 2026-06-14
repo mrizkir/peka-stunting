@@ -171,4 +171,63 @@ class AuthApiTest extends TestCase
 	{
 		$this->deleteJson('/api/v1/auth/account')->assertUnauthorized();
 	}
+
+	public function test_user_can_upload_profile_photo(): void
+	{
+		$user = User::factory()->create();
+		$user->assignRole('user');
+		$token = $user->createToken('mobile')->plainTextToken;
+		$file = \Illuminate\Http\UploadedFile::fake()->image('avatar.jpg', 400, 400);
+
+		$response = $this
+			->withToken($token)
+			->post('/api/v1/auth/profile-photo', [
+				'profile_photo' => $file,
+			], [
+				'Accept' => 'application/json',
+			]);
+
+		$response
+			->assertOk()
+			->assertJsonPath('success', true)
+			->assertJsonPath('data.id', $user->id);
+
+		$this->assertNotEmpty($response->json('data.profile_photo_url'));
+		$this->assertNotNull($user->fresh()->profilePhotoMedia());
+	}
+
+	public function test_user_can_delete_profile_photo(): void
+	{
+		$user = User::factory()->create();
+		$user->assignRole('user');
+		$user
+			->addMedia(\Illuminate\Http\UploadedFile::fake()->image('avatar.jpg'))
+			->toMediaCollection(User::MEDIA_COLLECTION_PROFILE_PHOTO);
+		Sanctum::actingAs($user);
+
+		$this->deleteJson('/api/v1/auth/profile-photo')
+			->assertOk()
+			->assertJsonPath('success', true)
+			->assertJsonPath('data.profile_photo_url', null);
+
+		$this->assertNull($user->fresh()->profilePhotoMedia());
+	}
+
+	public function test_me_returns_profile_photo_url(): void
+	{
+		$user = User::factory()->create();
+		$user->assignRole('user');
+		$user
+			->addMedia(\Illuminate\Http\UploadedFile::fake()->image('avatar.jpg'))
+			->toMediaCollection(User::MEDIA_COLLECTION_PROFILE_PHOTO);
+		Sanctum::actingAs($user);
+
+		$media = $user->fresh()->profilePhotoMedia();
+		$expectedUrl = $media?->getFullUrl().'?v='.$media->updated_at->getTimestamp();
+
+		$this->getJson('/api/v1/auth/me')
+			->assertOk()
+			->assertJsonPath('success', true)
+			->assertJsonPath('data.profile_photo_url', $expectedUrl);
+	}
 }

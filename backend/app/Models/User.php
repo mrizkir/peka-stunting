@@ -9,12 +9,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasMedia
 {
 	/** @use HasFactory<UserFactory> */
-	use HasApiTokens, HasFactory, HasRoles, Notifiable;
+	use HasApiTokens, HasFactory, HasRoles, InteractsWithMedia, Notifiable;
+
+	public const MEDIA_COLLECTION_PROFILE_PHOTO = 'profile-photo';
 
 	/**
 	 * The attributes that are mass assignable.
@@ -57,5 +62,34 @@ class User extends Authenticatable
 	public function updatedEducationContents(): HasMany
 	{
 		return $this->hasMany(EducationContent::class, 'updated_by');
+	}
+
+	public function registerMediaCollections(): void
+	{
+		$this->addMediaCollection(self::MEDIA_COLLECTION_PROFILE_PHOTO)
+			->singleFile()
+			->useDisk('public')
+			->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+	}
+
+	public function profilePhotoMedia(): ?Media
+	{
+		return $this->getFirstMedia(self::MEDIA_COLLECTION_PROFILE_PHOTO);
+	}
+
+	public function profilePhotoUrl(): ?string
+	{
+		$media = $this->profilePhotoMedia();
+		if ($media === null) {
+			return null;
+		}
+
+		$url = $media->getFullUrl();
+
+		if ($media->updated_at !== null) {
+			$url .= '?v='.$media->updated_at->getTimestamp();
+		}
+
+		return $url;
 	}
 }

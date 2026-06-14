@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Support\UploadSizeLimit;
 
 class UpdateUserRequest extends FormRequest
 {
@@ -26,6 +27,8 @@ class UpdateUserRequest extends FormRequest
 			'gender' => ['nullable', 'in:L,P'],
 			'birth_date' => ['nullable', 'date', 'before_or_equal:today'],
 			'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+			'profile_photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:'.UploadSizeLimit::POSTER_IMAGE_MAX_KILOBYTES],
+			'remove_profile_photo' => ['nullable', 'boolean'],
 		];
 	}
 
@@ -45,6 +48,9 @@ class UpdateUserRequest extends FormRequest
 			'birth_date.before_or_equal' => 'Tanggal lahir tidak boleh lebih dari hari ini.',
 			'password.min' => 'Password minimal :min karakter.',
 			'password.confirmed' => 'Konfirmasi password tidak cocok.',
+			'profile_photo.image' => 'Foto profil harus berupa gambar.',
+			'profile_photo.mimes' => 'Format foto profil harus JPG, PNG, atau WebP.',
+			'profile_photo.max' => 'Ukuran foto profil maksimal '.UploadSizeLimit::posterImageMaxLabel().'.',
 		];
 	}
 

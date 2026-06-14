@@ -45,6 +45,8 @@ class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
         _youtubeController = YoutubePlayerController.fromVideoId(
           videoId: videoId,
           params: const YoutubePlayerParams(
+            origin: 'https://www.youtube-nocookie.com',
+            privacyEnhancedMode: true,
             showControls: true,
             showFullscreenButton: true,
             strictRelatedVideos: true,
@@ -72,6 +74,26 @@ class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
       case EducationVideoKind.external:
         _errorMessage = null;
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _pauseIfNotVisible();
+  }
+
+  void _pauseIfNotVisible() {
+    final isVisible = TickerMode.of(context) &&
+        (ModalRoute.of(context)?.isCurrent ?? true);
+
+    if (!isVisible) {
+      _pausePlayback();
+    }
+  }
+
+  void _pausePlayback() {
+    _youtubeController?.pauseVideo();
+    _fileController?.pause();
   }
 
   @override
@@ -105,13 +127,6 @@ class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: ColoredBox(
-              color: Colors.black,
-              child: _buildPlayerBody(context),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -134,6 +149,13 @@ class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
                     label: const Text('Buka'),
                   ),
               ],
+            ),
+          ),
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: ColoredBox(
+              color: Colors.black,
+              child: _buildPlayerBody(context),
             ),
           ),
         ],

@@ -112,4 +112,29 @@ class AuthRepository {
   }
 
   Future<String?> currentToken() => _tokenStorage.readToken();
+
+  Future<UserModel> uploadProfilePhoto(String filePath) async {
+    try {
+      final response = await _dio.post(
+        '/auth/profile-photo',
+        data: FormData.fromMap({
+          'profile_photo': await MultipartFile.fromFile(filePath),
+        }),
+      );
+      final data = parseApiData(response.data);
+      return UserModel.fromJson(data);
+    } on DioException catch (error) {
+      rethrowApi(error);
+    }
+  }
+
+  Future<UserModel> deleteProfilePhoto() async {
+    try {
+      final response = await _dio.delete('/auth/profile-photo');
+      final data = parseApiData(response.data);
+      return UserModel.fromJson(data);
+    } on DioException catch (error) {
+      rethrowApi(error);
+    }
+  }
 }

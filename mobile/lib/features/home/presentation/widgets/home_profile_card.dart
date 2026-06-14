@@ -1,27 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/profile_avatar.dart';
 
 class HomeProfileCard extends StatelessWidget {
   const HomeProfileCard({
     super.key,
     required this.name,
     required this.rolesLabel,
+    this.profilePhotoUrl,
   });
 
   final String name;
   final String rolesLabel;
-
-  String get _initials {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) {
-      return 'P';
-    }
-    if (parts.length == 1) {
-      return parts.first[0].toUpperCase();
-    }
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-  }
+  final String? profilePhotoUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -34,17 +26,10 @@ class HomeProfileCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
+          ProfileAvatar(
+            name: name,
+            profilePhotoUrl: profilePhotoUrl,
             radius: 28,
-            backgroundColor: Colors.white,
-            child: Text(
-              _initials,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
-              ),
-            ),
           ),
           const SizedBox(width: 16),
           Expanded(

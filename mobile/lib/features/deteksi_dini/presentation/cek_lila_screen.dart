@@ -170,9 +170,15 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
       appBar: AppBar(
         title: const Text('Cek LILA'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(cekLilaContentProvider(widget.menuSlug));
+          await ref.read(cekLilaContentProvider(widget.menuSlug).future);
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          children: [
           const SizedBox(height: 8),
           Text(
             'LILA (Lingkar Lengan Atas) adalah ukuran lingkar lengan bagian '
@@ -322,6 +328,7 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

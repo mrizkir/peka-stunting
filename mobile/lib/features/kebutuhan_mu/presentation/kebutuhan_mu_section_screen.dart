@@ -21,6 +21,11 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final menuDetailAsync = ref.watch(kebutuhanMuMenuDetailProvider(menuSlug));
 
+    Future<void> refresh() async {
+      ref.invalidate(kebutuhanMuMenuDetailProvider(menuSlug));
+      await ref.read(kebutuhanMuMenuDetailProvider(menuSlug).future);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -35,46 +40,58 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: menuDetailAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Text('Gagal memuat section: $error'),
+      body: RefreshIndicator(
+        onRefresh: refresh,
+        child: menuDetailAsync.when(
+          loading: () => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: const [
+              SizedBox(height: 200),
+              Center(child: CircularProgressIndicator()),
+            ],
           ),
-        ),
-        data: (snapshot) {
-          final section = snapshot?.data.sections
-              .where((candidate) => candidate.slug == sectionSlug)
-              .firstOrNull;
-
-          if (section == null) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Text('Section tidak ditemukan.'),
-              ),
-            );
-          }
-
-          return ListView(
+          error: (error, _) => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(20),
             children: [
-              Text(
-                '${section.items.length} materi tersedia.',
-                style: TextStyle(color: Colors.grey.shade700),
-              ),
-              const SizedBox(height: 16),
-              if (section.items.isEmpty)
-                const Text('Materi akan ditambahkan.')
-              else
-                for (var i = 0; i < section.items.length; i++) ...[
-                  if (i > 0) const SizedBox(height: 12),
-                  _buildItemTile(context, section.items[i]),
-                ],
+              Text('Gagal memuat section: $error'),
             ],
-          );
-        },
+          ),
+          data: (snapshot) {
+            final section = snapshot?.data.sections
+                .where((candidate) => candidate.slug == sectionSlug)
+                .firstOrNull;
+
+            if (section == null) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                children: const [
+                  Text('Section tidak ditemukan.'),
+                ],
+              );
+            }
+
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              children: [
+                Text(
+                  '${section.items.length} materi tersedia.',
+                  style: TextStyle(color: Colors.grey.shade700),
+                ),
+                const SizedBox(height: 16),
+                if (section.items.isEmpty)
+                  const Text('Materi akan ditambahkan.')
+                else
+                  for (var i = 0; i < section.items.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 12),
+                    _buildItemTile(context, section.items[i]),
+                  ],
+              ],
+            );
+          },
+        ),
       ),
     );
   }

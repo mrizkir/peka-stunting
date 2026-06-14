@@ -2,6 +2,47 @@
   $isEdit = isset($user);
 @endphp
 
+@if ($isEdit)
+  <div class="md:col-span-2">
+    <h3 class="text-base font-semibold text-base-content">Foto profil</h3>
+    <p class="text-base-content/65 mt-1 text-sm leading-6">
+      Format: JPG, PNG, atau WebP. Maks. 2 MB.
+    </p>
+    <div class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-base-200">
+        @if ($profilePhotoUrl ?? null)
+          <img
+            src="{{ $profilePhotoUrl }}"
+            alt="Foto profil {{ $user->name }}"
+            class="h-full w-full object-cover"
+          >
+        @else
+          <span class="text-base-content/50 text-2xl font-semibold">
+            {{ strtoupper(mb_substr($user->name, 0, 1)) }}
+          </span>
+        @endif
+      </div>
+      <div class="flex-1 space-y-3">
+        <input
+          type="file"
+          name="profile_photo"
+          accept="image/jpeg,image/png,image/webp"
+          class="file-input file-input-bordered w-full"
+        >
+        @error('profile_photo')
+          <p class="text-error text-sm">{{ $message }}</p>
+        @enderror
+        @if ($profilePhotoUrl ?? null)
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="remove_profile_photo" value="1" class="checkbox checkbox-sm">
+            <span>Hapus foto profil saat disimpan</span>
+          </label>
+        @endif
+      </div>
+    </div>
+  </div>
+@endif
+
 <div class="grid gap-5 md:grid-cols-2">
   <div class="md:col-span-2">
     <x-ui.input

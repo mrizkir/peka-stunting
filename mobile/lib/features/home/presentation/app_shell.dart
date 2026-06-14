@@ -16,40 +16,53 @@ class AppShell extends StatelessWidget {
     return ListenableBuilder(
       listenable: router.routerDelegate,
       builder: (context, _) {
-        final path = router.state.uri.path;
         final colorScheme = Theme.of(context).colorScheme;
         final navTheme = NavigationBarTheme.of(context);
         final indicatorColor =
             navTheme.indicatorColor ?? colorScheme.secondaryContainer;
 
-        return Scaffold(
-          body: navigationShell,
-          bottomNavigationBar: Material(
-            color: navTheme.backgroundColor ?? colorScheme.surfaceContainer,
-            elevation: navTheme.elevation ?? 3,
-            shadowColor: navTheme.shadowColor ?? Colors.black26,
-            child: SafeArea(
-              top: false,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _NavIconButton(
-                    selected: path == '/',
-                    indicatorColor: indicatorColor,
-                    icon: Icons.home_outlined,
-                    selectedIcon: Icons.home,
-                    tooltip: 'Home',
-                    onTap: () => context.go('/'),
-                  ),
-                  _NavIconButton(
-                    selected: path == '/profile',
-                    indicatorColor: indicatorColor,
-                    icon: Icons.person_outline,
-                    selectedIcon: Icons.person,
-                    tooltip: 'Profil',
-                    onTap: () => context.go('/profile'),
-                  ),
-                ],
+        return PopScope(
+          canPop: navigationShell.currentIndex == 0,
+          onPopInvokedWithResult: (didPop, result) {
+            if (!didPop) {
+              navigationShell.goBranch(0, initialLocation: false);
+            }
+          },
+          child: Scaffold(
+            body: navigationShell,
+            bottomNavigationBar: Material(
+              color: navTheme.backgroundColor ?? colorScheme.surfaceContainer,
+              elevation: navTheme.elevation ?? 3,
+              shadowColor: navTheme.shadowColor ?? Colors.black26,
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _NavIconButton(
+                      selected: navigationShell.currentIndex == 0,
+                      indicatorColor: indicatorColor,
+                      icon: Icons.home_outlined,
+                      selectedIcon: Icons.home,
+                      tooltip: 'Home',
+                      onTap: () => navigationShell.goBranch(
+                        0,
+                        initialLocation: navigationShell.currentIndex == 0,
+                      ),
+                    ),
+                    _NavIconButton(
+                      selected: navigationShell.currentIndex == 1,
+                      indicatorColor: indicatorColor,
+                      icon: Icons.person_outline,
+                      selectedIcon: Icons.person,
+                      tooltip: 'Profil',
+                      onTap: () => navigationShell.goBranch(
+                        1,
+                        initialLocation: navigationShell.currentIndex == 1,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

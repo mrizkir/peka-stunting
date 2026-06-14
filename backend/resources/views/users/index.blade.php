@@ -10,17 +10,7 @@
       'csrfToken' => csrf_token(),
       'initialPerPage' => (int) request('per_page', 10),
       'initialQ' => (string) request('q', ''),
-      'initialUsers' => $users->map(fn ($user) => [
-        'id' => $user->id,
-        'name' => $user->name,
-        'email' => $user->email,
-        'phone' => $user->phone,
-        'gender_label' => $user->gender === 'L' ? 'Laki-laki' : ($user->gender === 'P' ? 'Perempuan' : '-'),
-        'birth_date_label' => $user->birth_date?->format('d M Y') ?? '-',
-        'edit_url' => route('users.edit', $user),
-        'destroy_url' => route('users.destroy', $user),
-        'is_current_auth' => auth()->id() === $user->id,
-      ])->values(),
+      'initialUsers' => $userRows,
       'initialPage' => $users->currentPage(),
       'initialLastPage' => $users->lastPage(),
       'initialTotal' => $users->total(),
@@ -80,6 +70,7 @@
       <table class="table-zebra table w-full">
         <thead>
           <tr>
+            <th class="w-16">Foto</th>
             <th>Nama</th>
             <th>Email</th>
             <th>No. HP</th>
@@ -91,18 +82,33 @@
         <tbody>
           <template x-if="loading">
             <tr>
-              <td colspan="6" class="py-8 text-center text-sm text-base-content/60">Memuat data...</td>
+              <td colspan="7" class="py-8 text-center text-sm text-base-content/60">Memuat data...</td>
             </tr>
           </template>
           <template x-if="!loading && users.length === 0">
             <tr>
-              <td colspan="6" class="py-8 text-center text-sm text-base-content/60">
+              <td colspan="7" class="py-8 text-center text-sm text-base-content/60">
                 Tidak ada data user.
               </td>
             </tr>
           </template>
           <template x-for="user in users" :key="user.id">
             <tr>
+              <td>
+                <template x-if="user.profile_photo_url">
+                  <img
+                    :src="user.profile_photo_url"
+                    :alt="`Foto profil ${user.name}`"
+                    class="h-10 w-10 rounded-full object-cover"
+                  >
+                </template>
+                <template x-if="!user.profile_photo_url">
+                  <div
+                    class="flex h-10 w-10 items-center justify-center rounded-full bg-base-200 text-sm font-semibold text-base-content/70"
+                    x-text="user.initials"
+                  ></div>
+                </template>
+              </td>
               <td class="font-medium" x-text="user.name"></td>
               <td x-text="user.email"></td>
               <td x-text="user.phone"></td>

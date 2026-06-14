@@ -60,9 +60,16 @@ class _CekRisikoAnemiaScreenState extends ConsumerState<CekRisikoAnemiaScreen> {
       appBar: AppBar(
         title: const Text('Cek Risiko Anemia'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(cekRisikoAnemiaContentProvider(widget.menuSlug));
+          ref.invalidate(cekRisikoAnemiaIntroContentProvider(widget.menuSlug));
+          await ref.read(cekRisikoAnemiaContentProvider(widget.menuSlug).future);
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          children: [
           Text(
             _groupLabel,
             style: TextStyle(
@@ -102,6 +109,7 @@ class _CekRisikoAnemiaScreenState extends ConsumerState<CekRisikoAnemiaScreen> {
           const SizedBox(height: 16),
           _AnemiaQuestionnaireCard(menuSlug: widget.menuSlug),
         ],
+        ),
       ),
     );
   }

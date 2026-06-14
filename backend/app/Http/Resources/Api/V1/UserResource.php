@@ -21,6 +21,7 @@ class UserResource extends JsonResource
 			'phone' => $this->phone,
 			'gender' => $this->gender,
 			'roles' => $this->getRoleNames()->values()->all(),
+			'profile_photo_url' => $this->profilePhotoUrl(),
 		];
 	}
 }

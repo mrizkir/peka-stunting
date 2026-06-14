@@ -208,9 +208,15 @@ class _PeriksaStatusGiziScreenState
       appBar: AppBar(
         title: const Text('Periksa Status Gizi'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(periksaStatusGiziContentProvider(widget.menuSlug));
+          await ref.read(periksaStatusGiziContentProvider(widget.menuSlug).future);
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          children: [
           _StatusGiziIntroText(menuSlug: widget.menuSlug),
           const SizedBox(height: 20),
           Card(
@@ -252,7 +258,7 @@ class _PeriksaStatusGiziScreenState
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: _gender,
+                      initialValue: _gender,
                       decoration: const InputDecoration(
                         labelText: 'Jenis kelamin',
                       ),
@@ -422,6 +428,7 @@ class _PeriksaStatusGiziScreenState
             ),
           ),
         ],
+        ),
       ),
     );
   }

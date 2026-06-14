@@ -158,9 +158,15 @@ class _CekImtScreenState extends ConsumerState<CekImtScreen> {
       appBar: AppBar(
         title: const Text('Cek IMT'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(cekImtContentProvider(widget.menuSlug));
+          await ref.read(cekImtContentProvider(widget.menuSlug).future);
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          children: [
           const SizedBox(height: 4),
           _ImtIntroText(menuSlug: widget.menuSlug),
           const SizedBox(height: 20),
@@ -275,6 +281,7 @@ class _CekImtScreenState extends ConsumerState<CekImtScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
