@@ -1,7 +1,3 @@
-import com.android.build.gradle.BaseExtension
-import org.gradle.api.JavaVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 allprojects {
     repositories {
         google()
@@ -21,20 +17,6 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
-}
-
-subprojects {
-    afterEvaluate {
-        extensions.findByType<BaseExtension>()?.apply {
-            compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_17
-                targetCompatibility = JavaVersion.VERSION_17
-            }
-        }
-        tasks.withType<KotlinCompile>().configureEach {
-            kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
-        }
-    }
 }
 
 tasks.register<Delete>("clean") {
