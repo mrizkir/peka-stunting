@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/peka_app_bar.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
 import '../../kebutuhan_mu/presentation/widgets/kebutuhan_mu_menu_description.dart';
@@ -205,7 +206,7 @@ class _PeriksaStatusGiziScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: PekaAppBar(
         title: const Text('Periksa Status Gizi'),
       ),
       body: RefreshIndicator(

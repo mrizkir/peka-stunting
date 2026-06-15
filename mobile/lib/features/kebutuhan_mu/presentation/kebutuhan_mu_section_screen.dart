@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/peka_app_bar.dart';
 import '../../../core/widgets/menu_tile.dart';
 import '../models/kebutuhan_mu_models.dart';
 import 'kebutuhan_mu_menu_screen.dart';
@@ -27,7 +28,7 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: PekaAppBar(
         title: Text(
           menuDetailAsync.maybeWhen(
             data: (snapshot) =>

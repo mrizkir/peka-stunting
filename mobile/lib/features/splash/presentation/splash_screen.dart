@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_config.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../providers/splash_provider.dart';
+import 'widgets/splash_logo.dart';
 
 /// Layar pembuka sebelum Login atau Home (jika sudah login).
 class SplashScreen extends ConsumerStatefulWidget {
@@ -55,44 +55,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
     });
 
+    final splashImageUrl = ref.watch(splashImageUrlProvider).valueOrNull;
+
     return Scaffold(
-      backgroundColor: AppTheme.primary,
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  AppConfig.logoAssetPath,
-                  height: 96,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  AppConfig.appTagline,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.92),
-                        height: 1.45,
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
-                const SizedBox(height: 48),
-                const SizedBox(
-                  height: 28,
-                  width: 28,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      body: SplashLogo(remoteUrl: splashImageUrl),
     );
   }
 }

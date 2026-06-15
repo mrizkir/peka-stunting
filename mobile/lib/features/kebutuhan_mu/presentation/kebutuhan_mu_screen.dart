@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/peka_app_bar.dart';
 import '../../../core/widgets/menu_tile.dart';
 import '../data/kebutuhan_mu_repository.dart';
 import '../models/kebutuhan_mu_models.dart';
@@ -54,7 +55,7 @@ class KebutuhanMuScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: PekaAppBar(
         title: const Text('Kebutuhanmu'),
         actions: [
           IconButton(

@@ -5,6 +5,7 @@ import '../../deteksi_dini/presentation/cek_imt_screen.dart';
 import '../../deteksi_dini/presentation/cek_lila_screen.dart';
 import '../../deteksi_dini/presentation/cek_risiko_anemia_screen.dart';
 import '../../deteksi_dini/presentation/periksa_status_gizi_screen.dart';
+import '../../../core/widgets/peka_app_bar.dart';
 import '../../../core/widgets/education_poster_viewer.dart';
 import '../../../core/widgets/education_video_player.dart';
 import '../data/kebutuhan_mu_repository.dart';
@@ -59,7 +60,7 @@ class KebutuhanMuContentScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: PekaAppBar(
         title: contentAsync.maybeWhen(
           data: (content) => Text(content.title),
           orElse: () => Text(mockItem?.name ?? 'Materi'),

@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/storage/education_content_cache.dart';
 import '../../../core/utils/profile_image_picker.dart';
+import '../../../core/widgets/peka_app_bar.dart';
 import '../../../core/widgets/profile_avatar.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -343,7 +344,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final user = ref.watch(authStateProvider).valueOrNull;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: PekaAppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Kembali',
@@ -402,6 +403,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             color: Colors.grey.shade500,
                             fontSize: 12,
                           ),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            await ref.read(authStateProvider.notifier).logout();
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor:
+                                Theme.of(context).colorScheme.error,
+                            side: BorderSide(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                          icon: const Icon(Icons.logout),
+                          label: const Text('Logout'),
                         ),
                         const SizedBox(height: 20),
                         Align(

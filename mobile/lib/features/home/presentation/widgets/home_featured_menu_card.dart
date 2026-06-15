@@ -9,17 +9,19 @@ class HomeFeaturedMenuCard extends StatelessWidget {
     required this.subtitle,
     required this.imageAsset,
     required this.onTap,
+    this.backgroundColor = Colors.white,
   });
 
   final String title;
   final String subtitle;
   final String imageAsset;
   final VoidCallback onTap;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: backgroundColor,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppTheme.homeCardRadius),

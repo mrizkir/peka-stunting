@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/peka_app_bar.dart';
 import '../../../core/widgets/education_poster_viewer.dart';
 import '../../../core/widgets/education_video_player.dart';
 import '../data/mengenal_stunting_repository.dart';
@@ -31,7 +32,7 @@ class MengenalStuntingContentScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: PekaAppBar(
         title: contentAsync.maybeWhen(
           data: (content) => Text(content.title),
           orElse: () => const Text('Materi'),

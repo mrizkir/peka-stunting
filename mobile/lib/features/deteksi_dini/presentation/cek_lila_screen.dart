@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/peka_app_bar.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
 import '../data/lila_screening_repository.dart';
@@ -167,7 +168,7 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: PekaAppBar(
         title: const Text('Cek LILA'),
       ),
       body: RefreshIndicator(

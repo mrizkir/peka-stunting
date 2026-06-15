@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/peka_app_bar.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
 import '../../kebutuhan_mu/kebutuhan_mu_config.dart';
@@ -57,7 +58,7 @@ class _CekRisikoAnemiaScreenState extends ConsumerState<CekRisikoAnemiaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: PekaAppBar(
         title: const Text('Cek Risiko Anemia'),
       ),
       body: RefreshIndicator(
@@ -371,15 +372,16 @@ class _AnemiaQuestionnaireCardState
         ],
         const SizedBox(height: 16),
         Card(
+          color: const Color(0xFFFCE7F3),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Interpretasi: 0 jawaban Ya = tidak berisiko; 1–3 = risiko rendah; '
-              '4–7 = risiko sedang; > 7 = risiko tinggi. Diagnosis pasti memerlukan '
+              'Diagnosis pasti memerlukan '
               'pemeriksaan Hb di fasilitas kesehatan. Hasil ini bersifat skrining awal.',
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey.shade600,
+                fontWeight: FontWeight.bold,
                 height: 1.4,
               ),
             ),
@@ -548,25 +550,7 @@ class _AnemiaResultCard extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '${result.yesCount} dari ${result.totalQuestions} indikator',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: _accentColor,
-                height: 1,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Jawaban "Ya"',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
-            ),
+            ),            
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -577,6 +561,7 @@ class _AnemiaResultCard extends StatelessWidget {
               child: Text(
                 _categoryLabel,
                 style: TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: _accentColor,
                 ),

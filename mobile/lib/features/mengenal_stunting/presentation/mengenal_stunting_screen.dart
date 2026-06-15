@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/peka_app_bar.dart';
 import '../../../core/widgets/menu_tile.dart';
 import '../data/mengenal_stunting_repository.dart';
 import '../models/mengenal_stunting_models.dart';
@@ -25,20 +26,8 @@ class MengenalStuntingScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              'assets/images/icon_mengenal_stunting.png',
-              width: 32,
-              height: 32,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(width: 10),
-            const Text('Mengenal Stunting'),
-          ],
-        ),
+      appBar: PekaAppBar(
+        title: const Text('Mengenal Stunting'),
         actions: [
           IconButton(
             onPressed: () => refresh(),

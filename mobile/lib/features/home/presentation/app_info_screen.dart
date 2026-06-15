@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/peka_app_bar.dart';
 import '../../../core/widgets/education_poster_viewer.dart';
 import '../../../core/widgets/education_video_player.dart';
 import '../../kebutuhan_mu/presentation/widgets/kebutuhan_mu_menu_description.dart';
@@ -24,7 +25,7 @@ class AppInfoScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: PekaAppBar(
         title: contentAsync.maybeWhen(
           data: (content) => Text(content.title),
           orElse: () => const Text('Info Aplikasi'),
