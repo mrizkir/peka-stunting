@@ -64,7 +64,10 @@ class EducationItem extends Model
 
 	public function hasScreeningQuestionnaire(): bool
 	{
-		return $this->slug === 'cek-risiko-anemia';
+		return in_array($this->slug, [
+			'cek-risiko-anemia',
+			'cek-keberhasilan-menyusui',
+		], true);
 	}
 
 	public function hasAnjuranRules(): bool
@@ -78,6 +81,7 @@ class EducationItem extends Model
 			'cek-imt' => CalculatorAnjuranRule::METRIC_BMI,
 			'cek-lila' => CalculatorAnjuranRule::METRIC_LILA_CM,
 			'cek-risiko-anemia' => CalculatorAnjuranRule::METRIC_YES_COUNT,
+			'cek-keberhasilan-menyusui' => CalculatorAnjuranRule::METRIC_YES_COUNT,
 			'periksa-status-gizi' => CalculatorAnjuranRule::METRIC_Z_SCORE,
 			default => null,
 		};

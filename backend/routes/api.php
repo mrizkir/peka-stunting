@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\V1\AnemiaCalculatorEvaluateController;
 use App\Http\Controllers\Api\V1\AnemiaScreeningSubmissionController;
+use App\Http\Controllers\Api\V1\BreastfeedingCalculatorEvaluateController;
+use App\Http\Controllers\Api\V1\BreastfeedingScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\BmiCalculatorEvaluateController;
 use App\Http\Controllers\Api\V1\BmiScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\LilaCalculatorEvaluateController;
@@ -59,6 +61,20 @@ Route::prefix('v1')->group(function () {
 		->group(function () {
 			Route::get('/', [AnemiaScreeningSubmissionController::class, 'index'])->name('index');
 			Route::post('/', [AnemiaScreeningSubmissionController::class, 'store'])->name('store');
+		});
+
+	Route::prefix('calculators/cek-keberhasilan-menyusui')
+		->name('api.v1.calculators.menyusui.')
+		->group(function () {
+			Route::post('/evaluate', [BreastfeedingCalculatorEvaluateController::class, 'evaluate'])->name('evaluate');
+		});
+
+	Route::middleware('auth:sanctum')
+		->prefix('screening-submissions/cek-keberhasilan-menyusui')
+		->name('api.v1.screening-submissions.menyusui.')
+		->group(function () {
+			Route::get('/', [BreastfeedingScreeningSubmissionController::class, 'index'])->name('index');
+			Route::post('/', [BreastfeedingScreeningSubmissionController::class, 'store'])->name('store');
 		});
 
 	Route::prefix('calculators/cek-imt')

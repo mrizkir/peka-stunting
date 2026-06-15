@@ -218,6 +218,37 @@ class CalculatorAnjuranDefaults
 	/**
 	 * @return array<int, array<string, mixed>>
 	 */
+	public static function menyusuiRules(): array
+	{
+		return [
+			[
+				'sort_order' => 1,
+				'metric' => CalculatorAnjuranRule::METRIC_YES_COUNT,
+				'indicator' => null,
+				'threshold' => 8.0,
+				'operator' => CalculatorAnjuranRule::OPERATOR_GTE,
+				'is_default' => false,
+				'label' => 'Menyusui Berhasil',
+				'slug' => 'normal',
+				'anjuran' => 'Selamat! Indikator keberhasilan menyusui Anda baik. Pertahankan ASI eksklusif, susui sesuai kebutuhan bayi, dan pastikan ibu juga cukup makan dan minum.',
+			],
+			[
+				'sort_order' => 2,
+				'metric' => CalculatorAnjuranRule::METRIC_YES_COUNT,
+				'indicator' => null,
+				'threshold' => null,
+				'operator' => CalculatorAnjuranRule::OPERATOR_GTE,
+				'is_default' => true,
+				'label' => 'Perlu Evaluasi dan Dukungan Menyusui',
+				'slug' => 'need_follow_up',
+				'anjuran' => 'Beberapa indikator keberhasilan menyusui belum terpenuhi. Segera konsultasikan ke Puskesmas atau fasilitas kesehatan untuk evaluasi dan bimbingan laktasi.',
+			],
+		];
+	}
+
+	/**
+	 * @return array<int, array<string, mixed>>
+	 */
 	public static function nutritionalStatusRules(): array
 	{
 		return array_merge(

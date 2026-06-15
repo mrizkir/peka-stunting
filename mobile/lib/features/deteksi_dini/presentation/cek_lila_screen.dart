@@ -346,6 +346,7 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
           ],
           const SizedBox(height: 16),
           Card(
+            color: const Color(0xFFFCE7F3),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
@@ -363,6 +364,7 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.grey.shade600,
+                  fontWeight: FontWeight.bold,
                   height: 1.4,
                 ),
               ),

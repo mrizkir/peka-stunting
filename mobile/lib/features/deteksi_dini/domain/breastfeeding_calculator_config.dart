@@ -1,0 +1,51 @@
+import 'breastfeeding_success_calculator.dart';
+
+class BreastfeedingCalculatorConfig {
+  const BreastfeedingCalculatorConfig({
+    required this.riskYesThreshold,
+    required this.questions,
+  });
+
+  final int riskYesThreshold;
+  final List<BreastfeedingScreeningQuestion> questions;
+
+  static BreastfeedingCalculatorConfig? fromJson(Map<String, dynamic>? json) {
+    if (json == null || json.isEmpty) {
+      return null;
+    }
+
+    final threshold = json['risk_yes_threshold'];
+    final rawQuestions = json['questions'];
+
+    if (rawQuestions is! List || rawQuestions.isEmpty) {
+      return null;
+    }
+
+    final questions = <BreastfeedingScreeningQuestion>[];
+    for (final entry in rawQuestions) {
+      if (entry is! Map) {
+        continue;
+      }
+      final map = Map<String, dynamic>.from(entry);
+      final id = map['id']?.toString().trim();
+      final text = map['text']?.toString().trim();
+      if (id == null || id.isEmpty || text == null || text.isEmpty) {
+        continue;
+      }
+      questions.add(BreastfeedingScreeningQuestion(id: id, text: text));
+    }
+
+    if (questions.isEmpty) {
+      return null;
+    }
+
+    final parsedThreshold = threshold is int
+        ? threshold
+        : int.tryParse(threshold?.toString() ?? '');
+
+    return BreastfeedingCalculatorConfig(
+      riskYesThreshold: parsedThreshold ?? 8,
+      questions: questions,
+    );
+  }
+}

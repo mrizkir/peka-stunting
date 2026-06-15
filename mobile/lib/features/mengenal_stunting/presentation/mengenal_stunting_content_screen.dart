@@ -125,17 +125,28 @@ class _ContentWithPosters extends StatelessWidget {
         ],
         if (hasExcerpt) ...[
           const SizedBox(height: 12),
-          Text(
-            content.excerpt!,
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 16,
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                content.excerpt!,
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontSize: 16,
+                  height: 1.5,
+                ),
+              ),
             ),
           ),
         ],
         if (hasBodyText) ...[
           const SizedBox(height: 16),
-          MengenalStuntingBodyHtml(html: content.body!),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: MengenalStuntingBodyHtml(html: content.body!),
+            ),
+          ),
         ],
       ],
     );

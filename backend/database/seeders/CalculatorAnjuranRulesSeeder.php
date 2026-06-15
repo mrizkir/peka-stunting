@@ -20,6 +20,7 @@ class CalculatorAnjuranRulesSeeder extends Seeder
 			['slug' => 'cek-imt', 'metric' => CalculatorAnjuranRule::METRIC_BMI],
 			['slug' => 'cek-lila', 'metric' => CalculatorAnjuranRule::METRIC_LILA_CM],
 			['slug' => 'cek-risiko-anemia', 'metric' => CalculatorAnjuranRule::METRIC_YES_COUNT],
+			['slug' => 'cek-keberhasilan-menyusui', 'metric' => CalculatorAnjuranRule::METRIC_YES_COUNT],
 			['slug' => 'periksa-status-gizi', 'metric' => CalculatorAnjuranRule::METRIC_Z_SCORE],
 		];
 

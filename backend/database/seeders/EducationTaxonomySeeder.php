@@ -6,6 +6,7 @@ use App\Models\EducationContent;
 use App\Models\EducationItem;
 use App\Models\EducationMenu;
 use App\Support\AnemiaScreeningDefaults;
+use App\Support\BreastfeedingSuccessDefaults;
 use App\Support\EducationMenuDescriptions;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -72,6 +73,11 @@ class EducationTaxonomySeeder extends Seeder
           $attributes['calculator_config'] = AnemiaScreeningDefaults::calculatorConfig();
         }
 
+        if ($slug === 'cek-keberhasilan-menyusui') {
+          $attributes['excerpt'] = 'Cek keberhasilan menyusui membantu ibu menilai apakah ASI eksklusif berjalan dengan baik. Jawab pertanyaan berikut berdasarkan kondisi bayi dan pola menyusui Anda.';
+          $attributes['calculator_config'] = BreastfeedingSuccessDefaults::calculatorConfig();
+        }
+
         $content = EducationContent::firstOrCreate(
           ['item_id' => $item->id],
           $attributes,
@@ -88,6 +94,19 @@ class EducationTaxonomySeeder extends Seeder
         }
 
         if ($slug === 'cek-risiko-anemia') {
+          $updates = [];
+          if (blank($content->excerpt)) {
+            $updates['excerpt'] = $attributes['excerpt'];
+          }
+          if (blank($content->calculator_config)) {
+            $updates['calculator_config'] = $attributes['calculator_config'];
+          }
+          if ($updates !== []) {
+            $content->update($updates);
+          }
+        }
+
+        if ($slug === 'cek-keberhasilan-menyusui') {
           $updates = [];
           if (blank($content->excerpt)) {
             $updates['excerpt'] = $attributes['excerpt'];

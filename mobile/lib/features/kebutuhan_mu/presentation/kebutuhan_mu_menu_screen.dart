@@ -71,8 +71,13 @@ class KebutuhanMuMenuScreen extends ConsumerWidget {
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 20),
-                  child: KebutuhanMuMenuDescription(
-                    description: description,
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: KebutuhanMuMenuDescription(
+                        description: description,
+                      ),
+                    ),
                   ),
                 );
               },

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ScreeningSubmission extends Model
 {
 	public const CALCULATOR_CEK_RISIKO_ANEMIA = 'cek-risiko-anemia';
+	public const CALCULATOR_CEK_KEBERHASILAN_MENYUSUI = 'cek-keberhasilan-menyusui';
 	public const CALCULATOR_CEK_IMT = 'cek-imt';
 	public const CALCULATOR_CEK_LILA = 'cek-lila';
 	public const CALCULATOR_PERIKSA_STATUS_GIZI = 'periksa-status-gizi';
@@ -66,6 +67,7 @@ class ScreeningSubmission extends Model
 	{
 		return [
 			self::CALCULATOR_CEK_RISIKO_ANEMIA => 'Cek Risiko Anemia',
+			self::CALCULATOR_CEK_KEBERHASILAN_MENYUSUI => 'Cek Keberhasilan Menyusui',
 			self::CALCULATOR_CEK_IMT => 'Cek IMT',
 			self::CALCULATOR_CEK_LILA => 'Cek LILA',
 			self::CALCULATOR_PERIKSA_STATUS_GIZI => 'Periksa Status Gizi',
@@ -79,7 +81,10 @@ class ScreeningSubmission extends Model
 
 	public function isQuestionnaire(): bool
 	{
-		return $this->calculator_slug === self::CALCULATOR_CEK_RISIKO_ANEMIA;
+		return in_array($this->calculator_slug, [
+			self::CALCULATOR_CEK_RISIKO_ANEMIA,
+			self::CALCULATOR_CEK_KEBERHASILAN_MENYUSUI,
+		], true);
 	}
 
 	public function isAtRiskCategory(): bool

@@ -62,6 +62,7 @@ class ScreeningSubmissionController extends Controller
 			ScreeningSubmission::CALCULATOR_CEK_LILA => 'screening-submissions.show-lila',
 			ScreeningSubmission::CALCULATOR_CEK_IMT => 'screening-submissions.show-bmi',
 			ScreeningSubmission::CALCULATOR_PERIKSA_STATUS_GIZI => 'screening-submissions.show-nutritional-status',
+			ScreeningSubmission::CALCULATOR_CEK_KEBERHASILAN_MENYUSUI => 'screening-submissions.show-anemia',
 			default => 'screening-submissions.show-anemia',
 		};
 

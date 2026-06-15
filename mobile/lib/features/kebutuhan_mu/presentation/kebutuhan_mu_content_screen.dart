@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../deteksi_dini/presentation/cek_imt_screen.dart';
+import '../../deteksi_dini/presentation/cek_keberhasilan_menyusui_screen.dart';
 import '../../deteksi_dini/presentation/cek_lila_screen.dart';
 import '../../deteksi_dini/presentation/cek_risiko_anemia_screen.dart';
 import '../../deteksi_dini/presentation/periksa_status_gizi_screen.dart';
@@ -44,6 +45,8 @@ class KebutuhanMuContentScreen extends ConsumerWidget {
         return CekLilaScreen(menuSlug: menuSlug);
       case 'cek-risiko-anemia':
         return CekRisikoAnemiaScreen(menuSlug: menuSlug);
+      case 'cek-keberhasilan-menyusui':
+        return CekKeberhasilanMenyusuiScreen(menuSlug: menuSlug);
       case 'periksa-status-gizi':
         return PeriksaStatusGiziScreen(menuSlug: menuSlug);
       default:
@@ -153,17 +156,28 @@ class _ContentWithPosters extends StatelessWidget {
         ],
         if (hasExcerpt) ...[
           const SizedBox(height: 12),
-          Text(
-            content.excerpt!,
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 16,
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                content.excerpt!,
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontSize: 16,
+                  height: 1.5,
+                ),
+              ),
             ),
           ),
         ],
         if (hasBodyText) ...[
           const SizedBox(height: 16),
-          KebutuhanMuMenuDescription(description: content.body!),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: KebutuhanMuMenuDescription(description: content.body!),
+            ),
+          ),
         ],
       ],
     );

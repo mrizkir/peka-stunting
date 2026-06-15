@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnjuranAnemiaController;
+use App\Http\Controllers\AnjuranMenyusuiController;
 use App\Http\Controllers\AnjuranStatusGiziController;
 use App\Http\Controllers\AnjuranImtController;
 use App\Http\Controllers\AnjuranLilaController;
@@ -39,6 +40,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [AnjuranAnemiaController::class, 'index'])->name('index');
     Route::get('/{menu:slug}', [AnjuranAnemiaController::class, 'edit'])->name('edit');
     Route::put('/{menu:slug}', [AnjuranAnemiaController::class, 'update'])->name('update');
+  });
+
+  Route::middleware('role:admin')->prefix('anjuran-menyusui')->name('anjuran-menyusui.')->group(function () {
+    Route::get('/', [AnjuranMenyusuiController::class, 'index'])->name('index');
+    Route::get('/{menu:slug}', [AnjuranMenyusuiController::class, 'edit'])->name('edit');
+    Route::put('/{menu:slug}', [AnjuranMenyusuiController::class, 'update'])->name('update');
   });
 
   Route::middleware('role:admin')->prefix('anjuran-status-gizi')->name('anjuran-status-gizi.')->group(function () {

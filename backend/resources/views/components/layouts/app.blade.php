@@ -40,6 +40,9 @@
             <a href="{{ route('anjuran-anemia.index') }}" class="{{ request()->routeIs('anjuran-anemia.*') ? 'nav-link-active' : 'nav-link' }}">
               Anjuran Anemia
             </a>
+            <a href="{{ route('anjuran-menyusui.index') }}" class="{{ request()->routeIs('anjuran-menyusui.*') ? 'nav-link-active' : 'nav-link' }}">
+              Anjuran Menyusui
+            </a>
             <a href="{{ route('anjuran-status-gizi.index') }}" class="{{ request()->routeIs('anjuran-status-gizi.*') ? 'nav-link-active' : 'nav-link' }}">
               Anjuran Status Gizi
             </a>

@@ -35,10 +35,15 @@ class CalculatorAnjuranRuleSync
 			return;
 		}
 
+		$content->loadMissing('item');
+
 		$defaults = match ($metric) {
 			CalculatorAnjuranRule::METRIC_BMI => \App\Support\CalculatorAnjuranDefaults::bmiRules(),
 			CalculatorAnjuranRule::METRIC_LILA_CM => $this->lilaDefaultsForContent($content),
-			CalculatorAnjuranRule::METRIC_YES_COUNT => \App\Support\CalculatorAnjuranDefaults::anemiaRules(),
+			CalculatorAnjuranRule::METRIC_YES_COUNT => match ($content->item?->slug) {
+				'cek-keberhasilan-menyusui' => \App\Support\CalculatorAnjuranDefaults::menyusuiRules(),
+				default => \App\Support\CalculatorAnjuranDefaults::anemiaRules(),
+			},
 			CalculatorAnjuranRule::METRIC_Z_SCORE => \App\Support\CalculatorAnjuranDefaults::nutritionalStatusRules(),
 			default => [],
 		};
