@@ -9,11 +9,19 @@ export function createCalculatorAnjuranRules(initial = {}) {
   const defaultMetric = initial.defaultMetric ?? 'bmi';
   const defaultIndicator = initial.defaultIndicator ?? 'height_for_age';
 
+  const resolveIndicator = (rule) => {
+    if (rule.indicator != null && rule.indicator !== '') {
+      return rule.indicator;
+    }
+
+    return defaultIndicator ?? '';
+  };
+
   return {
     rules: seedRules.map((rule, index) => ({
       sort_order: Number(rule.sort_order ?? index + 1),
       metric: rule.metric ?? defaultMetric,
-      indicator: rule.indicator ?? defaultIndicator,
+      indicator: resolveIndicator(rule),
       threshold: rule.threshold ?? '',
       operator: rule.operator ?? 'gt',
       is_default: Boolean(rule.is_default),

@@ -40,8 +40,12 @@ class UpdateAnjuranLilaRequest extends FormRequest
 			'anjuran_rules.*.operator' => ['required', Rule::in([
 				CalculatorAnjuranRule::OPERATOR_GT,
 				CalculatorAnjuranRule::OPERATOR_GTE,
-				CalculatorAnjuranRule::OPERATOR_LT,
-				CalculatorAnjuranRule::OPERATOR_LTE,
+			])],
+			'anjuran_rules.*.indicator' => ['nullable', 'string', Rule::in([
+				'',
+				CalculatorAnjuranRule::INDICATOR_AGE_10_14,
+				CalculatorAnjuranRule::INDICATOR_AGE_15_17,
+				CalculatorAnjuranRule::INDICATOR_AGE_GT_17,
 			])],
 			'anjuran_rules.*.threshold' => ['nullable', 'numeric'],
 			'anjuran_rules.*.slug' => ['nullable', 'string', 'max:64'],

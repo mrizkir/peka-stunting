@@ -43,7 +43,9 @@ class AnjuranLilaAdminTest extends TestCase
 			->get(route('anjuran-lila.edit', 'remaja-putri'))
 			->assertOk()
 			->assertSee('Aturan anjuran LILA')
-			->assertSee('Normal');
+			->assertSee('Kelompok usia (indikator)')
+			->assertSee('age_10_14')
+			->assertSee('Selamat, status gizi relatif normal');
 	}
 
 	public function test_admin_can_save_anjuran_rules(): void
@@ -56,6 +58,7 @@ class AnjuranLilaAdminTest extends TestCase
 				[
 					'sort_order' => 1,
 					'metric' => 'lila_cm',
+					'indicator' => 'age_gt_17',
 					'threshold' => 23.5,
 					'operator' => 'gte',
 					'is_default' => '0',
@@ -66,8 +69,9 @@ class AnjuranLilaAdminTest extends TestCase
 				[
 					'sort_order' => 2,
 					'metric' => 'lila_cm',
+					'indicator' => 'age_gt_17',
 					'threshold' => '',
-					'operator' => 'lt',
+					'operator' => 'gte',
 					'is_default' => '1',
 					'label' => 'Berisiko KEK',
 					'slug' => 'at_risk',

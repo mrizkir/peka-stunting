@@ -20,9 +20,11 @@ class LilaCalculatorEvaluateController extends Controller
 	{
 		try {
 			$lilaCm = (float) $request->validated('lila_cm');
+			$ageYears = (int) $request->validated('age_years');
 			$resolved = $this->submissionService->evaluateByMenu(
 				$request->validated('menu_slug'),
 				$lilaCm,
+				$ageYears,
 			);
 		} catch (ModelNotFoundException $exception) {
 			return ApiResponse::error($exception->getMessage(), 404);

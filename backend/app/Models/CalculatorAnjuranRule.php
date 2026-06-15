@@ -23,6 +23,12 @@ class CalculatorAnjuranRule extends Model
 
 	public const INDICATOR_PRIMARY = 'primary';
 
+	public const INDICATOR_AGE_10_14 = 'age_10_14';
+
+	public const INDICATOR_AGE_15_17 = 'age_15_17';
+
+	public const INDICATOR_AGE_GT_17 = 'age_gt_17';
+
 	public const OPERATOR_GT = 'gt';
 
 	public const OPERATOR_GTE = 'gte';

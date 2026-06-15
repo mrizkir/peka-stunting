@@ -27,6 +27,8 @@ class LilaScreeningSubmissionController extends Controller
 			);
 		} catch (ModelNotFoundException $exception) {
 			return ApiResponse::error($exception->getMessage(), 404);
+		} catch (\RuntimeException $exception) {
+			return ApiResponse::error($exception->getMessage(), 422);
 		}
 
 		return ApiResponse::success(

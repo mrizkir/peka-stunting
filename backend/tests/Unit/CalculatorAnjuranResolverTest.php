@@ -57,7 +57,7 @@ class CalculatorAnjuranResolverTest extends TestCase
 		$this->assertSame('Kurus', $resolved->label);
 	}
 
-	public function test_resolves_normal_lila_at_threshold(): void
+	public function test_resolves_normal_lila_at_threshold_for_age_over_17(): void
 	{
 		$content = $this->createLilaContentWithRules();
 
@@ -65,24 +65,40 @@ class CalculatorAnjuranResolverTest extends TestCase
 			$content,
 			CalculatorAnjuranRule::METRIC_LILA_CM,
 			23.5,
+			CalculatorAnjuranRule::INDICATOR_AGE_GT_17,
 		);
 
 		$this->assertSame('normal', $resolved->slug);
-		$this->assertSame('Normal', $resolved->label);
+		$this->assertSame('Selamat, status gizi relatif normal', $resolved->label);
 	}
 
-	public function test_resolves_at_risk_lila_below_threshold(): void
+	public function test_resolves_at_risk_lila_below_threshold_for_age_15_to_17(): void
 	{
 		$content = $this->createLilaContentWithRules();
 
 		$resolved = $this->resolver->resolve(
 			$content,
 			CalculatorAnjuranRule::METRIC_LILA_CM,
-			22.0,
+			21.0,
+			CalculatorAnjuranRule::INDICATOR_AGE_15_17,
 		);
 
 		$this->assertSame('at_risk', $resolved->slug);
-		$this->assertSame('Berisiko KEK', $resolved->label);
+		$this->assertSame('Anda berisiko kekurangan gizi (KEK)', $resolved->label);
+	}
+
+	public function test_resolves_normal_lila_for_age_10_to_14_at_threshold(): void
+	{
+		$content = $this->createLilaContentWithRules();
+
+		$resolved = $this->resolver->resolve(
+			$content,
+			CalculatorAnjuranRule::METRIC_LILA_CM,
+			18.5,
+			CalculatorAnjuranRule::INDICATOR_AGE_10_14,
+		);
+
+		$this->assertSame('normal', $resolved->slug);
 	}
 
 	public function test_resolves_stunted_height_for_age_z_score(): void
@@ -151,7 +167,7 @@ class CalculatorAnjuranResolverTest extends TestCase
 		$content = $item->content;
 		$content->anjuranRules()->delete();
 
-		foreach (CalculatorAnjuranDefaults::lilaRules() as $rule) {
+		foreach (CalculatorAnjuranDefaults::lilaRulesRemajaPutri() as $rule) {
 			$content->anjuranRules()->create($rule);
 		}
 

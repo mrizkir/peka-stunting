@@ -105,9 +105,7 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
           ? Icons.calculate_outlined
           : Icons.article_outlined,
       title: item.name,
-      subtitle: item.excerpt?.trim().isNotEmpty == true
-          ? item.excerpt!
-          : 'Buka materi',
+      subtitle: 'Silahkan tes untuk skrining',
       color: isCalculator ? const Color(0xFF0EA5E9) : AppTheme.primary,
       onTap: () => context.push(
         '/kebutuhan-mu/$menuSlug/$sectionSlug/${item.slug}',

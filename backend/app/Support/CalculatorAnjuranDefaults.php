@@ -60,6 +60,8 @@ class CalculatorAnjuranDefaults
 	}
 
 	/**
+	 * Aturan LILA flat (menu selain remaja putri): ambang 23,5 cm.
+	 *
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function lilaRules(): array
@@ -72,20 +74,90 @@ class CalculatorAnjuranDefaults
 				'threshold' => 23.5,
 				'operator' => CalculatorAnjuranRule::OPERATOR_GTE,
 				'is_default' => false,
-				'label' => 'Normal',
+				'label' => 'Selamat, status gizi relatif normal',
 				'slug' => 'normal',
-				'anjuran' => 'Jika hasil Lingkar Lengan Atas (LiLA) remaja normal (≥ 23,5 cm), artinya cadangan lemak dan massa otot tubuh saat ini dalam kondisi cukup. Fokus utamanya adalah menjaga agar status gizi tetap stabil dan tidak jatuh ke risiko KEK atau sebaliknya menjadi obesitas. Pertahankan pola makan gizi seimbang dan aktifitas fisik secara rutin.',
+				'anjuran' => 'Jika hasil Lingkar Lengan Atas (LiLA) normal (≥ 23,5 cm), artinya cadangan lemak dan massa otot tubuh saat ini dalam kondisi cukup. Fokus utamanya adalah menjaga agar status gizi tetap stabil dan tidak jatuh ke risiko KEK atau sebaliknya menjadi obesitas. Pertahankan pola makan gizi seimbang dan aktifitas fisik secara rutin.',
 			],
 			[
 				'sort_order' => 2,
 				'metric' => CalculatorAnjuranRule::METRIC_LILA_CM,
 				'indicator' => null,
 				'threshold' => null,
-				'operator' => CalculatorAnjuranRule::OPERATOR_LT,
+				'operator' => CalculatorAnjuranRule::OPERATOR_GTE,
 				'is_default' => true,
-				'label' => 'Berisiko KEK',
+				'label' => 'Anda berisiko kekurangan gizi (KEK)',
 				'slug' => 'at_risk',
-				'anjuran' => 'Kekurangan Energi Kronis (KEK) pada remaja, yang biasanya ditandai dengan ukuran Lingkar Lengan Atas (LiLA) kurang dari 23,5 cm, merupakan kondisi serius karena menunjukkan kekurangan gizi jangka panjang yang bisa menghambat pertumbuhan dan menurunkan sistem imun. Terus apa yang harus dilakukan? Remaja harus meningkatkan konsumsi protein kualitas tinggi seperti telur, ikan, ayam, daging, dan susu untuk memperbaiki jaringan tubuh dan meningkatkan massa otot. Selain makan besar 3 kali sehari, sangat disarankan mengonsumsi makanan tambahan padat gizi (seperti biskuit khusus dari puskesmas, kacang hijau, atau telur rebus) di antara waktu makan. Lakukan konsultasi kesehatan di Puskesmas atau fasilitas kesehatan lainnya.',
+				'anjuran' => 'Kekurangan Energi Kronis (KEK), yang biasanya ditandai dengan ukuran Lingkar Lengan Atas (LiLA) kurang dari 23,5 cm, merupakan kondisi serius karena menunjukkan kekurangan gizi jangka panjang yang bisa menghambat pertumbuhan dan menurunkan sistem imun. Terus apa yang harus dilakukan? Tingkatkan konsumsi protein kualitas tinggi seperti telur, ikan, ayam, daging, dan susu untuk memperbaiki jaringan tubuh dan meningkatkan massa otot. Selain makan besar 3 kali sehari, sangat disarankan mengonsumsi makanan tambahan padat gizi (seperti biskuit khusus dari puskesmas, kacang hijau, atau telur rebus) di antara waktu makan. Lakukan konsultasi kesehatan di Puskesmas atau fasilitas kesehatan lainnya.',
+			],
+		];
+	}
+
+	/**
+	 * Aturan LILA remaja putri berdasarkan kelompok usia.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function lilaRulesRemajaPutri(): array
+	{
+		$rules = [];
+		$sortOrder = 1;
+
+		foreach (
+			[
+				[CalculatorAnjuranRule::INDICATOR_AGE_10_14, 18.5],
+				[CalculatorAnjuranRule::INDICATOR_AGE_15_17, 22.0],
+				[CalculatorAnjuranRule::INDICATOR_AGE_GT_17, 23.5],
+			] as [$indicator, $threshold]
+		) {
+			foreach (self::lilaAgeBandRules($indicator, $threshold) as $rule) {
+				$rules[] = [...$rule, 'sort_order' => $sortOrder++];
+			}
+		}
+
+		return $rules;
+	}
+
+	/**
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function lilaAgeBandRules(
+		string $indicator,
+		float $threshold,
+	): array {
+		$normalAnjuran = match ($indicator) {
+			CalculatorAnjuranRule::INDICATOR_AGE_10_14 => 'Untuk remaja putri berusia 10 – 14 tahun, Jika hasil Lingkar Lengan Atas (LiLA) remaja normal (≥ 18,5 cm), artinya cadangan lemak dan massa otot tubuh saat ini dalam kondisi cukup. Fokus utamanya adalah menjaga agar status gizi tetap stabil dan tidak jatuh ke risiko KEK atau sebaliknya menjadi obesitas. Pertahankan pola makan gizi seimbang dan aktifitas fisik secara rutin.',
+			CalculatorAnjuranRule::INDICATOR_AGE_15_17 => 'Untuk remaja putri berusia 15 – 17 tahun, Jika hasil Lingkar Lengan Atas (LiLA) remaja normal (≥ 22 cm), artinya cadangan lemak dan massa otot tubuh saat ini dalam kondisi cukup. Fokus utamanya adalah menjaga agar status gizi tetap stabil dan tidak jatuh ke risiko KEK atau sebaliknya menjadi obesitas. Pertahankan pola makan gizi seimbang dan aktifitas fisik secara rutin.',
+			default => 'Jika Lingkar Lengan Atas (LiLA) remaja > 17 tahun menunjukan normal (≥ 23,5 cm), artinya cadangan lemak dan massa otot tubuh saat ini dalam kondisi cukup. Fokus utamanya adalah menjaga agar status gizi tetap stabil dan tidak jatuh ke risiko KEK atau sebaliknya menjadi obesitas. Pertahankan pola makan gizi seimbang dan aktifitas fisik secara rutin.',
+		};
+
+		$atRiskAnjuran = match ($indicator) {
+			CalculatorAnjuranRule::INDICATOR_AGE_10_14 => 'Kekurangan Energi Kronis (KEK) pada remaja putri usia 10 -14 tahun, yang biasanya ditandai dengan ukuran Lingkar Lengan Atas (LiLA) kurang dari 18,5 cm, merupakan kondisi serius karena menunjukkan kekurangan gizi jangka panjang yang bisa menghambat pertumbuhan dan menurunkan sistem imun. Terus apa yang harus dilakukan? Remaja harus meningkatkan konsumsi protein kualitas tinggi seperti telur, ikan, ayam, daging, dan susu untuk memperbaiki jaringan tubuh dan meningkatkan massa otot. Selain makan besar 3 kali sehari, sangat disarankan mengonsumsi makanan tambahan padat gizi (seperti biskuit khusus dari puskesmas, kacang hijau, atau telur rebus) di antara waktu makan. Lakukan konsultasi kesehatan di Puskesmas atau fasilitas kesehatan lainnya.',
+			CalculatorAnjuranRule::INDICATOR_AGE_15_17 => 'Kekurangan Energi Kronis (KEK) pada remaja putri usia 15 -17 tahun, yang biasanya ditandai dengan ukuran Lingkar Lengan Atas (LiLA) kurang dari 22 cm, merupakan kondisi serius karena menunjukkan kekurangan gizi jangka panjang yang bisa menghambat pertumbuhan dan menurunkan sistem imun. Terus apa yang harus dilakukan? Remaja harus meningkatkan konsumsi protein kualitas tinggi seperti telur, ikan, ayam, daging, dan susu untuk memperbaiki jaringan tubuh dan meningkatkan massa otot. Selain makan besar 3 kali sehari, sangat disarankan mengonsumsi makanan tambahan padat gizi (seperti biskuit khusus dari puskesmas, kacang hijau, atau telur rebus) di antara waktu makan. Lakukan konsultasi kesehatan di Puskesmas atau fasilitas kesehatan lainnya.',
+			default => 'Kekurangan Energi Kronis (KEK) pada remaja usia  > 17 tahun, yang biasanya ditandai dengan ukuran Lingkar Lengan Atas (LiLA) kurang dari 23,5 cm, merupakan kondisi serius karena menunjukkan kekurangan gizi jangka panjang yang bisa menghambat pertumbuhan dan menurunkan sistem imun. Terus apa yang harus dilakukan? Remaja harus meningkatkan konsumsi protein kualitas tinggi seperti telur, ikan, ayam, daging, dan susu untuk memperbaiki jaringan tubuh dan meningkatkan massa otot. Selain makan besar 3 kali sehari, sangat disarankan mengonsumsi makanan tambahan padat gizi (seperti biskuit khusus dari puskesmas, kacang hijau, atau telur rebus) di antara waktu makan. Lakukan konsultasi kesehatan di Puskesmas atau fasilitas kesehatan lainnya.',
+		};
+
+		return [
+			[
+				'sort_order' => 1,
+				'metric' => CalculatorAnjuranRule::METRIC_LILA_CM,
+				'indicator' => $indicator,
+				'threshold' => $threshold,
+				'operator' => CalculatorAnjuranRule::OPERATOR_GTE,
+				'is_default' => false,
+				'label' => 'Selamat, status gizi relatif normal',
+				'slug' => 'normal',
+				'anjuran' => $normalAnjuran,
+			],
+			[
+				'sort_order' => 2,
+				'metric' => CalculatorAnjuranRule::METRIC_LILA_CM,
+				'indicator' => $indicator,
+				'threshold' => null,
+				'operator' => CalculatorAnjuranRule::OPERATOR_GTE,
+				'is_default' => true,
+				'label' => 'Anda berisiko kekurangan gizi (KEK)',
+				'slug' => 'at_risk',
+				'anjuran' => $atRiskAnjuran,
 			],
 		];
 	}

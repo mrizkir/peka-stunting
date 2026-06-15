@@ -8,7 +8,7 @@
     <div class="alert alert-success mb-6 text-sm">{{ session('success') }}</div>
   @endif
 
-  <x-ui.card title="Kelompok kebutuhan" description="Setiap menu yang memiliki kalkulator Cek LILA dapat memiliki anjuran berbeda.">
+  <x-ui.card title="Kelompok kebutuhan" description="Remaja Putri membutuhkan 6 aturan (3 kelompok usia). Menu lain cukup 2 aturan (Normal + Default KEK, ambang 23,5 cm).">
     <div class="overflow-x-auto">
       <table class="min-w-full text-sm">
         <thead>

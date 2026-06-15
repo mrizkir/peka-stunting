@@ -9,6 +9,10 @@ class CalculatorAnjuranRule {
   static const indicatorWeightForHeight = 'weight_for_height';
   static const indicatorPrimary = 'primary';
 
+  static const indicatorAge10To14 = 'age_10_14';
+  static const indicatorAge15To17 = 'age_15_17';
+  static const indicatorAgeGt17 = 'age_gt_17';
+
   static const operatorGt = 'gt';
   static const operatorGte = 'gte';
   static const operatorLt = 'lt';

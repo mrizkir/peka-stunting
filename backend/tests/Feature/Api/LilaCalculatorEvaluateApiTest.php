@@ -23,39 +23,68 @@ class LilaCalculatorEvaluateApiTest extends TestCase
 		$this->seed(EducationTaxonomySeeder::class);
 	}
 
-	public function test_guest_can_evaluate_lila(): void
+	public function test_guest_can_evaluate_lila_for_remaja_putri(): void
 	{
 		$this->publishLilaContentWithRules('remaja-putri');
 
 		$this->postJson('/api/v1/calculators/cek-lila/evaluate', [
 			'menu_slug' => 'remaja-putri',
+			'age_years' => 18,
 			'lila_cm' => 22.4,
 		])
 			->assertOk()
 			->assertJsonPath('success', true)
 			->assertJsonPath('data.lila_cm', 22.4)
 			->assertJsonPath('data.category', 'at_risk')
-			->assertJsonPath('data.category_label', 'Berisiko KEK')
+			->assertJsonPath('data.category_label', 'Anda berisiko kekurangan gizi (KEK)')
 			->assertJsonPath('data.anjuran', fn ($value) => is_string($value) && $value !== '');
 	}
 
-	public function test_evaluate_normal_at_threshold(): void
+	public function test_evaluate_normal_at_threshold_for_age_over_17(): void
 	{
 		$this->publishLilaContentWithRules('remaja-putri');
 
 		$this->postJson('/api/v1/calculators/cek-lila/evaluate', [
 			'menu_slug' => 'remaja-putri',
+			'age_years' => 18,
 			'lila_cm' => 23.5,
 		])
 			->assertOk()
 			->assertJsonPath('data.category', 'normal')
-			->assertJsonPath('data.category_label', 'Normal');
+			->assertJsonPath('data.category_label', 'Selamat, status gizi relatif normal');
+	}
+
+	public function test_evaluate_uses_age_band_threshold_for_16_year_old(): void
+	{
+		$this->publishLilaContentWithRules('remaja-putri');
+
+		$this->postJson('/api/v1/calculators/cek-lila/evaluate', [
+			'menu_slug' => 'remaja-putri',
+			'age_years' => 16,
+			'lila_cm' => 22.4,
+		])
+			->assertOk()
+			->assertJsonPath('data.category', 'normal');
+	}
+
+	public function test_evaluate_rejects_age_below_10_for_remaja_putri(): void
+	{
+		$this->publishLilaContentWithRules('remaja-putri');
+
+		$this->postJson('/api/v1/calculators/cek-lila/evaluate', [
+			'menu_slug' => 'remaja-putri',
+			'age_years' => 9,
+			'lila_cm' => 20,
+		])
+			->assertStatus(422)
+			->assertJsonPath('success', false);
 	}
 
 	public function test_evaluate_returns_404_for_unpublished_content(): void
 	{
 		$this->postJson('/api/v1/calculators/cek-lila/evaluate', [
 			'menu_slug' => 'remaja-putri',
+			'age_years' => 16,
 			'lila_cm' => 24,
 		])->assertNotFound();
 	}
@@ -75,7 +104,11 @@ class LilaCalculatorEvaluateApiTest extends TestCase
 		]);
 
 		$content->anjuranRules()->delete();
-		foreach (CalculatorAnjuranDefaults::lilaRules() as $rule) {
+		$rules = $menuSlug === 'remaja-putri'
+			? CalculatorAnjuranDefaults::lilaRulesRemajaPutri()
+			: CalculatorAnjuranDefaults::lilaRules();
+
+		foreach ($rules as $rule) {
 			$content->anjuranRules()->create($rule);
 		}
 

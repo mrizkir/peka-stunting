@@ -7,6 +7,7 @@ use App\Models\EducationItem;
 use App\Models\EducationMenu;
 use App\Models\ScreeningSubmission;
 use App\Models\User;
+use App\Support\CalculatorAnjuranDefaults;
 use Database\Seeders\EducationTaxonomySeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,7 +37,7 @@ class LilaScreeningSubmissionApiTest extends TestCase
 		$response = $this->postJson('/api/v1/screening-submissions/cek-lila', [
 			'menu_slug' => 'remaja-putri',
 			'age_years' => 16,
-			'lila_cm' => 22.4,
+			'lila_cm' => 21.0,
 		]);
 
 		$response
@@ -45,9 +46,9 @@ class LilaScreeningSubmissionApiTest extends TestCase
 			->assertJsonPath('data.calculator_slug', ScreeningSubmission::CALCULATOR_CEK_LILA)
 			->assertJsonPath('data.menu_slug', 'remaja-putri')
 			->assertJsonPath('data.category', ScreeningSubmission::CATEGORY_AT_RISK)
-			->assertJsonPath('data.category_label', 'Berisiko KEK')
+			->assertJsonPath('data.category_label', 'Anda berisiko kekurangan gizi (KEK)')
 			->assertJsonPath('data.answers.age_years', 16)
-			->assertJsonPath('data.answers.lila_cm', 22.4)
+			->assertJsonPath('data.answers.lila_cm', 21)
 			->assertJsonPath('data.anjuran', fn ($value) => is_string($value) && $value !== '');
 
 		$this->assertDatabaseHas('screening_submissions', [
@@ -55,11 +56,11 @@ class LilaScreeningSubmissionApiTest extends TestCase
 			'calculator_slug' => ScreeningSubmission::CALCULATOR_CEK_LILA,
 			'menu_slug' => 'remaja-putri',
 			'category' => ScreeningSubmission::CATEGORY_AT_RISK,
-			'category_label' => 'Berisiko KEK',
+			'category_label' => 'Anda berisiko kekurangan gizi (KEK)',
 		]);
 	}
 
-	public function test_lila_at_normal_threshold_is_not_at_risk(): void
+	public function test_lila_at_normal_threshold_for_age_15_to_17(): void
 	{
 		$this->publishLilaContent('remaja-putri');
 
@@ -70,11 +71,11 @@ class LilaScreeningSubmissionApiTest extends TestCase
 		$this->postJson('/api/v1/screening-submissions/cek-lila', [
 			'menu_slug' => 'remaja-putri',
 			'age_years' => 17,
-			'lila_cm' => 23.5,
+			'lila_cm' => 22,
 		])
 			->assertCreated()
 			->assertJsonPath('data.category', ScreeningSubmission::CATEGORY_NORMAL)
-			->assertJsonPath('data.category_label', 'Normal');
+			->assertJsonPath('data.category_label', 'Selamat, status gizi relatif normal');
 	}
 
 	public function test_guest_cannot_store_lila_submission(): void
@@ -101,6 +102,15 @@ class LilaScreeningSubmissionApiTest extends TestCase
 			'status' => EducationContent::STATUS_PUBLISHED,
 			'published_at' => now(),
 		]);
+
+		$content->anjuranRules()->delete();
+		$rules = $menuSlug === 'remaja-putri'
+			? CalculatorAnjuranDefaults::lilaRulesRemajaPutri()
+			: CalculatorAnjuranDefaults::lilaRules();
+
+		foreach ($rules as $rule) {
+			$content->anjuranRules()->create($rule);
+		}
 
 		return $content->fresh();
 	}

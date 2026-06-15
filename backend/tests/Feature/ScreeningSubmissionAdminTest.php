@@ -64,7 +64,7 @@ class ScreeningSubmissionAdminTest extends TestCase
 			'total_questions' => 0,
 			'risk_yes_threshold' => 0,
 			'category' => ScreeningSubmission::CATEGORY_AT_RISK,
-			'category_label' => 'Berisiko KEK',
+			'category_label' => 'Anda berisiko kekurangan gizi (KEK)',
 			'answers' => ['age_years' => 16, 'lila_cm' => 22.4],
 			'questions_snapshot' => null,
 			'submitted_at' => now(),
@@ -76,7 +76,7 @@ class ScreeningSubmissionAdminTest extends TestCase
 			]))
 			->assertOk()
 			->assertSee('Cek LILA')
-			->assertSee('Berisiko KEK')
+			->assertSee('Anda berisiko kekurangan gizi (KEK)')
 			->assertSee('Usia 16 th · LILA 22.4 cm');
 	}
 
@@ -103,7 +103,7 @@ class ScreeningSubmissionAdminTest extends TestCase
 			'total_questions' => 0,
 			'risk_yes_threshold' => 0,
 			'category' => ScreeningSubmission::CATEGORY_AT_RISK,
-			'category_label' => 'Berisiko KEK',
+			'category_label' => 'Anda berisiko kekurangan gizi (KEK)',
 			'answers' => ['age_years' => 16, 'lila_cm' => 22.4],
 			'questions_snapshot' => null,
 			'submitted_at' => now(),

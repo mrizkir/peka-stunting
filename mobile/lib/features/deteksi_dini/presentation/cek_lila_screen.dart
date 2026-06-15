@@ -67,18 +67,41 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
     super.dispose();
   }
 
-  ResolvedAnjuran? _resolveAnjuran(double lilaCm) {
+  ResolvedAnjuran? _resolveAnjuran(int ageYears, double lilaCm) {
     final content = ref.read(cekLilaContentProvider(widget.menuSlug)).valueOrNull;
     final rules = content?.content.anjuranRules ?? const [];
     if (rules.isEmpty) {
       return null;
     }
 
+    final indicator = LilaAgeBandHelper.usesAgeBands(widget.menuSlug)
+        ? LilaAgeBandHelper.indicatorForAge(ageYears)
+        : null;
+
     return _anjuranResolver.resolve(
       rules: rules.map(CalculatorAnjuranRule.fromJson).toList(),
       metric: CalculatorAnjuranRule.metricLilaCm,
       value: lilaCm,
+      indicator: indicator,
     );
+  }
+
+  bool get _usesAgeBands =>
+      LilaAgeBandHelper.usesAgeBands(widget.menuSlug);
+
+  String? _validateAge(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Masukkan usia';
+    }
+    final n = int.tryParse(value.trim());
+    if (n == null || n <= 0 || n > 120) {
+      return 'Usia tidak valid (1–120 tahun)';
+    }
+    if (_usesAgeBands && n < LilaAgeBandHelper.minRemajaPutriAgeYears) {
+      return 'Usia minimal ${LilaAgeBandHelper.minRemajaPutriAgeYears} tahun '
+          'untuk skrining remaja putri';
+    }
+    return null;
   }
 
   Future<void> _calculate() async {
@@ -88,14 +111,32 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
 
     final age = int.parse(_ageController.text.trim());
     final lila = double.parse(_lilaController.text.replaceAll(',', '.'));
-    final nextResult = LilaCalculator.calculate(circumferenceCm: lila);
+    final nextResult = LilaCalculator.calculate(
+      circumferenceCm: lila,
+      menuSlug: widget.menuSlug,
+      ageYears: age,
+    );
     if (nextResult == null) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _usesAgeBands
+                ? 'Usia di luar rentang remaja putri (minimal '
+                    '${LilaAgeBandHelper.minRemajaPutriAgeYears} tahun).'
+                : 'Ukuran LILA tidak valid.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
 
     setState(() {
       _result = nextResult;
-      _resolvedAnjuran = _resolveAnjuran(nextResult.valueCm);
+      _resolvedAnjuran = _resolveAnjuran(age, nextResult.valueCm);
     });
 
     final isLoggedIn = ref.read(authStateProvider).valueOrNull != null;
@@ -181,15 +222,17 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
           padding: const EdgeInsets.all(20),
           children: [
           const SizedBox(height: 8),
-          Text(
-            'LILA (Lingkar Lengan Atas) adalah ukuran lingkar lengan bagian '
-            'atas (lingkar di pertengahan antara bahu dan siku) yang digunakan '
-            'untuk menilai status gizi remaja apakah mengalami kekurangan '
-            'energi kronis (KEK), yaitu LILA < 23,5 cm. LILA kecil '
-            'menunjukkan tubuh kekurangan asupan energi dan protein dalam waktu '
-            'lama. Akibatnya, risiko stunting meningkat.',
-            style: TextStyle(color: Colors.grey.shade700, height: 1.5),
-          ),
+          if (_usesAgeBands)
+            const _RemajaPutriLilaIntro()
+          else
+            Text(
+              'LILA (Lingkar Lengan Atas) adalah ukuran lingkar lengan bagian '
+              'atas (lingkar di pertengahan antara bahu dan siku) yang digunakan '
+              'untuk menilai status gizi apakah mengalami kekurangan energi '
+              'kronis (KEK), yaitu LILA < 23,5 cm. LILA kecil menunjukkan '
+              'tubuh kekurangan asupan energi dan protein dalam waktu lama.',
+              style: TextStyle(color: Colors.grey.shade700, height: 1.5),
+            ),
           const SizedBox(height: 20),
           Card(
             child: Padding(
@@ -240,16 +283,7 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
                         hintText: 'Contoh: 16',
                         suffixText: 'tahun',
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Masukkan usia';
-                        }
-                        final n = int.tryParse(value.trim());
-                        if (n == null || n <= 0 || n > 120) {
-                          return 'Usia tidak valid (1-120 tahun)';
-                        }
-                        return null;
-                      },
+                      validator: _validateAge,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -315,11 +349,17 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'Interpretasi: LILA < ${LilaCalculator.normalMinimumCm} cm '
-                'berisiko KEK; LILA ≥ ${LilaCalculator.normalMinimumCm} cm '
-                'status gizi relatif normal. Hasil ini bersifat skrining awal '
-                '— konsultasikan dengan tenaga kesehatan untuk penilaian '
-                'lebih lanjut.',
+                _usesAgeBands
+                    ? 'Interpretasi remaja putri: usia 10–14 tahun (normal ≥ 18,5 cm), '
+                        '15–17 tahun (normal ≥ 22 cm), > 17 tahun (normal ≥ 23,5 cm). '
+                        'Di bawah ambang masing-masing berisiko KEK. Hasil ini '
+                        'bersifat skrining awal — konsultasikan dengan tenaga '
+                        'kesehatan untuk penilaian lebih lanjut.'
+                    : 'Interpretasi: LILA < ${LilaCalculator.normalMinimumCm} cm '
+                        'berisiko KEK; LILA ≥ ${LilaCalculator.normalMinimumCm} cm '
+                        'status gizi relatif normal. Hasil ini bersifat skrining awal '
+                        '— konsultasikan dengan tenaga kesehatan untuk penilaian '
+                        'lebih lanjut.',
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.grey.shade600,
@@ -331,6 +371,24 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
         ],
         ),
       ),
+    );
+  }
+}
+
+class _RemajaPutriLilaIntro extends StatelessWidget {
+  const _RemajaPutriLilaIntro();
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(color: Colors.grey.shade700, height: 1.5);
+
+    return Text(
+      'LILA (Lingkar Lengan Atas) digunakan untuk menilai status gizi remaja '
+      'putri terhadap kekurangan energi kronis (KEK). Ambang normal '
+      'berbeda menurut usia: 10–14 tahun (≥ 18,5 cm), 15–17 tahun (≥ 22 cm), '
+      'dan > 17 tahun (≥ 23,5 cm). LILA di bawah ambang menunjukkan risiko '
+      'kekurangan gizi jangka panjang yang dapat menghambat pertumbuhan.',
+      style: style,
     );
   }
 }
@@ -474,6 +532,7 @@ class _LilaResultCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               _anjuran,
+              textAlign: TextAlign.justify,
               style: TextStyle(
                 color: Colors.grey.shade700,
                 height: 1.5,

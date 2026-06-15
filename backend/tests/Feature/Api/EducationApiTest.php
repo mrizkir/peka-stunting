@@ -135,16 +135,17 @@ class EducationApiTest extends TestCase
 			->content;
 
 		$content->anjuranRules()->delete();
-		foreach (\App\Support\CalculatorAnjuranDefaults::lilaRules() as $rule) {
+		foreach (\App\Support\CalculatorAnjuranDefaults::lilaRulesRemajaPutri() as $rule) {
 			$content->anjuranRules()->create($rule);
 		}
 
 		$this->getJson('/api/v1/education/menus/remaja-putri/contents/cek-lila')
 			->assertOk()
 			->assertJsonPath('data.type', 'calculator')
-			->assertJsonCount(2, 'data.anjuran_rules')
-			->assertJsonPath('data.anjuran_rules.0.label', 'Normal')
-			->assertJsonPath('data.anjuran_rules.0.metric', 'lila_cm');
+			->assertJsonCount(6, 'data.anjuran_rules')
+			->assertJsonPath('data.anjuran_rules.0.label', 'Selamat, status gizi relatif normal')
+			->assertJsonPath('data.anjuran_rules.0.metric', 'lila_cm')
+			->assertJsonPath('data.anjuran_rules.0.indicator', 'age_10_14');
 	}
 
 	public function test_calculator_content_returns_anjuran_rules_for_cek_anemia(): void

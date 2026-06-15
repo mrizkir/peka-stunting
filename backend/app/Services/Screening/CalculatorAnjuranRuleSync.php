@@ -37,7 +37,7 @@ class CalculatorAnjuranRuleSync
 
 		$defaults = match ($metric) {
 			CalculatorAnjuranRule::METRIC_BMI => \App\Support\CalculatorAnjuranDefaults::bmiRules(),
-			CalculatorAnjuranRule::METRIC_LILA_CM => \App\Support\CalculatorAnjuranDefaults::lilaRules(),
+			CalculatorAnjuranRule::METRIC_LILA_CM => $this->lilaDefaultsForContent($content),
 			CalculatorAnjuranRule::METRIC_YES_COUNT => \App\Support\CalculatorAnjuranDefaults::anemiaRules(),
 			CalculatorAnjuranRule::METRIC_Z_SCORE => \App\Support\CalculatorAnjuranDefaults::nutritionalStatusRules(),
 			default => [],
@@ -48,5 +48,20 @@ class CalculatorAnjuranRuleSync
 		}
 
 		$this->sync($content, $defaults);
+	}
+
+	/**
+	 * @return array<int, array<string, mixed>>
+	 */
+	private function lilaDefaultsForContent(EducationContent $content): array
+	{
+		$content->loadMissing('item.menu');
+		$menuSlug = $content->item?->menu?->slug;
+
+		if ($menuSlug === \App\Support\LilaAgeBand::REMAJA_PUTRI_MENU_SLUG) {
+			return \App\Support\CalculatorAnjuranDefaults::lilaRulesRemajaPutri();
+		}
+
+		return \App\Support\CalculatorAnjuranDefaults::lilaRules();
 	}
 }

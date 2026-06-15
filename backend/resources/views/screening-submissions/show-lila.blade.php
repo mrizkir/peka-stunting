@@ -27,7 +27,21 @@
         </div>
       </dl>
       <p class="text-base-content/60 mt-5 text-sm leading-6">
-        Batas normal: LILA ≥ 23,5 cm. Di bawah batas tersebut dikategorikan berisiko kekurangan energi kronis (KEK).
+        @if (($answers['age_years'] ?? null) !== null)
+          @php($age = (int) $answers['age_years'])
+          @if ($age >= 10 && $age <= 14)
+            Batas normal remaja putri usia 10–14 tahun: LILA ≥ 18,5 cm.
+          @elseif ($age >= 15 && $age <= 17)
+            Batas normal remaja putri usia 15–17 tahun: LILA ≥ 22 cm.
+          @elseif ($age > 17)
+            Batas normal remaja putri usia &gt; 17 tahun: LILA ≥ 23,5 cm.
+          @else
+            Batas normal: LILA ≥ 23,5 cm.
+          @endif
+        @else
+          Batas normal: LILA ≥ 23,5 cm.
+        @endif
+        Di bawah batas tersebut dikategorikan berisiko kekurangan energi kronis (KEK).
       </p>
     </x-ui.card>
 
