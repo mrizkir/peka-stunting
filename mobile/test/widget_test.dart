@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:peka_stunting/app.dart';
 import 'package:peka_stunting/features/auth/models/user_model.dart';
 import 'package:peka_stunting/features/auth/providers/auth_provider.dart';
+import 'package:peka_stunting/features/splash/models/splash_image_data.dart';
 import 'package:peka_stunting/features/splash/providers/splash_provider.dart';
 
 class _ImmediateGuestAuth extends AuthNotifier {
@@ -18,7 +19,9 @@ void main() {
       ProviderScope(
         overrides: [
           authStateProvider.overrideWith(_ImmediateGuestAuth.new),
-          splashImageUrlProvider.overrideWith((ref) async => null),
+          splashImageProvider.overrideWith(
+            (ref) async => const SplashImageData(),
+          ),
         ],
         child: const PekaStuntingApp(),
       ),
@@ -26,7 +29,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('PEKA'), findsNothing);
-    expect(find.byType(Image), findsWidgets);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
 
     await tester.pump(const Duration(milliseconds: 2500));
     await tester.pump();

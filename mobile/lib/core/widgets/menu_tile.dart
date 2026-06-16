@@ -9,6 +9,7 @@ class MenuTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.color,
+    this.backgroundColor,
     required this.onTap,
   }) : assert(icon != null || imageAsset != null);
 
@@ -17,6 +18,7 @@ class MenuTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final Color color;
+  final Color? backgroundColor;
   final VoidCallback onTap;
 
   Widget _buildLeading() {
@@ -45,6 +47,7 @@ class MenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: backgroundColor,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,

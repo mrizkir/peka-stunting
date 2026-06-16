@@ -33,6 +33,7 @@ class PekaAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       leading: leading,
       automaticallyImplyLeading: automaticallyImplyLeading,
+      titleSpacing: 0,
       title: logoOnly
           ? logo(height: logoHeight)
           : Row(

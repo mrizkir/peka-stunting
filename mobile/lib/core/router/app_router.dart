@@ -11,6 +11,7 @@ import '../../features/home/presentation/app_shell.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/home/presentation/profile_screen.dart';
 import '../../features/kebutuhan_mu/presentation/kebutuhan_mu_content_screen.dart';
+import '../../features/kebutuhan_mu/presentation/kebutuhan_mu_group_screen.dart';
 import '../../features/kebutuhan_mu/presentation/kebutuhan_mu_menu_screen.dart';
 import '../../features/kebutuhan_mu/presentation/kebutuhan_mu_screen.dart';
 import '../../features/kebutuhan_mu/presentation/kebutuhan_mu_section_screen.dart';
@@ -115,6 +116,29 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                                   state.pathParameters['sectionSlug']!,
                             ),
                             routes: [
+                              GoRoute(
+                                path: 'group/:groupSlug',
+                                builder: (context, state) =>
+                                    KebutuhanMuGroupScreen(
+                                  menuSlug: state.pathParameters['menuSlug']!,
+                                  sectionSlug:
+                                      state.pathParameters['sectionSlug']!,
+                                  groupSlug:
+                                      state.pathParameters['groupSlug']!,
+                                ),
+                                routes: [
+                                  GoRoute(
+                                    path: ':itemSlug',
+                                    builder: (context, state) =>
+                                        KebutuhanMuContentScreen(
+                                      menuSlug:
+                                          state.pathParameters['menuSlug']!,
+                                      itemSlug:
+                                          state.pathParameters['itemSlug']!,
+                                    ),
+                                  ),
+                                ],
+                              ),
                               GoRoute(
                                 path: ':itemSlug',
                                 builder: (context, state) =>

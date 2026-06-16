@@ -27,19 +27,32 @@ class KebutuhanMuItem {
     required this.slug,
     required this.type,
     this.excerpt,
+    this.items = const [],
   });
 
   final String name;
   final String slug;
   final String type;
   final String? excerpt;
+  final List<KebutuhanMuItem> items;
+
+  bool get isGroup => type == 'group';
+
+  bool get isCalculator => type == 'calculator';
 
   factory KebutuhanMuItem.fromJson(Map<String, dynamic> json) {
+    final type = json['type'] as String? ?? 'content';
+
     return KebutuhanMuItem(
       name: json['name'] as String,
       slug: json['slug'] as String,
-      type: json['type'] as String? ?? 'content',
+      type: type,
       excerpt: json['excerpt'] as String?,
+      items: type == 'group'
+          ? (json['items'] as List<dynamic>? ?? [])
+              .map((e) => KebutuhanMuItem.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : const [],
     );
   }
 }

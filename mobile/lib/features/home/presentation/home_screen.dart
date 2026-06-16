@@ -24,7 +24,7 @@ class HomeScreen extends ConsumerWidget {
               Center(
                 child: Image.asset(
                   'assets/images/logo_app_2.png',
-                  height: 300,
+                  height: 100,
                   fit: BoxFit.contain,
                 ),
               ),

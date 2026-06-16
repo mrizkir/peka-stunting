@@ -98,18 +98,101 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
   }
 
   Widget _buildItemTile(BuildContext context, KebutuhanMuItem item) {
-    final isCalculator = item.type == 'calculator';
+    if (item.isGroup) {
+      final imageAsset = _itemImageAsset(item.slug);
+
+      return MenuTile(
+        icon: imageAsset == null ? Icons.restaurant_menu_outlined : null,
+        imageAsset: imageAsset,
+        title: item.name,
+        subtitle: '${item.items.length} resep tersedia',
+        color: AppTheme.primary,
+        backgroundColor: const Color(0xFFE1ECC8),
+        onTap: () => context.push(
+          '/kebutuhan-mu/$menuSlug/$sectionSlug/group/${item.slug}',
+        ),
+      );
+    }
+
+    final isCalculator = item.isCalculator;
+    final imageAsset = _itemImageAsset(item.slug);
 
     return MenuTile(
-      icon: isCalculator
-          ? Icons.calculate_outlined
-          : Icons.article_outlined,
+      icon: imageAsset == null
+          ? (isCalculator
+              ? Icons.calculate_outlined
+              : Icons.article_outlined)
+          : null,
+      imageAsset: imageAsset,
       title: item.name,
-      subtitle: 'Silahkan tes untuk skrining',
+      subtitle: isCalculator
+          ? 'Silahkan tes untuk skrining'
+          : 'Baca materi edukasi',
       color: isCalculator ? const Color(0xFF0EA5E9) : AppTheme.primary,
+      backgroundColor: const Color(0xFFE1ECC8),
       onTap: () => context.push(
         '/kebutuhan-mu/$menuSlug/$sectionSlug/${item.slug}',
       ),
     );
+  }
+
+  String? _itemImageAsset(String slug) {
+    switch (slug) {
+      //deteksi dini
+      case 'cek-imt':
+        return 'assets/images/cek_imt_logo.png';
+      case 'cek-lila':
+        return 'assets/images/cek_lila_logo.png';
+      case 'cek-risiko-anemia':
+        return 'assets/images/cek_risiko_anemia_logo.png';
+      case 'cek-keberhasilan-menyusui':
+        return 'assets/images/cek_keberhasilan_menyusui_logo.png';
+      
+      //group menu makanan kearifan lokal
+      case 'menu-makanan-kearifan-lokal':
+        return 'assets/images/menu_makanan_kearifan_lokal_logo.png';
+      
+      //remaja putri
+      case 'pola-gizi-seimbang':
+        return 'assets/images/pola_gizi_seimbang_logo.png';
+      case 'cara-cegah-anemia':
+        return 'assets/images/cara_cegah_anemia_logo.png';
+      case 'olahraga-rutin':
+        return 'assets/images/olahraga_rutin_logo.png';
+      case 'bahaya-begadang':
+        return 'assets/images/bahaya_begadang_logo.png';
+      case 'jaga-organ-kesehatan-reproduksi':
+        return 'assets/images/jaga_organ_kesehatan_reproduksi_logo.png';
+      case 'kebersihan-diri-dan-lingkungan':
+        return 'assets/images/kebersihan_diri_dan_lingkungan_logo.png';
+      
+      //ibu hamil
+      case 'penuhi-kebutuhan-nutrisi':
+        return 'assets/images/penuhi_kebutuhan_nutrisi_logo.png';
+      case 'lakukan-pemeriksaan-kehamilan-secara-rutin':
+        return 'assets/images/lakukan_pemeriksaan_kehamilan_secara_rutin_logo.png';
+      case 'jaga-kebersihan-diri':
+        return 'assets/images/jaga_kebersihan_diri_logo.png';
+      case 'hindari-paparan-asap-rokok':
+        return 'assets/images/hindari_paparan_asap_rokok_logo.png';
+      case 'olahraga-secara-rutin':
+        return 'assets/images/olahraga_secara_rutin_logo.png';
+      case 'hindari-stres':
+        return 'assets/images/hindari_stres_logo.png';
+      case 'istirahat-yang-cukup':
+        return 'assets/images/istirahat_yang_cukup_logo.png';
+      
+      //ibu nifas dan menyusui
+      case 'terapkan-asi-eksklusif':
+        return 'assets/images/terapkan_asi_eksklusif_logo.png';
+      case 'teknik-meningkatkan-produksi-asi':
+        return 'assets/images/teknik_meningkatkan_produksi_asi_logo.png';
+      case 'penuhi-kebutuhan-gizi-seimbang':
+        return 'assets/images/penuhi_kebutuhan_gizi_seimbang_logo.png';
+      case 'persiapkan-kb':
+        return 'assets/images/persiapkan_kb_logo.png';
+      default:
+        return null;
+    }
   }
 }
