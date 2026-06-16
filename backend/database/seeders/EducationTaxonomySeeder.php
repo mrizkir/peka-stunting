@@ -56,6 +56,7 @@ class EducationTaxonomySeeder extends Seeder
       );
 
       if ($children !== []) {
+        $item->content()->delete();
         $this->seedItems($menu, $children, $item->id, $level + 1);
       } else {
         $attributes = [
@@ -157,7 +158,7 @@ class EducationTaxonomySeeder extends Seeder
             'children' => [
               ['name' => 'Pola Gizi Seimbang', 'slug' => 'pola-gizi-seimbang'],
               ['name' => 'Cara Cegah Anemia', 'slug' => 'cara-cegah-anemia'],
-              ['name' => 'Menu Makanan Kearifan Lokal', 'slug' => 'menu-makanan-kearifan-lokal'],
+              $this->menuMakananKearifanLokalUmum(),
               ['name' => 'Olahraga Rutin', 'slug' => 'olahraga-rutin'],
               ['name' => 'Bahaya Begadang', 'slug' => 'bahaya-begadang'],
               ['name' => 'Jaga Organ Kesehatan Reproduksi', 'slug' => 'jaga-organ-kesehatan-reproduksi'],
@@ -176,7 +177,7 @@ class EducationTaxonomySeeder extends Seeder
             'children' => [
               ['name' => 'Pola Gizi Seimbang', 'slug' => 'pola-gizi-seimbang'],
               ['name' => 'Cegah Anemia', 'slug' => 'cegah-anemia'],
-              ['name' => 'Menu Makanan Kearifan Lokal', 'slug' => 'menu-makanan-kearifan-lokal'],
+              $this->menuMakananKearifanLokalUmum(),
               ['name' => 'Jaga Alat Reproduksi', 'slug' => 'jaga-alat-reproduksi'],
               ['name' => 'Rencanakan kehamilan dengan baik', 'slug' => 'rencanakan-kehamilan-dengan-baik'],
               ['name' => 'Persiapkan 1000 hari pertama kehidupan', 'slug' => 'persiapkan-1000-hari-pertama-kehidupan'],
@@ -193,7 +194,7 @@ class EducationTaxonomySeeder extends Seeder
             'slug' => 'upaya-pencegahan-stunting',
             'children' => [
               ['name' => 'Penuhi Kebutuhan Nutrisi', 'slug' => 'penuhi-kebutuhan-nutrisi'],
-              ['name' => 'Menu Makanan Kearifan Lokal', 'slug' => 'menu-makanan-kearifan-lokal'],
+              $this->menuMakananKearifanLokalUmum(),
               ['name' => 'Lakukan Pemeriksaan Kehamilan Secara Rutin', 'slug' => 'lakukan-pemeriksaan-kehamilan-secara-rutin'],
               ['name' => 'Jaga Kebersihan Diri', 'slug' => 'jaga-kebersihan-diri'],
               ['name' => 'Hindari Paparan Asap Rokok', 'slug' => 'hindari-paparan-asap-rokok'],
@@ -224,7 +225,7 @@ class EducationTaxonomySeeder extends Seeder
               ['name' => 'Terapkan ASI Eksklusif', 'slug' => 'terapkan-asi-eksklusif'],
               ['name' => 'Teknik Meningkatkan Produksi ASI', 'slug' => 'teknik-meningkatkan-produksi-asi'],
               ['name' => 'Penuhi Kebutuhan Nutrisi', 'slug' => 'penuhi-kebutuhan-gizi-seimbang'],
-              ['name' => 'Menu Makanan Kearifan Lokal', 'slug' => 'makanan-kearifan-lokal-penambah-produksi-asi'],
+              $this->menuMakananKearifanLokalUmum('makanan-kearifan-lokal-penambah-produksi-asi'),
               ['name' => 'Persiapkan KB', 'slug' => 'persiapkan-kb'],
             ],
           ],
@@ -247,12 +248,50 @@ class EducationTaxonomySeeder extends Seeder
             'children' => [
               ['name' => 'Pemberian ASI', 'slug' => 'pemberian-asi'],
               ['name' => 'Pemberian MPASI yang Benar', 'slug' => 'pemberian-makanan-pendamping-asi-yang-benar'],
-              ['name' => 'Menu Makanan Kearifan Lokal', 'slug' => 'menu-makanan-tambahan-berbasis-kearifan-lokal'],
+              $this->menuMakananKearifanLokalBayiBalita(),
               ['name' => 'Memantau Tumbuh Kembang', 'slug' => 'rutin-memantau-pertumbuhan-balita'],
               ['name' => 'Imunisasi', 'slug' => 'imunisasi'],
             ],
           ],
         ],
+      ],
+    ];
+  }
+
+  /**
+   * @return array{name: string, slug: string, children: array<int, array{name: string}>}
+   */
+  private function menuMakananKearifanLokalUmum(string $slug = 'menu-makanan-kearifan-lokal'): array
+  {
+    return [
+      'name' => 'Menu Makanan Kearifan Lokal',
+      'slug' => $slug,
+      'children' => [
+        ['name' => 'Tumis Jantung Pisang Bilis Basah'],
+        ['name' => 'Pindang Ikan Amoy'],
+        ['name' => 'Nugget Ikan Kembung'],
+        ['name' => 'Otak-Otak Bilis Basah'],
+        ['name' => 'Tim Pindang Ikan Patin Sayuran'],
+        ['name' => 'Dadar Telur Ikan Bilis Daun Singkong'],
+        ['name' => 'Dimsum Ikan Kembung Tahu Wortel'],
+        ['name' => 'Tumis Daun Pepaya Bilis Basah'],
+      ],
+    ];
+  }
+
+  /**
+   * @return array{name: string, slug: string, children: array<int, array{name: string}>}
+   */
+  private function menuMakananKearifanLokalBayiBalita(): array
+  {
+    return [
+      'name' => 'Menu Makanan Kearifan Lokal',
+      'slug' => 'menu-makanan-tambahan-berbasis-kearifan-lokal',
+      'children' => [
+        ['name' => 'Nugget Ikan Kembung'],
+        ['name' => 'Bubur Ikan Kembung'],
+        ['name' => 'Otak-Otak Bilis Basah'],
+        ['name' => 'Tim Pindang Ikan Patin Sayuran'],
       ],
     ];
   }

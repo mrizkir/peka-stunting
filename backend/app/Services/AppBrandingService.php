@@ -9,7 +9,7 @@ class AppBrandingService
 {
     public function splashImageUrl(): ?string
     {
-        $url = AppBranding::instance()->splashMedia()?->getUrl();
+        $url = AppBranding::instance()->splashMedia()?->getFullUrl();
 
         if ($url === null || $url === '') {
             return null;

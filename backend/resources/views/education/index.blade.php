@@ -61,26 +61,68 @@
             <div class="flex items-center justify-between gap-3">
               <div>
                 <h2 class="text-base font-semibold text-slate-950">{{ $section['title'] }}</h2>
-                <p class="mt-1 text-sm text-slate-500">{{ count($section['items']) }} item pada section ini.</p>
+                <p class="mt-1 text-sm text-slate-500">
+                  @php
+                    $sectionItemCount = collect($section['items'])->sum(function (array $item) {
+                      if (($item['type'] ?? '') === 'Group') {
+                        return count($item['children'] ?? []);
+                      }
+
+                      return 1;
+                    });
+                  @endphp
+                  {{ $sectionItemCount }} item pada section ini.
+                </p>
               </div>
               <x-ui.badge tone="info">Level 2</x-ui.badge>
             </div>
 
             <div class="mt-5 space-y-3">
               @foreach ($section['items'] as $item)
-                <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-                  <div>
-                    <p class="font-medium text-slate-900">{{ $item['title'] }}</p>
-                    <p class="mt-1 text-sm text-slate-500">{{ $item['type'] }}</p>
-                  </div>
+                @if (($item['type'] ?? '') === 'Group')
+                  <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <p class="font-medium text-slate-900">{{ $item['title'] }}</p>
+                        <p class="mt-1 text-sm text-slate-500">{{ $item['type'] }}</p>
+                      </div>
+                      <x-ui.badge tone="info">Level 2</x-ui.badge>
+                    </div>
 
-                  <div class="flex items-center gap-3">
-                    <x-ui.badge :tone="$item['status'] === 'Published' ? 'success' : 'warning'">
-                      {{ $item['status'] }}
-                    </x-ui.badge>
-                    <a href="{{ route('education.contents.show', ['menu' => $menu['slug'], 'item' => $item['slug']]) }}" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">Buka</a>
+                    <div class="mt-4 space-y-3 border-l-2 border-slate-200 pl-4">
+                      @foreach ($item['children'] as $child)
+                        <div class="flex items-center justify-between rounded-2xl bg-white px-4 py-3 ring-1 ring-slate-200">
+                          <div>
+                            <p class="font-medium text-slate-900">{{ $child['title'] }}</p>
+                            <p class="mt-1 text-sm text-slate-500">{{ $child['type'] }}</p>
+                          </div>
+
+                          <div class="flex items-center gap-3">
+                            <x-ui.badge tone="neutral">Level 3</x-ui.badge>
+                            <x-ui.badge :tone="$child['status'] === 'Published' ? 'success' : 'warning'">
+                              {{ $child['status'] }}
+                            </x-ui.badge>
+                            <a href="{{ route('education.contents.show', ['menu' => $menu['slug'], 'item' => $child['slug']]) }}" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">Buka</a>
+                          </div>
+                        </div>
+                      @endforeach
+                    </div>
                   </div>
-                </div>
+                @else
+                  <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                    <div>
+                      <p class="font-medium text-slate-900">{{ $item['title'] }}</p>
+                      <p class="mt-1 text-sm text-slate-500">{{ $item['type'] }}</p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                      <x-ui.badge :tone="$item['status'] === 'Published' ? 'success' : 'warning'">
+                        {{ $item['status'] }}
+                      </x-ui.badge>
+                      <a href="{{ route('education.contents.show', ['menu' => $menu['slug'], 'item' => $item['slug']]) }}" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">Buka</a>
+                    </div>
+                  </div>
+                @endif
               @endforeach
             </div>
           </section>

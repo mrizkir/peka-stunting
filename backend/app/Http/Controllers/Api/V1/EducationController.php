@@ -38,6 +38,8 @@ class EducationController extends Controller
 			->with([
 				'children' => fn ($query) => $query->orderBy('sort_order'),
 				'children.content.media',
+				'children.children' => fn ($query) => $query->orderBy('sort_order'),
+				'children.children.content.media',
 				'content.media',
 			])
 			->get();

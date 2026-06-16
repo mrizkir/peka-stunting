@@ -38,7 +38,7 @@ class EducationApiPresenter
 		foreach ($rootItems as $rootItem) {
 			if ($rootItem->children->isNotEmpty()) {
 				$sectionItems = $rootItem->children
-					->map(fn (EducationItem $child) => $this->presentLeafItem($child))
+					->map(fn (EducationItem $child) => $this->presentSectionItem($child))
 					->filter()
 					->values()
 					->all();
@@ -114,6 +114,43 @@ class EducationApiPresenter
 				'name' => $item->name,
 				'slug' => $item->slug,
 			],
+		];
+	}
+
+	/**
+	 * @return array<string, mixed>|null
+	 */
+	private function presentSectionItem(EducationItem $item): ?array
+	{
+		if ($item->children->isNotEmpty()) {
+			return $this->presentGroupItem($item);
+		}
+
+		return $this->presentLeafItem($item);
+	}
+
+	/**
+	 * @return array<string, mixed>|null
+	 */
+	private function presentGroupItem(EducationItem $item): ?array
+	{
+		$groupItems = $item->children
+			->map(fn (EducationItem $child) => $this->presentLeafItem($child))
+			->filter()
+			->values()
+			->all();
+
+		if ($groupItems === []) {
+			return null;
+		}
+
+		return [
+			'id' => $item->id,
+			'name' => $item->name,
+			'slug' => $item->slug,
+			'sort_order' => $item->sort_order,
+			'type' => 'group',
+			'items' => $groupItems,
 		];
 	}
 

@@ -41,7 +41,11 @@ class EducationController extends Controller
 		}
 
 		$rootItems = $menu->rootItems()
-			->with(['children.content', 'content'])
+			->with([
+				'children.content',
+				'children.children.content',
+				'content',
+			])
 			->get();
 
 		return view('education.index', [
@@ -169,7 +173,7 @@ class EducationController extends Controller
 
 	/**
 	 * @param  \Illuminate\Support\Collection<int, EducationItem>  $rootItems
-	 * @return array<int, array{title: string, items: array<int, array{title: string, slug: string, type: string, status: string}>}>
+	 * @return array<int, array{title: string, items: array<int, array<string, mixed>>}>
 	 */
 	private function buildSections($rootItems): array
 	{
@@ -178,14 +182,18 @@ class EducationController extends Controller
 
 		foreach ($rootItems as $rootItem) {
 			if ($rootItem->children->isNotEmpty()) {
-				$sections[] = [
-					'title' => $rootItem->name,
-					'items' => $rootItem->children
-						->filter(fn (EducationItem $child) => $child->content !== null)
-						->map(fn (EducationItem $child) => $this->formatListItem($child))
-						->values()
-						->all(),
-				];
+				$sectionItems = $rootItem->children
+					->map(fn (EducationItem $child) => $this->formatSectionListItem($child))
+					->filter()
+					->values()
+					->all();
+
+				if ($sectionItems !== []) {
+					$sections[] = [
+						'title' => $rootItem->name,
+						'items' => $sectionItems,
+					];
+				}
 			} elseif ($rootItem->content !== null) {
 				$flatItems[] = $this->formatListItem($rootItem);
 			}
@@ -199,6 +207,38 @@ class EducationController extends Controller
 		}
 
 		return $sections;
+	}
+
+	/**
+	 * @return array<string, mixed>|null
+	 */
+	private function formatSectionListItem(EducationItem $item): ?array
+	{
+		if ($item->children->isNotEmpty()) {
+			$children = $item->children
+				->filter(fn (EducationItem $child) => $child->content !== null)
+				->map(fn (EducationItem $child) => $this->formatListItem($child))
+				->values()
+				->all();
+
+			if ($children === []) {
+				return null;
+			}
+
+			return [
+				'title' => $item->name,
+				'slug' => $item->slug,
+				'type' => 'Group',
+				'status' => '-',
+				'children' => $children,
+			];
+		}
+
+		if ($item->content === null) {
+			return null;
+		}
+
+		return $this->formatListItem($item);
 	}
 
 	/**

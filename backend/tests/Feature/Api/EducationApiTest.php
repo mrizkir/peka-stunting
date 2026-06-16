@@ -208,6 +208,75 @@ class EducationApiTest extends TestCase
 			->assertJsonPath('data.calculator_config.questions.0.id', 'fatigue_5l');
 	}
 
+	public function test_menu_show_includes_kearifan_group_with_published_recipes(): void
+	{
+		$this->publishContent('remaja-putri', 'nugget-ikan-kembung');
+
+		$response = $this->getJson('/api/v1/education/menus/remaja-putri');
+
+		$response->assertOk();
+
+		$sectionItems = collect($response->json('data.sections'))
+			->firstWhere('slug', 'upaya-pencegahan-stunting')['items'] ?? [];
+
+		$group = collect($sectionItems)->firstWhere('slug', 'menu-makanan-kearifan-lokal');
+
+		$this->assertNotNull($group);
+		$this->assertSame('group', $group['type']);
+		$this->assertCount(1, $group['items']);
+		$this->assertSame('nugget-ikan-kembung', $group['items'][0]['slug']);
+	}
+
+	public function test_menu_show_hides_kearifan_group_when_no_recipes_published(): void
+	{
+		$response = $this->getJson('/api/v1/education/menus/remaja-putri');
+
+		$response->assertOk();
+
+		$sectionItems = collect($response->json('data.sections'))
+			->firstWhere('slug', 'upaya-pencegahan-stunting')['items'] ?? [];
+
+		$this->assertNull(
+			collect($sectionItems)->firstWhere('slug', 'menu-makanan-kearifan-lokal'),
+		);
+	}
+
+	public function test_bayi_balita_kearifan_group_has_four_recipes(): void
+	{
+		foreach ([
+			'nugget-ikan-kembung',
+			'bubur-ikan-kembung',
+			'otak-otak-bilis-basah',
+			'tim-pindang-ikan-patin-sayuran',
+		] as $recipeSlug) {
+			$this->publishContent('bayi-dan-balita', $recipeSlug);
+		}
+
+		$bayiResponse = $this->getJson('/api/v1/education/menus/bayi-dan-balita');
+		$bayiResponse->assertOk();
+
+		$sectionItems = collect($bayiResponse->json('data.sections'))
+			->firstWhere('slug', 'upaya-pencegahan-stunting')['items'] ?? [];
+
+		$group = collect($sectionItems)
+			->firstWhere('slug', 'menu-makanan-tambahan-berbasis-kearifan-lokal');
+
+		$this->assertNotNull($group);
+		$this->assertSame('group', $group['type']);
+		$this->assertCount(4, $group['items']);
+
+		$remajaResponse = $this->getJson('/api/v1/education/menus/remaja-putri');
+		$remajaResponse->assertOk();
+
+		$remajaSectionItems = collect($remajaResponse->json('data.sections'))
+			->firstWhere('slug', 'upaya-pencegahan-stunting')['items'] ?? [];
+
+		$remajaGroup = collect($remajaSectionItems)
+			->firstWhere('slug', 'menu-makanan-kearifan-lokal');
+
+		$this->assertNull($remajaGroup);
+	}
+
 	/**
 	 * @param  array<string, mixed>  $overrides
 	 */
