@@ -140,57 +140,69 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
     switch (slug) {
       //deteksi dini
       case 'cek-imt':
-        return 'assets/images/cek_imt_logo.png';
+        return 'assets/images/deteksi_dini/cek_imt_logo.png';
       case 'cek-lila':
-        return 'assets/images/cek_lila_logo.png';
+        return 'assets/images/deteksi_dini/cek_lila_logo.png';
       case 'cek-risiko-anemia':
-        return 'assets/images/cek_risiko_anemia_logo.png';
+        return 'assets/images/deteksi_dini/cek_risiko_anemia_logo.png';
       case 'cek-keberhasilan-menyusui':
-        return 'assets/images/cek_keberhasilan_menyusui_logo.png';
+        return 'assets/images/deteksi_dini/cek_keberhasilan_menyusui_logo.png';
+      case 'periksa-status-gizi':
+        return 'assets/images/deteksi_dini/cek_status_gizi_logo.png';
       
       //group menu makanan kearifan lokal
       case 'menu-makanan-kearifan-lokal':
-        return 'assets/images/menu_makanan_kearifan_lokal_logo.png';
+        return 'assets/images/group/menu_makanan_kearifan_lokal_logo.png';
       
       //remaja putri
       case 'pola-gizi-seimbang':
-        return 'assets/images/pola_gizi_seimbang_logo.png';
+        return 'assets/images/remaja_putri/pola_gizi_seimbang_logo.png';
       case 'cara-cegah-anemia':
-        return 'assets/images/cara_cegah_anemia_logo.png';
+        return 'assets/images/remaja_putri/cara_cegah_anemia_logo.png';
       case 'olahraga-rutin':
-        return 'assets/images/olahraga_rutin_logo.png';
+        return 'assets/images/remaja_putri/olahraga_rutin_logo.png';
       case 'bahaya-begadang':
-        return 'assets/images/bahaya_begadang_logo.png';
+        return 'assets/images/remaja_putri/bahaya_begadang_logo.png';
       case 'jaga-organ-kesehatan-reproduksi':
-        return 'assets/images/jaga_organ_kesehatan_reproduksi_logo.png';
+        return 'assets/images/remaja_putri/jaga_organ_kesehatan_reproduksi_logo.png';
       case 'kebersihan-diri-dan-lingkungan':
-        return 'assets/images/kebersihan_diri_dan_lingkungan_logo.png';
+        return 'assets/images/remaja_putri/kebersihan_diri_dan_lingkungan_logo.png';
       
       //ibu hamil
       case 'penuhi-kebutuhan-nutrisi':
-        return 'assets/images/penuhi_kebutuhan_nutrisi_logo.png';
+        return 'assets/images/ibu_hamil/penuhi_kebutuhan_nutrisi_logo.png';
       case 'lakukan-pemeriksaan-kehamilan-secara-rutin':
-        return 'assets/images/lakukan_pemeriksaan_kehamilan_secara_rutin_logo.png';
+        return 'assets/images/ibu_hamil/lakukan_pemeriksaan_kehamilan_secara_rutin_logo.png';
       case 'jaga-kebersihan-diri':
-        return 'assets/images/jaga_kebersihan_diri_logo.png';
+        return 'assets/images/ibu_hamil/jaga_kebersihan_diri_logo.png';
       case 'hindari-paparan-asap-rokok':
-        return 'assets/images/hindari_paparan_asap_rokok_logo.png';
+        return 'assets/images/ibu_hamil/hindari_paparan_asap_rokok_logo.png';
       case 'olahraga-secara-rutin':
-        return 'assets/images/olahraga_secara_rutin_logo.png';
+        return 'assets/images/ibu_hamil/olahraga_secara_rutin_logo.png';
       case 'hindari-stres':
-        return 'assets/images/hindari_stres_logo.png';
+        return 'assets/images/ibu_hamil/hindari_stres_logo.png';
       case 'istirahat-yang-cukup':
-        return 'assets/images/istirahat_yang_cukup_logo.png';
+        return 'assets/images/ibu_hamil/istirahat_yang_cukup_logo.png';
       
       //ibu nifas dan menyusui
       case 'terapkan-asi-eksklusif':
-        return 'assets/images/terapkan_asi_eksklusif_logo.png';
+        return 'assets/images/ibu_nifas/terapkan_asi_eksklusif_logo.png';
       case 'teknik-meningkatkan-produksi-asi':
-        return 'assets/images/teknik_meningkatkan_produksi_asi_logo.png';
+        return 'assets/images/ibu_nifas/teknik_meningkatkan_produksi_asi_logo.png';
       case 'penuhi-kebutuhan-gizi-seimbang':
-        return 'assets/images/penuhi_kebutuhan_gizi_seimbang_logo.png';
+        return 'assets/images/ibu_nifas/penuhi_kebutuhan_gizi_seimbang_logo.png';
       case 'persiapkan-kb':
-        return 'assets/images/persiapkan_kb_logo.png';
+        return 'assets/images/ibu_nifas/persiapkan_kb_logo.png';
+      
+      //bayi dan balita
+      case 'pemberian-asi':
+        return 'assets/images/balita/pemberian_asi_logo.png';
+      case 'pemberian-makanan-pendamping-asi-yang-benar':
+        return 'assets/images/balita/pemberian_mpasi_benar_logo.png';
+      case 'rutin-memantau-pertumbuhan-balita':
+        return 'assets/images/balita/rutin_memantau_pertumbuhan_balita_logo.png';
+      case 'imunisasi':
+        return 'assets/images/balita/imunisasi_logo.png';
       default:
         return null;
     }

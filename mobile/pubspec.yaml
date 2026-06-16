@@ -85,8 +85,15 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/deteksi_dini/
+    - assets/images/group/
+    - assets/images/remaja_putri/
+    - assets/images/ibu_hamil/
+    - assets/images/ibu_nifas/
+    - assets/images/balita/
+    - assets/images/level_1/
+    - assets/images/level_2/
     - assets/images/logo_app_1.png
-    - assets/images/icon_mengenal_stunting.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

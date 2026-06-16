@@ -125,6 +125,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final splashData = splashAsync.valueOrNull;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFA0C49D),
       body: SplashLogo(
         remoteUrl: splashData?.remoteUrl,
         localPath: splashData?.localPath,

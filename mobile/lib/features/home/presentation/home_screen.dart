@@ -38,19 +38,19 @@ class HomeScreen extends ConsumerWidget {
               HomeFeaturedMenuCard(
                 title: 'Mengenal Stunting',
                 subtitle: 'Baca materi edukasi sesuai kelompok sasaran.',
-                imageAsset: 'assets/images/icon_mengenal_stunting.png',
+                imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
                 onTap: () => context.push('/mengenal-stunting'),
               ),
               const SizedBox(height: 16),
               HomeFeaturedMenuCard(
-                imageAsset: 'assets/images/icon_kebutuhan_mu.png',
+                imageAsset: 'assets/images/level_1/icon_kebutuhan_mu.png',
                 title: 'Kebutuhanmu',
                 subtitle: 'Pilih kelompok sasaran sesuai kebutuhan Anda.',
                 onTap: () => context.push('/kebutuhan-mu'),
               ),
               const SizedBox(height: 16),
               HomeFeaturedMenuCard(
-                imageAsset: 'assets/images/info_aplikasi.png',
+                imageAsset: 'assets/images/level_1/info_aplikasi.png',
                 title: 'Info Aplikasi',
                 subtitle: 'Tentang aplikasi PEKA Stunting.',
                 onTap: () => context.push('/app-info'),

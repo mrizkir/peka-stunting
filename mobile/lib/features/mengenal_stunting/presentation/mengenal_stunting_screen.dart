@@ -57,7 +57,7 @@ class MengenalStuntingScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(20),
                 children: [                                    
                   MenuTile(
-                    imageAsset: 'assets/images/icon_mengenal_stunting.png',
+                    imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
                     title: 'Pengertian Stunting',
                     subtitle: 'Memahami pengertian stunting.',
                     color: AppTheme.primary,
@@ -65,7 +65,7 @@ class MengenalStuntingScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   MenuTile(
-                    imageAsset: 'assets/images/icon_mengenal_stunting.png',
+                    imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
                     title: 'Ciri - Ciri Stunting',
                     subtitle: 'Mengenali ciri-ciri stunting.',
                     color: const Color(0xFF6366F1),
@@ -73,21 +73,21 @@ class MengenalStuntingScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   MenuTile(
-                    imageAsset: 'assets/images/icon_mengenal_stunting.png',
+                    imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
                     title: 'Penyebab Stunting',
                     subtitle: 'Mengenali penyebab stunting.',
                     color: const Color(0xFF6366F1),
                     onTap: () => context.push('/mengenal-stunting/penyebab'),
                   ),
                   MenuTile(
-                    imageAsset: 'assets/images/icon_mengenal_stunting.png',
+                    imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
                     title: 'Siapa yang Berisiko',
                     subtitle: 'Mengenali siapa yang berisiko stunting.',
                     color: const Color(0xFF6366F1),
                     onTap: () => context.push('/mengenal-stunting/siapa-yang-berisiko'),
                   ),
                   MenuTile(
-                    imageAsset: 'assets/images/icon_mengenal_stunting.png',
+                    imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
                     title: 'Dampak Stunting',
                     subtitle: 'Mengenali siapa yang berisiko stunting.',
                     color: const Color(0xFF6366F1),
