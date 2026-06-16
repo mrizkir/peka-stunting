@@ -6,7 +6,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/peka_app_bar.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
-import '../../kebutuhan_mu/kebutuhan_mu_config.dart';
 import '../../kebutuhan_mu/models/kebutuhan_mu_models.dart';
 import '../../kebutuhan_mu/presentation/widgets/kebutuhan_mu_menu_description.dart';
 import '../data/anemia_screening_repository.dart';
@@ -52,9 +51,6 @@ class CekRisikoAnemiaScreen extends ConsumerStatefulWidget {
 }
 
 class _CekRisikoAnemiaScreenState extends ConsumerState<CekRisikoAnemiaScreen> {
-  String get _groupLabel =>
-      KebutuhanMuConfig.groupTitles[widget.menuSlug] ?? 'Kebutuhanmu';
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,16 +67,9 @@ class _CekRisikoAnemiaScreenState extends ConsumerState<CekRisikoAnemiaScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
           children: [
-          Text(
-            _groupLabel,
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 14,
-            ),
-          ),
           const SizedBox(height: 8),
           _AnemiaIntroText(menuSlug: widget.menuSlug),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -409,16 +398,35 @@ class _AnemiaIntroText extends ConsumerWidget {
     Widget? introFromSnapshot(KebutuhanMuContentSnapshot? snapshot) {
       final content = snapshot?.content;
       final excerpt = content?.excerpt?.trim();
-      if (excerpt != null && excerpt.isNotEmpty) {
-        return Text(excerpt, style: introStyle);
-      }
-
       final body = content?.body?.trim();
-      if (body != null && body.isNotEmpty) {
-        return KebutuhanMuMenuDescription(description: body);
+      final hasExcerpt = excerpt != null && excerpt.isNotEmpty;
+      final hasBody = body != null && body.isNotEmpty;
+
+      if (!hasExcerpt && !hasBody) {
+        return null;
       }
 
-      return null;
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Deskripsi',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              if (hasExcerpt) Text(excerpt, style: introStyle),
+              if (hasExcerpt && hasBody) const SizedBox(height: 8),
+              if (hasBody)
+                KebutuhanMuMenuDescription(description: body),
+            ],
+          ),
+        ),
+      );
     }
 
     return contentAsync.when(

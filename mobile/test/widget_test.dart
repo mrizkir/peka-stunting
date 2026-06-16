@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -24,7 +25,8 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('PEKA'), findsOneWidget);
+    expect(find.text('PEKA'), findsNothing);
+    expect(find.byType(Image), findsWidgets);
 
     await tester.pump(const Duration(milliseconds: 2500));
     await tester.pump();

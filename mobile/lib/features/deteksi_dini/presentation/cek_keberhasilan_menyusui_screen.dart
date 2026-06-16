@@ -416,16 +416,35 @@ class _MenyusuiIntroText extends ConsumerWidget {
     Widget? introFromSnapshot(KebutuhanMuContentSnapshot? snapshot) {
       final content = snapshot?.content;
       final excerpt = content?.excerpt?.trim();
-      if (excerpt != null && excerpt.isNotEmpty) {
-        return Text(excerpt, style: introStyle);
-      }
-
       final body = content?.body?.trim();
-      if (body != null && body.isNotEmpty) {
-        return KebutuhanMuMenuDescription(description: body);
+      final hasExcerpt = excerpt != null && excerpt.isNotEmpty;
+      final hasBody = body != null && body.isNotEmpty;
+
+      if (!hasExcerpt && !hasBody) {
+        return null;
       }
 
-      return null;
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Deskripsi',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              if (hasExcerpt) Text(excerpt, style: introStyle),
+              if (hasExcerpt && hasBody) const SizedBox(height: 8),
+              if (hasBody)
+                KebutuhanMuMenuDescription(description: body),
+            ],
+          ),
+        ),
+      );
     }
 
     return contentAsync.when(

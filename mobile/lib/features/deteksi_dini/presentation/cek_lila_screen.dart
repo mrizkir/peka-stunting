@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/peka_app_bar.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
+import '../../kebutuhan_mu/presentation/widgets/kebutuhan_mu_menu_description.dart';
 import '../data/lila_screening_repository.dart';
 import '../domain/bmi_calculator.dart';
 import '../domain/calculator_anjuran_resolver.dart';
@@ -222,18 +223,8 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
           padding: const EdgeInsets.all(20),
           children: [
           const SizedBox(height: 8),
-          if (_usesAgeBands)
-            const _RemajaPutriLilaIntro()
-          else
-            Text(
-              'LILA (Lingkar Lengan Atas) adalah ukuran lingkar lengan bagian '
-              'atas (lingkar di pertengahan antara bahu dan siku) yang digunakan '
-              'untuk menilai status gizi apakah mengalami kekurangan energi '
-              'kronis (KEK), yaitu LILA < 23,5 cm. LILA kecil menunjukkan '
-              'tubuh kekurangan asupan energi dan protein dalam waktu lama.',
-              style: TextStyle(color: Colors.grey.shade700, height: 1.5),
-            ),
-          const SizedBox(height: 20),
+          _LilaIntroText(menuSlug: widget.menuSlug),
+          const SizedBox(height: 16),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -377,20 +368,58 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
   }
 }
 
-class _RemajaPutriLilaIntro extends StatelessWidget {
-  const _RemajaPutriLilaIntro();
+class _LilaIntroText extends ConsumerWidget {
+  const _LilaIntroText({required this.menuSlug});
+
+  final String menuSlug;
 
   @override
-  Widget build(BuildContext context) {
-    final style = TextStyle(color: Colors.grey.shade700, height: 1.5);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final introStyle = TextStyle(
+      color: Colors.grey.shade700,
+      height: 1.5,
+    );
 
-    return Text(
-      'LILA (Lingkar Lengan Atas) digunakan untuk menilai status gizi remaja '
-      'putri terhadap kekurangan energi kronis (KEK). Ambang normal '
-      'berbeda menurut usia: 10–14 tahun (≥ 18,5 cm), 15–17 tahun (≥ 22 cm), '
-      'dan > 17 tahun (≥ 23,5 cm). LILA di bawah ambang menunjukkan risiko '
-      'kekurangan gizi jangka panjang yang dapat menghambat pertumbuhan.',
-      style: style,
+    final contentAsync = ref.watch(cekLilaContentProvider(menuSlug));
+
+    Widget? introFromSnapshot(KebutuhanMuContentSnapshot? snapshot) {
+      final content = snapshot?.content;
+      final excerpt = content?.excerpt?.trim();
+      final body = content?.body?.trim();
+      final hasExcerpt = excerpt != null && excerpt.isNotEmpty;
+      final hasBody = body != null && body.isNotEmpty;
+
+      if (!hasExcerpt && !hasBody) {
+        return null;
+      }
+
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Deskripsi',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              if (hasExcerpt) Text(excerpt, style: introStyle),
+              if (hasExcerpt && hasBody) const SizedBox(height: 8),
+              if (hasBody)
+                KebutuhanMuMenuDescription(description: body),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return contentAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (snapshot) => introFromSnapshot(snapshot) ?? const SizedBox.shrink(),
     );
   }
 }

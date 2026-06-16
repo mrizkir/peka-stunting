@@ -168,9 +168,9 @@ class _CekImtScreenState extends ConsumerState<CekImtScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
           children: [
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           _ImtIntroText(menuSlug: widget.menuSlug),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -299,12 +299,12 @@ class _ImtIntroText extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final introStyle = TextStyle(
       color: Colors.grey.shade700,
-      height: 1.4,
+      height: 1.5,
     );
 
     final contentAsync = ref.watch(cekImtContentProvider(menuSlug));
 
-    Widget introFromSnapshot(KebutuhanMuContentSnapshot? snapshot) {
+    Widget? introFromSnapshot(KebutuhanMuContentSnapshot? snapshot) {
       final content = snapshot?.content;
       final excerpt = content?.excerpt?.trim();
       final body = content?.body?.trim();
@@ -312,36 +312,26 @@ class _ImtIntroText extends ConsumerWidget {
       final hasBody = body != null && body.isNotEmpty;
 
       if (!hasExcerpt && !hasBody) {
-        return const SizedBox.shrink();
+        return null;
       }
 
       return Card(
-        clipBehavior: Clip.antiAlias,
         child: Padding(
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (hasExcerpt)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey.shade300),
+              Text(
+                'Deskripsi',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                  ),
-                  child: Text(excerpt, style: introStyle),
-                ),
+              ),
+              const SizedBox(height: 8),
+              if (hasExcerpt) Text(excerpt, style: introStyle),
+              if (hasExcerpt && hasBody) const SizedBox(height: 8),
               if (hasBody)
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: KebutuhanMuMenuDescription(description: body),
-                ),
+                KebutuhanMuMenuDescription(description: body),
             ],
           ),
         ),
@@ -351,7 +341,7 @@ class _ImtIntroText extends ConsumerWidget {
     return contentAsync.when(
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
-      data: introFromSnapshot,
+      data: (snapshot) => introFromSnapshot(snapshot) ?? const SizedBox.shrink(),
     );
   }
 }
