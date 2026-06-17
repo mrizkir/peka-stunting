@@ -61,6 +61,7 @@ class MengenalStuntingScreen extends ConsumerWidget {
                     title: 'Pengertian Stunting',
                     subtitle: 'Memahami pengertian stunting.',
                     color: AppTheme.primary,
+                    backgroundColor: const Color(0xFFE1ECC8),
                     onTap: () => context.push('/mengenal-stunting/pengertian'),
                   ),
                   const SizedBox(height: 12),
@@ -69,6 +70,7 @@ class MengenalStuntingScreen extends ConsumerWidget {
                     title: 'Ciri - Ciri Stunting',
                     subtitle: 'Mengenali ciri-ciri stunting.',
                     color: const Color(0xFF6366F1),
+                    backgroundColor: const Color(0xFFE1ECC8),
                     onTap: () => context.push('/mengenal-stunting/ciri-ciri'),
                   ),
                   const SizedBox(height: 12),
@@ -77,6 +79,7 @@ class MengenalStuntingScreen extends ConsumerWidget {
                     title: 'Penyebab Stunting',
                     subtitle: 'Mengenali penyebab stunting.',
                     color: const Color(0xFF6366F1),
+                    backgroundColor: const Color(0xFFE1ECC8),
                     onTap: () => context.push('/mengenal-stunting/penyebab'),
                   ),
                   MenuTile(
@@ -84,6 +87,7 @@ class MengenalStuntingScreen extends ConsumerWidget {
                     title: 'Siapa yang Berisiko',
                     subtitle: 'Mengenali siapa yang berisiko stunting.',
                     color: const Color(0xFF6366F1),
+                    backgroundColor: const Color(0xFFE1ECC8),
                     onTap: () => context.push('/mengenal-stunting/siapa-yang-berisiko'),
                   ),
                   MenuTile(
@@ -91,6 +95,7 @@ class MengenalStuntingScreen extends ConsumerWidget {
                     title: 'Dampak Stunting',
                     subtitle: 'Mengenali siapa yang berisiko stunting.',
                     color: const Color(0xFF6366F1),
+                    backgroundColor: const Color(0xFFE1ECC8),
                     onTap: () => context.push('/mengenal-stunting/dampak'),
                   ),
                 ],
@@ -123,6 +128,7 @@ class MengenalStuntingScreen extends ConsumerWidget {
           ? item.excerpt!
           : style.subtitle,
       color: style.color,
+      backgroundColor: const Color(0xFFE1ECC8),
       onTap: () => context.push('/mengenal-stunting/${item.slug}'),
     );
   }

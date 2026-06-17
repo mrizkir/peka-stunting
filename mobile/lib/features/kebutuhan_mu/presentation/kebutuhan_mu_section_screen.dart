@@ -194,6 +194,16 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
       case 'persiapkan-kb':
         return 'assets/images/ibu_nifas/persiapkan_kb_logo.png';
       
+      //calon pengantin
+      case 'cegah-anemia':
+        return 'assets/images/catin/cegah_anemia_logo.png';
+      case 'jaga-alat-reproduksi':
+        return 'assets/images/catin/jaga_alat_reproduksi_logo.png';
+      case 'rencanakan-kehamilan-dengan-baik':
+        return 'assets/images/catin/rencanakan_kehamilan_logo.png';
+      case 'persiapkan-1000-hari-pertama-kehidupan':
+        return 'assets/images/catin/1000_hari_pertama_kehidupan_logo.png';
+
       //bayi dan balita
       case 'pemberian-asi':
         return 'assets/images/balita/pemberian_asi_logo.png';

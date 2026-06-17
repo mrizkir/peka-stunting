@@ -142,6 +142,7 @@ class KebutuhanMuScreen extends ConsumerWidget {
           ? '${group.publishedContentsCount} konten siap baca'
           : style.subtitle,
       color: style.color,
+      backgroundColor: const Color(0xFFE1ECC8),
       onTap: () => context.push('/kebutuhan-mu/${group.slug}'),
     );
   }
