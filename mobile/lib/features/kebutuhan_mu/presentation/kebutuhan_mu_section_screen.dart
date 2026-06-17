@@ -213,6 +213,8 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
         return 'assets/images/balita/rutin_memantau_pertumbuhan_balita_logo.png';
       case 'imunisasi':
         return 'assets/images/balita/imunisasi_logo.png';
+      case 'menu-makanan-tambahan-berbasis-kearifan-lokal':
+        return 'assets/images/balita/menu_makanan_bayi_logo.png';
       default:
         return null;
     }

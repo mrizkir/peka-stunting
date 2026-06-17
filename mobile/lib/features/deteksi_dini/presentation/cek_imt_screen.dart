@@ -247,7 +247,7 @@ class _CekImtScreenState extends ConsumerState<CekImtScreen> {
                             )
                           : const Text('Hitung IMT'),
                     ),
-                    if (_result != null) ...[
+                    if (_result != null && !_isSaving) ...[
                       const SizedBox(height: 12),
                       OutlinedButton(
                         onPressed: _reset,

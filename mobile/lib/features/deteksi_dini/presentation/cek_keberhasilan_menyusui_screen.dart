@@ -142,6 +142,7 @@ class _MenyusuiQuestionnaireCardState
   ResolvedAnjuran? _resolvedAnjuran;
   bool _isSaving = false;
   String? _questionsSignature;
+  int _resetGeneration = 0;
   final _anjuranResolver = const CalculatorAnjuranResolver();
 
   void _applyQuestionnaire({
@@ -276,6 +277,7 @@ class _MenyusuiQuestionnaireCardState
       _result = null;
       _resolvedAnjuran = null;
       _isSaving = false;
+      _resetGeneration++;
     });
   }
 
@@ -328,7 +330,7 @@ class _MenyusuiQuestionnaireCardState
                   const SizedBox(height: 16),
                   for (var i = 0; i < _questions.length; i++) ...[
                     _QuestionTile(
-                      key: ValueKey(_questions[i].id),
+                      key: ValueKey('${_questions[i].id}-$_resetGeneration'),
                       index: i + 1,
                       question: _questions[i],
                       value: _answers[_questions[i].id],
@@ -357,7 +359,7 @@ class _MenyusuiQuestionnaireCardState
                           )
                         : const Text('Klik Hasil'),
                   ),
-                  if (_result != null) ...[
+                  if (_result != null && !_isSaving) ...[
                     const SizedBox(height: 12),
                     OutlinedButton(
                       onPressed: _reset,

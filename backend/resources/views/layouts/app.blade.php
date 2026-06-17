@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? config('app.name', 'PEKA Stunting') }}</title>
 
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo_app_1.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo_app_1.png') }}">
+
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
 
@@ -14,9 +18,11 @@
     <div class="min-h-screen lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
       <aside class="border-base-300/80 bg-base-100/90 border-b px-6 py-5 shadow-sm backdrop-blur lg:min-h-screen lg:border-r lg:border-b-0">
         <div class="flex items-center gap-3">
-          <div class="bg-primary text-primary-content flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-bold shadow-md">
-            P
-          </div>
+          <img
+            src="{{ asset('images/logo_app_1.png') }}"
+            alt="Logo PEKA Stunting"
+            class="h-11 w-11 shrink-0 rounded-2xl object-cover shadow-md"
+          />
           <div>
             <p class="text-sm font-semibold text-base-content">PEKA Stunting</p>
             <p class="text-base-content/60 text-xs">AKBID Anugerah Bintan</p>

@@ -37,7 +37,7 @@
                             <div class="flex items-start justify-between gap-3">
                                 <div>
                                     <h3 class="text-base font-semibold text-slate-950">{{ $menu['title'] }}</h3>
-                                    <p class="mt-2 text-sm leading-6 text-slate-500">{{ $menu['description'] }}</p>
+                                    <div class="prose prose-sm prose-slate mt-2 max-w-none text-slate-500">{!! $menu['description'] !!}</div>
                                 </div>
                                 <x-ui.badge tone="info">{{ $menu['items_count'] }} item</x-ui.badge>
                             </div>

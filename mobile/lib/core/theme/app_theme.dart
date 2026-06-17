@@ -9,6 +9,17 @@ class AppTheme {
   static const Color infoAppCardBackground = Color(0xFFD1FAE5);
   static const double homeCardRadius = 22;
 
+  static const LinearGradient appBackgroundGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFFE1ECC8),
+      Color(0xFFF8FAFC),
+      Color(0xFFA0C49D),
+    ],
+    stops: [0.0, 0.5, 1.0],
+  );
+
   static ThemeData light() {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: primary,
@@ -19,7 +30,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+      scaffoldBackgroundColor: Colors.transparent,
       appBarTheme: const AppBarTheme(
         centerTitle: false,
         elevation: 0,

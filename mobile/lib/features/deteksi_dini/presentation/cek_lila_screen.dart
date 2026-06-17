@@ -316,7 +316,7 @@ class _CekLilaScreenState extends ConsumerState<CekLilaScreen> {
                             )
                           : const Text('Klik Hasil'),
                     ),
-                    if (_result != null) ...[
+                    if (_result != null && !_isSaving) ...[
                       const SizedBox(height: 12),
                       OutlinedButton(
                         onPressed: _reset,
