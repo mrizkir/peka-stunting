@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/peka_app_bar.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../kebutuhan_mu/data/kebutuhan_mu_repository.dart';
+import '../../kebutuhan_mu/kebutuhan_mu_config.dart';
 import '../../kebutuhan_mu/presentation/widgets/kebutuhan_mu_menu_description.dart';
 import '../data/nutritional_status_screening_repository.dart';
 import '../domain/bmi_calculator.dart';
@@ -207,6 +208,7 @@ class _PeriksaStatusGiziScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PekaAppBar(
+        logoAssetPath: KebutuhanMuConfig.menuLogoAsset(widget.menuSlug),
         title: const Text('Periksa Status Gizi'),
       ),
       body: RefreshIndicator(

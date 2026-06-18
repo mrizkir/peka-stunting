@@ -11,6 +11,7 @@ class PekaAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.automaticallyImplyLeading = true,
     this.logoOnly = false,
     this.logoHeight = 32,
+    this.logoAssetPath,
   });
 
   final Widget? title;
@@ -19,10 +20,11 @@ class PekaAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool automaticallyImplyLeading;
   final bool logoOnly;
   final double logoHeight;
+  final String? logoAssetPath;
 
-  static Widget logo({double height = 32}) {
+  static Widget logo({double height = 32, String? assetPath}) {
     return Image.asset(
-      AppConfig.logoAssetPath,
+      assetPath ?? AppConfig.logoAssetPath,
       height: height,
       fit: BoxFit.contain,
     );
@@ -35,11 +37,11 @@ class PekaAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: automaticallyImplyLeading,
       titleSpacing: 0,
       title: logoOnly
-          ? logo(height: logoHeight)
+          ? logo(height: logoHeight, assetPath: logoAssetPath)
           : Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                logo(height: logoHeight),
+                logo(height: logoHeight, assetPath: logoAssetPath),
                 if (title != null) ...[
                   const SizedBox(width: 10),
                   Flexible(child: title!),

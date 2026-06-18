@@ -60,6 +60,7 @@ class _CekKeberhasilanMenyusuiScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PekaAppBar(
+        logoAssetPath: KebutuhanMuConfig.menuLogoAsset(widget.menuSlug),
         title: const Text('Cek Keberhasilan Menyusui'),
       ),
       body: RefreshIndicator(

@@ -18,6 +18,23 @@ class KebutuhanMuConfig {
     'bayi-dan-balita': 'Bayi dan Balita',
   };
 
+  static String? menuLogoAsset(String menuSlug) {
+    switch (menuSlug) {
+      case 'remaja-putri':
+        return 'assets/images/level_2/remaja_putri.png';
+      case 'calon-pengantin':
+        return 'assets/images/level_2/calon_pengantin.png';
+      case 'ibu-hamil':
+        return 'assets/images/level_2/ibu_hamil.png';
+      case 'ibu-nifas-dan-menyusui':
+        return 'assets/images/level_2/ibu_nifas_menyusui.png';
+      case 'bayi-dan-balita':
+        return 'assets/images/level_2/bayi_balita.png';
+      default:
+        return null;
+    }
+  }
+
   static String? itemLogoAsset(String slug) {
     switch (slug) {
       // deteksi dini

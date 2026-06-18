@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/peka_app_bar.dart';
 import '../../../core/widgets/menu_tile.dart';
+import '../kebutuhan_mu_config.dart';
 import '../data/kebutuhan_mu_repository.dart';
 import '../models/kebutuhan_mu_models.dart';
 
@@ -154,34 +155,36 @@ class KebutuhanMuScreen extends ConsumerWidget {
   }
 
   _GroupTileStyle _tileStyle(String slug) {
+    final imageAsset = KebutuhanMuConfig.menuLogoAsset(slug);
+
     switch (slug) {
       case 'remaja-putri':
         return _GroupTileStyle(
-          imageAsset: 'assets/images/level_2/remaja_putri.png',
+          imageAsset: imageAsset,
           color: const Color(0xFFEC4899),
           subtitle: 'Materi edukasi untuk remaja putri.',
         );
       case 'calon-pengantin':
         return _GroupTileStyle(
-          imageAsset: 'assets/images/level_2/calon_pengantin.png',
+          imageAsset: imageAsset,
           color: const Color(0xFFF43F5E),
           subtitle: 'Materi edukasi untuk calon pengantin.',
         );
       case 'ibu-hamil':
         return _GroupTileStyle(
-          imageAsset: 'assets/images/level_2/ibu_hamil.png',
+          imageAsset: imageAsset,
           color: const Color(0xFF8B5CF6),
           subtitle: 'Materi edukasi untuk ibu hamil.',
         );
       case 'ibu-nifas-dan-menyusui':
         return _GroupTileStyle(
-          imageAsset: 'assets/images/level_2/ibu_nifas_menyusui.png',
+          imageAsset: imageAsset,
           color: const Color(0xFF0EA5E9),
           subtitle: 'Materi edukasi untuk ibu nifas dan menyusui.',
         );
       case 'bayi-dan-balita':
         return _GroupTileStyle(
-          imageAsset: 'assets/images/level_2/bayi_balita.png',
+          imageAsset: imageAsset,
           color: AppTheme.primary,
           subtitle: 'Materi edukasi untuk bayi dan balita.',
         );

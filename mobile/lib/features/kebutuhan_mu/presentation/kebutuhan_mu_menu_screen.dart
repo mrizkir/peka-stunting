@@ -30,6 +30,7 @@ class KebutuhanMuMenuScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: PekaAppBar(
+        logoAssetPath: KebutuhanMuConfig.menuLogoAsset(menuSlug),
         title: Text(
           menuDetailAsync.maybeWhen(
             data: (snapshot) =>

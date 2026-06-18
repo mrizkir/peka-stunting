@@ -9,6 +9,7 @@ import '../../deteksi_dini/presentation/periksa_status_gizi_screen.dart';
 import '../../../core/widgets/peka_app_bar.dart';
 import '../../../core/widgets/education_poster_viewer.dart';
 import '../../../core/widgets/education_video_player.dart';
+import '../kebutuhan_mu_config.dart';
 import '../data/kebutuhan_mu_repository.dart';
 import '../kebutuhan_mu_mock_data.dart';
 import '../models/kebutuhan_mu_models.dart';
@@ -64,6 +65,7 @@ class KebutuhanMuContentScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: PekaAppBar(
+        logoAssetPath: KebutuhanMuConfig.menuLogoAsset(menuSlug),
         title: contentAsync.maybeWhen(
           data: (content) => Text(content.title),
           orElse: () => Text(mockItem?.name ?? 'Materi'),
