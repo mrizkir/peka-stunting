@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/menu_tile.dart';
 import '../../../core/widgets/peka_app_bar.dart';
+import '../kebutuhan_mu_config.dart';
 import '../models/kebutuhan_mu_models.dart';
 import 'kebutuhan_mu_menu_screen.dart';
 
@@ -111,13 +112,17 @@ class KebutuhanMuGroupScreen extends ConsumerWidget {
   }
 
   Widget _buildRecipeTile(BuildContext context, KebutuhanMuItem item) {
+    final imageAsset = KebutuhanMuConfig.itemLogoAsset(item.slug);
+
     return MenuTile(
-      icon: Icons.restaurant_menu_outlined,
+      icon: imageAsset == null ? Icons.restaurant_menu_outlined : null,
+      imageAsset: imageAsset,
       title: item.name,
       subtitle: item.excerpt?.trim().isNotEmpty == true
           ? item.excerpt!.trim()
           : 'Lihat resep makanan kearifan lokal.',
       color: AppTheme.primary,
+      backgroundColor: const Color(0xFFE1ECC8),
       onTap: () => context.push(
         '/kebutuhan-mu/$menuSlug/$sectionSlug/group/$groupSlug/${item.slug}',
       ),

@@ -6,6 +6,7 @@ class AppTheme {
 
   /// Putih kehijauan lembut, selaras dengan palet aplikasi.
   static const Color scaffoldBackground = Color(0xFFF1F5EC);
+  static const Color menuTileBorder = Color(0xFFB8C9A8);
 
   static const Color profileCardBackground = Color(0xFFE8F4FC);
   static const Color kebutuhanMuCardBackground = Color(0xFFF97316);

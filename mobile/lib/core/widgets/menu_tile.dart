@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 /// Kartu menu dengan ikon/gambar di kiri — dipakai di home dan mengenal-stunting.
 class MenuTile extends StatelessWidget {
   const MenuTile({
@@ -48,6 +50,11 @@ class MenuTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       color: backgroundColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppTheme.menuTileBorder),
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
