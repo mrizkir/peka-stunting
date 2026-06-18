@@ -30,13 +30,6 @@ class AppInfoScreen extends ConsumerWidget {
           data: (content) => Text(content.title),
           orElse: () => const Text('Info Aplikasi'),
         ),
-        actions: [
-          IconButton(
-            onPressed: () => refresh(),
-            tooltip: 'Muat ulang',
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: refresh,

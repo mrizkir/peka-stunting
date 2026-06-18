@@ -68,13 +68,6 @@ class KebutuhanMuContentScreen extends ConsumerWidget {
           data: (content) => Text(content.title),
           orElse: () => Text(mockItem?.name ?? 'Materi'),
         ),
-        actions: [
-          IconButton(
-            onPressed: () => refresh(),
-            tooltip: 'Muat ulang',
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: refresh,

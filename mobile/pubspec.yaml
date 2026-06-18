@@ -86,6 +86,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/deteksi_dini/
+    - assets/images/mengenal_stunting/
     - assets/images/group/
     - assets/images/remaja_putri/
     - assets/images/ibu_hamil/

@@ -4,21 +4,13 @@ class AppTheme {
   static const Color primary = Color(0xFF059669);
   static const Color primaryDark = Color(0xFF047857);
 
+  /// Putih kehijauan lembut, selaras dengan palet aplikasi.
+  static const Color scaffoldBackground = Color(0xFFF1F5EC);
+
   static const Color profileCardBackground = Color(0xFFE8F4FC);
   static const Color kebutuhanMuCardBackground = Color(0xFFF97316);
   static const Color infoAppCardBackground = Color(0xFFD1FAE5);
   static const double homeCardRadius = 22;
-
-  static const LinearGradient appBackgroundGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      Color(0xFFE1ECC8),
-      Color(0xFFF8FAFC),
-      Color(0xFFA0C49D),
-    ],
-    stops: [0.0, 0.5, 1.0],
-  );
 
   static ThemeData light() {
     final colorScheme = ColorScheme.fromSeed(
@@ -30,11 +22,11 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: Colors.transparent,
+      scaffoldBackgroundColor: scaffoldBackground,
       appBarTheme: const AppBarTheme(
         centerTitle: false,
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: scaffoldBackground,
         foregroundColor: Color(0xFF0F172A),
       ),
       cardTheme: CardThemeData(

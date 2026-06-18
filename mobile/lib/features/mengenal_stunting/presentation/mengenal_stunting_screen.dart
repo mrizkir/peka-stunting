@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/peka_app_bar.dart';
 import '../../../core/widgets/menu_tile.dart';
+import '../mengenal_stunting_config.dart';
 import '../data/mengenal_stunting_repository.dart';
 import '../models/mengenal_stunting_models.dart';
 
@@ -28,13 +29,6 @@ class MengenalStuntingScreen extends ConsumerWidget {
     return Scaffold(
       appBar: PekaAppBar(
         title: const Text('Mengenal Stunting'),
-        actions: [
-          IconButton(
-            onPressed: () => refresh(),
-            tooltip: 'Muat ulang',
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: refresh,
@@ -55,49 +49,11 @@ class MengenalStuntingScreen extends ConsumerWidget {
             if (menu.items.isEmpty) {
               return ListView(
                 padding: const EdgeInsets.all(20),
-                children: [                                    
-                  MenuTile(
-                    imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
-                    title: 'Pengertian Stunting',
-                    subtitle: 'Memahami pengertian stunting.',
-                    color: AppTheme.primary,
-                    backgroundColor: const Color(0xFFE1ECC8),
-                    onTap: () => context.push('/mengenal-stunting/pengertian'),
-                  ),
-                  const SizedBox(height: 12),
-                  MenuTile(
-                    imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
-                    title: 'Ciri - Ciri Stunting',
-                    subtitle: 'Mengenali ciri-ciri stunting.',
-                    color: const Color(0xFF6366F1),
-                    backgroundColor: const Color(0xFFE1ECC8),
-                    onTap: () => context.push('/mengenal-stunting/ciri-ciri'),
-                  ),
-                  const SizedBox(height: 12),
-                  MenuTile(
-                    imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
-                    title: 'Penyebab Stunting',
-                    subtitle: 'Mengenali penyebab stunting.',
-                    color: const Color(0xFF6366F1),
-                    backgroundColor: const Color(0xFFE1ECC8),
-                    onTap: () => context.push('/mengenal-stunting/penyebab'),
-                  ),
-                  MenuTile(
-                    imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
-                    title: 'Siapa yang Berisiko',
-                    subtitle: 'Mengenali siapa yang berisiko stunting.',
-                    color: const Color(0xFF6366F1),
-                    backgroundColor: const Color(0xFFE1ECC8),
-                    onTap: () => context.push('/mengenal-stunting/siapa-yang-berisiko'),
-                  ),
-                  MenuTile(
-                    imageAsset: 'assets/images/level_1/icon_mengenal_stunting.png',
-                    title: 'Dampak Stunting',
-                    subtitle: 'Mengenali siapa yang berisiko stunting.',
-                    color: const Color(0xFF6366F1),
-                    backgroundColor: const Color(0xFFE1ECC8),
-                    onTap: () => context.push('/mengenal-stunting/dampak'),
-                  ),
+                children: [
+                  for (var i = 0; i < _fallbackItems.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 12),
+                    _buildFallbackTile(context, _fallbackItems[i]),
+                  ],
                 ],
               );
             }
@@ -118,11 +74,56 @@ class MengenalStuntingScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildItemTile(BuildContext context, MengenalStuntingItem item) {
+  static const _fallbackItems = [
+    _FallbackItem(
+      slug: 'pengertian',
+      title: 'Pengertian Stunting',
+      subtitle: 'Memahami pengertian stunting.',
+    ),
+    _FallbackItem(
+      slug: 'ciri-ciri',
+      title: 'Ciri - Ciri Stunting',
+      subtitle: 'Mengenali ciri-ciri stunting.',
+    ),
+    _FallbackItem(
+      slug: 'penyebab',
+      title: 'Penyebab Stunting',
+      subtitle: 'Mengenali penyebab stunting.',
+    ),
+    _FallbackItem(
+      slug: 'siapa-yang-berisiko',
+      title: 'Siapa yang Berisiko',
+      subtitle: 'Mengenali siapa yang berisiko stunting.',
+    ),
+    _FallbackItem(
+      slug: 'dampak',
+      title: 'Dampak Stunting',
+      subtitle: 'Mengenali dampak stunting.',
+    ),
+  ];
+
+  Widget _buildFallbackTile(BuildContext context, _FallbackItem item) {
     final style = _tileStyle(item.slug);
+    final imageAsset = MengenalStuntingConfig.itemLogoAsset(item.slug);
 
     return MenuTile(
-      icon: style.icon,
+      icon: imageAsset == null ? style.icon : null,
+      imageAsset: imageAsset,
+      title: item.title,
+      subtitle: item.subtitle,
+      color: style.color,
+      backgroundColor: const Color(0xFFE1ECC8),
+      onTap: () => context.push('/mengenal-stunting/${item.slug}'),
+    );
+  }
+
+  Widget _buildItemTile(BuildContext context, MengenalStuntingItem item) {
+    final style = _tileStyle(item.slug);
+    final imageAsset = MengenalStuntingConfig.itemLogoAsset(item.slug);
+
+    return MenuTile(
+      icon: imageAsset == null ? style.icon : null,
+      imageAsset: imageAsset,
       title: item.name,
       subtitle: item.excerpt?.trim().isNotEmpty == true
           ? item.excerpt!
@@ -155,6 +156,18 @@ class MengenalStuntingScreen extends ConsumerWidget {
         );
     }
   }
+}
+
+class _FallbackItem {
+  const _FallbackItem({
+    required this.slug,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String slug;
+  final String title;
+  final String subtitle;
 }
 
 class _ItemTileStyle {

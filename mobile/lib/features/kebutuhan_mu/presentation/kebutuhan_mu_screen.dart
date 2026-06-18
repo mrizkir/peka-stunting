@@ -57,13 +57,6 @@ class KebutuhanMuScreen extends ConsumerWidget {
     return Scaffold(
       appBar: PekaAppBar(
         title: const Text('Kebutuhanmu'),
-        actions: [
-          IconButton(
-            onPressed: () => refresh(),
-            tooltip: 'Muat ulang',
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: refresh,
