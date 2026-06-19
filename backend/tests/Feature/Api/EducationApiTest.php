@@ -241,6 +241,47 @@ class EducationApiTest extends TestCase
 		);
 	}
 
+	public function test_menu_show_includes_edukasi_lainnya_when_published(): void
+	{
+		$this->publishContent('remaja-putri', 'edukasi-lain-nya', [
+			'title' => 'Edukasi Lain-nya',
+			'excerpt' => 'Materi edukasi tambahan.',
+		]);
+
+		$response = $this->getJson('/api/v1/education/menus/remaja-putri');
+
+		$response->assertOk();
+
+		$sectionItems = collect($response->json('data.sections'))
+			->firstWhere('slug', 'upaya-pencegahan-stunting')['items'] ?? [];
+
+		$item = collect($sectionItems)->firstWhere('slug', 'edukasi-lain-nya');
+
+		$this->assertNotNull($item);
+		$this->assertSame('content', $item['type']);
+		$this->assertSame('Edukasi Lain-nya', $item['name']);
+	}
+
+	public function test_edukasi_lainnya_seeded_for_all_kebutuhan_mu_menus(): void
+	{
+		foreach ([
+			'remaja-putri',
+			'calon-pengantin',
+			'ibu-hamil',
+			'ibu-nifas-dan-menyusui',
+			'bayi-dan-balita',
+		] as $menuSlug) {
+			$menuId = EducationMenu::query()->where('slug', $menuSlug)->value('id');
+
+			$this->assertNotNull($menuId);
+			$this->assertDatabaseHas('education_items', [
+				'menu_id' => $menuId,
+				'slug' => 'edukasi-lain-nya',
+				'name' => 'Edukasi Lain-nya',
+			]);
+		}
+	}
+
 	public function test_bayi_balita_kearifan_group_has_four_recipes(): void
 	{
 		foreach ([

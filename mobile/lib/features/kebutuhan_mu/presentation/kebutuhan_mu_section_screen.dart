@@ -114,12 +114,14 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
 
     final isCalculator = item.isCalculator;
     final imageAsset = KebutuhanMuConfig.itemLogoAsset(item.slug);
+    final fallbackIcon = KebutuhanMuConfig.itemFallbackIcon(item.slug);
 
     return MenuTile(
       icon: imageAsset == null
-          ? (isCalculator
-              ? Icons.calculate_outlined
-              : Icons.article_outlined)
+          ? (fallbackIcon ??
+              (isCalculator
+                  ? Icons.calculate_outlined
+                  : Icons.article_outlined))
           : null,
       imageAsset: imageAsset,
       title: item.name,

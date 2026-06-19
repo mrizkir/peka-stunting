@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class KebutuhanMuConfig {
   KebutuhanMuConfig._();
 
@@ -9,6 +11,8 @@ class KebutuhanMuConfig {
 
   static const deteksiDiniSlug = 'deteksi-dini';
   static const upayaPencegahanSlug = 'upaya-pencegahan-stunting';
+  static const edukasiLainnyaSlug = 'edukasi-lain-nya';
+  static const resepLainnyaSlug = 'resep-lain-nya';
 
   static const groupTitles = {
     'remaja-putri': 'Remaja Putri',
@@ -133,6 +137,18 @@ class KebutuhanMuConfig {
         return 'assets/images/balita/imunisasi_logo.png';
       case 'menu-makanan-tambahan-berbasis-kearifan-lokal':
         return 'assets/images/balita/menu_makanan_bayi_logo.png';
+      default:
+        return null;
+    }
+  }
+
+  /// Ikon Material untuk item tanpa asset gambar khusus.
+  static IconData? itemFallbackIcon(String slug) {
+    switch (slug) {
+      case edukasiLainnyaSlug:
+        return Icons.menu_book_outlined;
+      case resepLainnyaSlug:
+        return Icons.restaurant_menu_outlined;
       default:
         return null;
     }

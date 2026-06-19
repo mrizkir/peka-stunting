@@ -110,9 +110,12 @@ class KebutuhanMuGroupScreen extends ConsumerWidget {
 
   Widget _buildRecipeTile(BuildContext context, KebutuhanMuItem item) {
     final imageAsset = KebutuhanMuConfig.itemLogoAsset(item.slug);
+    final fallbackIcon = KebutuhanMuConfig.itemFallbackIcon(item.slug);
 
     return MenuTile(
-      icon: imageAsset == null ? Icons.restaurant_menu_outlined : null,
+      icon: imageAsset == null
+          ? (fallbackIcon ?? Icons.restaurant_menu_outlined)
+          : null,
       imageAsset: imageAsset,
       title: item.name,
       subtitle: item.excerpt?.trim().isNotEmpty == true

@@ -163,6 +163,7 @@ class EducationTaxonomySeeder extends Seeder
               ['name' => 'Bahaya Begadang', 'slug' => 'bahaya-begadang'],
               ['name' => 'Jaga Organ Kesehatan Reproduksi', 'slug' => 'jaga-organ-kesehatan-reproduksi'],
               ['name' => 'Kebersihan Diri dan Lingkungan', 'slug' => 'kebersihan-diri-dan-lingkungan'],
+              $this->edukasiLainnyaItem(),
             ],
           ],
         ]),
@@ -181,6 +182,7 @@ class EducationTaxonomySeeder extends Seeder
               ['name' => 'Jaga Alat Reproduksi', 'slug' => 'jaga-alat-reproduksi'],
               ['name' => 'Rencanakan kehamilan dengan baik', 'slug' => 'rencanakan-kehamilan-dengan-baik'],
               ['name' => 'Persiapkan 1000 hari pertama kehidupan', 'slug' => 'persiapkan-1000-hari-pertama-kehidupan'],
+              $this->edukasiLainnyaItem(),
             ],
           ],
         ]),
@@ -201,6 +203,7 @@ class EducationTaxonomySeeder extends Seeder
               ['name' => 'Olahraga secara rutin', 'slug' => 'olahraga-secara-rutin'],
               ['name' => 'Hindari Stres', 'slug' => 'hindari-stres'],
               ['name' => 'Istirahat yang Cukup', 'slug' => 'istirahat-yang-cukup'],
+              $this->edukasiLainnyaItem(),
             ],
           ],
         ]),
@@ -227,6 +230,7 @@ class EducationTaxonomySeeder extends Seeder
               ['name' => 'Penuhi Kebutuhan Nutrisi', 'slug' => 'penuhi-kebutuhan-gizi-seimbang'],
               $this->menuMakananKearifanLokalUmum('makanan-kearifan-lokal-penambah-produksi-asi'),
               ['name' => 'Persiapkan KB', 'slug' => 'persiapkan-kb'],
+              $this->edukasiLainnyaItem(),
             ],
           ],
         ],
@@ -251,6 +255,7 @@ class EducationTaxonomySeeder extends Seeder
               $this->menuMakananKearifanLokalBayiBalita(),
               ['name' => 'Memantau Tumbuh Kembang', 'slug' => 'rutin-memantau-pertumbuhan-balita'],
               ['name' => 'Imunisasi', 'slug' => 'imunisasi'],
+              $this->edukasiLainnyaItem(),
             ],
           ],
         ],
@@ -275,6 +280,7 @@ class EducationTaxonomySeeder extends Seeder
         ['name' => 'Dadar Telur Ikan Bilis Daun Singkong'],
         ['name' => 'Dimsum Ikan Kembung Tahu Wortel'],
         ['name' => 'Tumis Daun Pepaya Bilis Basah'],
+        $this->resepLainnyaItem(),
       ],
     ];
   }
@@ -292,7 +298,30 @@ class EducationTaxonomySeeder extends Seeder
         ['name' => 'Bubur Ikan Kembung'],
         ['name' => 'Otak-Otak Bilis Basah'],
         ['name' => 'Tim Pindang Ikan Patin Sayuran'],
+        $this->resepLainnyaItem(),
       ],
+    ];
+  }
+
+  /**
+   * @return array{name: string, slug: string}
+   */
+  private function edukasiLainnyaItem(): array
+  {
+    return [
+      'name' => 'Edukasi Lain-nya',
+      'slug' => 'edukasi-lain-nya',
+    ];
+  }
+
+  /**
+   * @return array{name: string, slug: string}
+   */
+  private function resepLainnyaItem(): array
+  {
+    return [
+      'name' => 'Resep Lain-nya',
+      'slug' => 'resep-lain-nya',
     ];
   }
 
