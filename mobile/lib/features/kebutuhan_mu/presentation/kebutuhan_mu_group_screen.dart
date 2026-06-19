@@ -73,11 +73,7 @@ class KebutuhanMuGroupScreen extends ConsumerWidget {
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(20),
-              children: [
-                Text(
-                  '${group.items.length} resep tersedia.',
-                  style: TextStyle(color: Colors.grey.shade700),
-                ),
+              children: [                
                 const SizedBox(height: 16),
                 if (group.items.isEmpty)
                   const Text('Resep akan ditambahkan.')

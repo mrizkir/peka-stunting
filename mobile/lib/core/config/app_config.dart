@@ -15,4 +15,10 @@ class AppConfig {
   static const String appTagline =
       'Paket Edukasi Komprehensif Berbasis Android dan '
       'Kearifan Lokal untuk Deteksi Dini dan Pencegahan Stunting';
+
+  /// Domain HTTPS untuk parameter `origin` embed YouTube di WebView.
+  static String get youtubeEmbedOrigin {
+    final uri = Uri.parse(productionApiBaseUrl);
+    return '${uri.scheme}://${uri.host}';
+  }
 }

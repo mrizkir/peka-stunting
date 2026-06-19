@@ -1,10 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
+import '../config/app_config.dart';
 import '../utils/education_video_url.dart';
 import '../utils/youtube_url.dart';
+
+final _youtubePlayerParams = YoutubePlayerParams(
+  origin: AppConfig.youtubeEmbedOrigin,
+  privacyEnhancedMode: true,
+  showControls: true,
+  showFullscreenButton: true,
+  strictRelatedVideos: true,
+  enableCaption: true,
+  interfaceLanguage: 'id',
+);
 
 /// Pemutar video edukasi inline: YouTube embed atau file langsung (MP4/VPS).
 class EducationVideoPlayer extends StatefulWidget {
@@ -21,9 +34,12 @@ class EducationVideoPlayer extends StatefulWidget {
 
 class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
   YoutubePlayerController? _youtubeController;
+  StreamSubscription<YoutubePlayerValue>? _youtubeSub;
   VideoPlayerController? _fileController;
   Future<void>? _fileInitFuture;
   String? _errorMessage;
+  bool? _wasVisible;
+  Timer? _youtubeErrorTimer;
 
   @override
   void initState() {
@@ -44,15 +60,9 @@ class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
         }
         _youtubeController = YoutubePlayerController.fromVideoId(
           videoId: videoId,
-          params: const YoutubePlayerParams(
-            origin: 'https://www.youtube-nocookie.com',
-            privacyEnhancedMode: true,
-            showControls: true,
-            showFullscreenButton: true,
-            strictRelatedVideos: true,
-            enableCaption: true,
-          ),
+          params: _youtubePlayerParams,
         );
+        _youtubeSub = _youtubeController!.stream.listen(_onYoutubeValue);
       case EducationVideoKind.directFile:
         final uri = Uri.tryParse(url);
         if (uri == null) {
@@ -86,9 +96,74 @@ class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
     final isVisible = TickerMode.of(context) &&
         (ModalRoute.of(context)?.isCurrent ?? true);
 
-    if (!isVisible) {
+    if (_wasVisible == true && !isVisible) {
       _pausePlayback();
     }
+    _wasVisible = isVisible;
+  }
+
+  void _onYoutubeValue(YoutubePlayerValue value) {
+    if (!mounted) {
+      return;
+    }
+
+    if (value.playerState == PlayerState.playing ||
+        value.playerState == PlayerState.buffering) {
+      _youtubeErrorTimer?.cancel();
+      if (_errorMessage != null) {
+        setState(() => _errorMessage = null);
+      }
+      return;
+    }
+
+    final error = value.error;
+    if (error == YoutubeError.none ||
+        error == YoutubeError.unknown ||
+        error == YoutubeError.sameAsNotEmbeddable2) {
+      // Error 152 sering muncul sementara saat init; abaikan.
+      return;
+    }
+
+    _youtubeErrorTimer?.cancel();
+    _youtubeErrorTimer = Timer(const Duration(seconds: 2), () {
+      if (!mounted) {
+        return;
+      }
+
+      final current = _youtubeController?.value;
+      if (current == null) {
+        return;
+      }
+
+      if (current.playerState == PlayerState.playing ||
+          current.playerState == PlayerState.buffering) {
+        return;
+      }
+
+      final currentError = current.error;
+      if (currentError == YoutubeError.none ||
+          currentError == YoutubeError.unknown ||
+          currentError == YoutubeError.sameAsNotEmbeddable2) {
+        return;
+      }
+
+      final message = _youtubeErrorMessage(currentError);
+      if (_errorMessage != message) {
+        setState(() => _errorMessage = message);
+      }
+    });
+  }
+
+  String _youtubeErrorMessage(YoutubeError error) {
+    return switch (error) {
+      YoutubeError.notEmbeddable ||
+      YoutubeError.sameAsNotEmbeddable ||
+      YoutubeError.sameAsNotEmbeddable2 =>
+        'Video tidak dapat diputar di aplikasi. Buka di YouTube.',
+      YoutubeError.videoNotFound || YoutubeError.cannotFindVideo =>
+        'Video tidak ditemukan.',
+      _ => 'Video tidak dapat diputar di aplikasi.',
+    };
   }
 
   void _pausePlayback() {
@@ -98,13 +173,24 @@ class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
 
   @override
   void dispose() {
+    _youtubeErrorTimer?.cancel();
+    _youtubeSub?.cancel();
     _youtubeController?.close();
     _fileController?.dispose();
     super.dispose();
   }
 
+  Uri? _externalVideoUri() {
+    final trimmed = widget.videoUrl.trim();
+    final videoId = YoutubeUrl.videoId(trimmed);
+    if (videoId != null) {
+      return Uri.parse('https://www.youtube.com/watch?v=$videoId');
+    }
+    return Uri.tryParse(trimmed);
+  }
+
   Future<void> _openExternally() async {
-    final uri = Uri.tryParse(widget.videoUrl.trim());
+    final uri = _externalVideoUri();
     if (uri == null) {
       return;
     }
@@ -142,7 +228,8 @@ class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
                   ),
                 ),
                 if (EducationVideoUrl.kind(widget.videoUrl) ==
-                    EducationVideoKind.external)
+                        EducationVideoKind.external ||
+                    _youtubeController != null)
                   TextButton.icon(
                     onPressed: _openExternally,
                     icon: const Icon(Icons.open_in_new, size: 18),
@@ -158,6 +245,19 @@ class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
               child: _buildPlayerBody(context),
             ),
           ),
+          if (_youtubeController != null && _errorMessage == null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: Text(
+                'Ketuk beberapa kali untuk memutar video, atau klik tombol buka untuk membuka di YouTube.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey.shade600,
+                      height: 1.4,
+                      fontStyle: FontStyle.italic,
+                    ),
+              ),
+            ),
         ],
       ),
     );
@@ -173,9 +273,22 @@ class _EducationVideoPlayerState extends State<EducationVideoPlayer> {
 
     final youtubeController = _youtubeController;
     if (youtubeController != null) {
-      return YoutubePlayer(
+      return YoutubePlayerThumbnail(
         controller: youtubeController,
         aspectRatio: 16 / 9,
+        backgroundColor: Colors.black,
+        playIcon: Material(
+          color: Colors.black38,
+          shape: const CircleBorder(),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Icon(
+              Icons.play_arrow,
+              size: 48,
+              color: Colors.white,
+            ),
+          ),
+        ),
       );
     }
 

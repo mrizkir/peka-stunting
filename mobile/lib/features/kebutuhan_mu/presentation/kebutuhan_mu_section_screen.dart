@@ -78,11 +78,7 @@ class KebutuhanMuSectionScreen extends ConsumerWidget {
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(20),
-              children: [
-                Text(
-                  '${section.items.length} materi tersedia.',
-                  style: TextStyle(color: Colors.grey.shade700),
-                ),
+              children: [                
                 const SizedBox(height: 16),
                 if (section.items.isEmpty)
                   const Text('Materi akan ditambahkan.')
