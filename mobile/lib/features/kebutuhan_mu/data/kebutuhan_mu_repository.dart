@@ -85,9 +85,9 @@ class KebutuhanMuRepository {
           !_groupsEquals(cachedSnapshot.data, freshSnapshot.data)) {
         yield freshSnapshot;
       }
-    } on DioException {
+    } catch (_) {
       if (cachedSnapshot == null) {
-        yield null;
+        rethrow;
       }
     }
   }
@@ -117,9 +117,9 @@ class KebutuhanMuRepository {
           !_menuDetailEquals(cachedSnapshot.data, freshSnapshot.data)) {
         yield freshSnapshot;
       }
-    } on DioException {
+    } catch (_) {
       if (cachedSnapshot == null) {
-        yield null;
+        rethrow;
       }
     }
   }
@@ -130,7 +130,7 @@ class KebutuhanMuRepository {
   }) async {
     try {
       return await _fetchRemoteContent(menuSlug: menuSlug, itemSlug: itemSlug);
-    } on DioException {
+    } catch (_) {
       final cached = await _cache.get(menuSlug: menuSlug, itemSlug: itemSlug);
       if (cached != null) {
         return _fromCached(cached);
@@ -165,9 +165,9 @@ class KebutuhanMuRepository {
           !_contentEquals(cachedSnapshot.content, freshSnapshot.content)) {
         yield freshSnapshot;
       }
-    } on DioException {
+    } catch (_) {
       if (cachedSnapshot == null) {
-        yield null;
+        rethrow;
       }
     }
   }

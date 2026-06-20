@@ -29,7 +29,7 @@ final dioProvider = Provider<Dio>((ref) {
         }
         handler.next(options);
       },
-      onError: (error, handler) {
+      onError: (error, handler) async {
         final response = error.response;
         if (response?.data is Map<String, dynamic>) {
           final data = response!.data as Map<String, dynamic>;
@@ -46,6 +46,26 @@ final dioProvider = Provider<Dio>((ref) {
           );
           return;
         }
+
+        final retryCount = (error.requestOptions.extra['retryCount'] as int?) ?? 0;
+        final shouldRetry = retryCount < 2 &&
+            (error.type == DioExceptionType.connectionError ||
+                error.type == DioExceptionType.connectionTimeout ||
+                error.type == DioExceptionType.receiveTimeout ||
+                error.type == DioExceptionType.sendTimeout);
+
+        if (shouldRetry) {
+          error.requestOptions.extra['retryCount'] = retryCount + 1;
+          await Future<void>.delayed(Duration(milliseconds: 600 * (retryCount + 1)));
+          try {
+            final retried = await dio.fetch<dynamic>(error.requestOptions);
+            handler.resolve(retried);
+            return;
+          } catch (_) {
+            // Lanjut ke error handler default di bawah.
+          }
+        }
+
         handler.next(error);
       },
     ),

@@ -1,6 +1,5 @@
 <x-layouts.app
   title="Menu Edukasi"
-  eyebrow="Fixed content"
   :heading="$menu['title']"
   :description="\Illuminate\Support\Str::limit(strip_tags($menu['description'] ?? ''), 200)"
 >

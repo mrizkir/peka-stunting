@@ -57,9 +57,20 @@ class KebutuhanMuMenuScreen extends ConsumerWidget {
               ),
               error: (error, _) => Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  'Deskripsi menu belum dapat dimuat: $error',
-                  style: TextStyle(color: Colors.grey.shade600),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Deskripsi menu belum dapat dimuat: $error',
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () =>
+                          ref.invalidate(kebutuhanMuMenuDetailProvider(menuSlug)),
+                      child: const Text('Coba lagi'),
+                    ),
+                  ],
                 ),
               ),
               data: (detail) {

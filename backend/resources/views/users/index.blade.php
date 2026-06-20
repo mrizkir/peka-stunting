@@ -76,18 +76,19 @@
             <th>No. HP</th>
             <th>Jenis Kelamin</th>
             <th>Tgl Lahir</th>
+            <th>Role</th>
             <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
           <template x-if="loading">
             <tr>
-              <td colspan="7" class="py-8 text-center text-sm text-base-content/60">Memuat data...</td>
+              <td colspan="8" class="py-8 text-center text-sm text-base-content/60">Memuat data...</td>
             </tr>
           </template>
           <template x-if="!loading && users.length === 0">
             <tr>
-              <td colspan="7" class="py-8 text-center text-sm text-base-content/60">
+              <td colspan="8" class="py-8 text-center text-sm text-base-content/60">
                 Tidak ada data user.
               </td>
             </tr>
@@ -114,6 +115,7 @@
               <td x-text="user.phone"></td>
               <td x-text="user.gender_label"></td>
               <td x-text="user.birth_date_label"></td>
+              <td x-text="user.role_label"></td>
               <td>
                 <div class="flex items-center justify-end gap-2">
                   <a :href="user.edit_url" class="btn btn-sm btn-ghost">Edit</a>

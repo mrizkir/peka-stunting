@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
 {
@@ -22,6 +23,7 @@ class StoreUserRequest extends FormRequest
 			'phone' => ['required', 'string', 'max:15', 'regex:/^\d{8,15}$/', 'unique:users,phone'],
 			'gender' => ['nullable', 'in:L,P'],
 			'birth_date' => ['nullable', 'date', 'before_or_equal:today'],
+			'role' => ['required', 'string', Rule::in(['admin', 'kader', 'user'])],
 			'password' => ['required', 'string', 'min:8', 'confirmed'],
 		];
 	}
@@ -56,6 +58,7 @@ class StoreUserRequest extends FormRequest
 			'phone' => 'nomor HP',
 			'gender' => 'jenis kelamin',
 			'birth_date' => 'tanggal lahir',
+			'role' => 'role',
 			'password' => 'password',
 		];
 	}

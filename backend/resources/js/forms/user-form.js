@@ -7,6 +7,7 @@ export function createUserForm(initialForm = {}, initialErrors = {}, options = {
       phone: '',
       gender: '',
       birth_date: '',
+      role: 'user',
       password: '',
       password_confirmation: '',
       ...initialForm,
@@ -17,6 +18,7 @@ export function createUserForm(initialForm = {}, initialErrors = {}, options = {
       phone: '',
       gender: '',
       birth_date: '',
+      role: '',
       password: '',
       password_confirmation: '',
       ...initialErrors,
@@ -76,6 +78,16 @@ export function createUserForm(initialForm = {}, initialErrors = {}, options = {
         }
       }
 
+      if (field === 'role') {
+        if (!this.form.role) {
+          this.errors.role = 'Role wajib dipilih.';
+        } else if (!['admin', 'kader', 'user'].includes(this.form.role)) {
+          this.errors.role = 'Role tidak valid.';
+        } else {
+          this.errors.role = '';
+        }
+      }
+
       if (field === 'password') {
         if (this.isEdit && !this.form.password) {
           this.errors.password = '';
@@ -108,7 +120,7 @@ export function createUserForm(initialForm = {}, initialErrors = {}, options = {
       }
     },
     validateForm() {
-      ['name', 'email', 'phone', 'gender', 'birth_date', 'password', 'password_confirmation']
+      ['name', 'email', 'phone', 'gender', 'birth_date', 'role', 'password', 'password_confirmation']
         .forEach((field) => this.validateField(field));
 
       return !Object.values(this.errors).some((message) => message);

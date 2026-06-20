@@ -1,6 +1,5 @@
 <x-layouts.app
     title="Menu Edukasi"
-    eyebrow="Fixed content"
     heading="Menu Edukasi"
     description="Pilih menu utama untuk melihat submenu dan konten yang tersedia."
 >

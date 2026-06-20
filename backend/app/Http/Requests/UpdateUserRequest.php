@@ -26,6 +26,7 @@ class UpdateUserRequest extends FormRequest
 			'phone' => ['required', 'string', 'max:15', 'regex:/^\d{8,15}$/', Rule::unique('users', 'phone')->ignore($userId)],
 			'gender' => ['nullable', 'in:L,P'],
 			'birth_date' => ['nullable', 'date', 'before_or_equal:today'],
+			'role' => ['required', 'string', Rule::in(['admin', 'kader', 'user'])],
 			'password' => ['nullable', 'string', 'min:8', 'confirmed'],
 			'profile_photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:'.UploadSizeLimit::POSTER_IMAGE_MAX_KILOBYTES],
 			'remove_profile_photo' => ['nullable', 'boolean'],
@@ -65,6 +66,7 @@ class UpdateUserRequest extends FormRequest
 			'phone' => 'nomor HP',
 			'gender' => 'jenis kelamin',
 			'birth_date' => 'tanggal lahir',
+			'role' => 'role',
 			'password' => 'password',
 		];
 	}

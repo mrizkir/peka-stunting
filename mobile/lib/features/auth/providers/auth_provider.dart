@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/auth_repository.dart';
 import '../models/user_model.dart';
 import '../../../core/analytics/analytics_providers.dart';
+import '../../../core/network/api_exception.dart';
 
 final authStateProvider =
     AsyncNotifierProvider<AuthNotifier, UserModel?>(AuthNotifier.new);
@@ -15,13 +16,27 @@ class AuthNotifier extends AsyncNotifier<UserModel?> {
     if (token == null || token.isEmpty) {
       return null;
     }
+
+    final cachedUser = await repository.cachedUser();
+
     try {
       final user = await repository.me();
       await ref.read(analyticsServiceProvider).setUserId('${user.id}');
       return user;
+    } on ApiException catch (error) {
+      if (error.statusCode == 401) {
+        await repository.clearLocalSession();
+        return null;
+      }
+      if (cachedUser != null) {
+        return cachedUser;
+      }
+      rethrow;
     } catch (_) {
-      await repository.logout();
-      return null;
+      if (cachedUser != null) {
+        return cachedUser;
+      }
+      rethrow;
     }
   }
 

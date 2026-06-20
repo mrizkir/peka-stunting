@@ -57,6 +57,7 @@ class AuthRepository {
       final token = payload['token'] as String;
       await _tokenStorage.saveToken(token);
       final user = UserModel.fromJson(payload['user'] as Map<String, dynamic>);
+      await _persistUser(user);
       await _analytics.setUserId('${user.id}');
       await _analytics.track(AnalyticsEventNames.registerSuccess);
       unawaited(_analytics.flush());
@@ -87,6 +88,7 @@ class AuthRepository {
       final token = payload['token'] as String;
       await _tokenStorage.saveToken(token);
       final user = UserModel.fromJson(payload['user'] as Map<String, dynamic>);
+      await _persistUser(user);
       await _analytics.setUserId('${user.id}');
       await _analytics.track(AnalyticsEventNames.loginSuccess);
       unawaited(_analytics.flush());
@@ -144,10 +146,26 @@ class AuthRepository {
     try {
       final response = await _dio.get('/auth/me');
       final data = parseApiData(response.data);
-      return UserModel.fromJson(data);
+      final user = UserModel.fromJson(data);
+      await _persistUser(user);
+      return user;
     } on DioException catch (error) {
       rethrowApi(error);
     }
+  }
+
+  Future<UserModel?> cachedUser() async {
+    final raw = await _tokenStorage.readUserJson();
+    if (raw == null) {
+      return null;
+    }
+
+    return UserModel.fromJson(raw);
+  }
+
+  Future<void> clearLocalSession() async {
+    await _tokenStorage.clearToken();
+    await _analytics.setUserId(null);
   }
 
   Future<void> logout() async {
@@ -185,7 +203,9 @@ class AuthRepository {
         }),
       );
       final data = parseApiData(response.data);
-      return UserModel.fromJson(data);
+      final user = UserModel.fromJson(data);
+      await _persistUser(user);
+      return user;
     } on DioException catch (error) {
       rethrowApi(error);
     }
@@ -195,9 +215,22 @@ class AuthRepository {
     try {
       final response = await _dio.delete('/auth/profile-photo');
       final data = parseApiData(response.data);
-      return UserModel.fromJson(data);
+      final user = UserModel.fromJson(data);
+      await _persistUser(user);
+      return user;
     } on DioException catch (error) {
       rethrowApi(error);
     }
+  }
+
+  Future<void> _persistUser(UserModel user) async {
+    await _tokenStorage.saveUserJson({
+      'id': user.id,
+      'name': user.name,
+      'email': user.email,
+      'phone': user.phone,
+      'roles': user.roles,
+      'profile_photo_url': user.profilePhotoUrl,
+    });
   }
 }

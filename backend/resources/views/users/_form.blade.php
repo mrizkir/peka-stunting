@@ -1,5 +1,6 @@
 @php
   $isEdit = isset($user);
+  $selectedRole = old('role', $isEdit ? ($user->roles->first()?->name ?? 'user') : 'user');
 @endphp
 
 @if ($isEdit)
@@ -136,6 +137,28 @@
     />
     <p x-show="errors.birth_date" x-text="errors.birth_date" class="text-error mt-2 text-sm"></p>
     @error('birth_date')
+      <p class="text-error mt-2 text-sm">{{ $message }}</p>
+    @enderror
+  </div>
+
+  <div>
+    <x-ui.select
+      label="Role"
+      name="role"
+      required
+      x-model="form.role"
+      @change="validateField('role')"
+      @blur="validateField('role')"
+      x-bind:aria-invalid="errors.role ? 'true' : 'false'"
+      x-bind:class="errors.role ? 'border-error focus:border-error focus:ring-error/20' : ''"
+    >
+      <option value="">Pilih role</option>
+      <option value="admin" @selected($selectedRole === 'admin')>Admin</option>
+      <option value="kader" @selected($selectedRole === 'kader')>Kader</option>
+      <option value="user" @selected($selectedRole === 'user')>User</option>
+    </x-ui.select>
+    <p x-show="errors.role" x-text="errors.role" class="text-error mt-2 text-sm"></p>
+    @error('role')
       <p class="text-error mt-2 text-sm">{{ $message }}</p>
     @enderror
   </div>
