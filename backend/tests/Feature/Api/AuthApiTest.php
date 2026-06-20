@@ -6,6 +6,8 @@ use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -229,5 +231,61 @@ class AuthApiTest extends TestCase
 			->assertOk()
 			->assertJsonPath('success', true)
 			->assertJsonPath('data.profile_photo_url', $expectedUrl);
+	}
+
+	public function test_forgot_password_sends_notification_for_existing_user(): void
+	{
+		Notification::fake();
+
+		$user = User::factory()->create(['email' => 'user@test.com']);
+
+		$this->postJson('/api/v1/auth/forgot-password', [
+			'email' => 'user@test.com',
+		])
+			->assertOk()
+			->assertJsonPath('success', true)
+			->assertJsonPath(
+				'data.message',
+				'Jika email terdaftar, kami mengirim instruksi reset password.',
+			);
+
+		Notification::assertSentTo($user, \App\Notifications\ResetPasswordNotification::class);
+	}
+
+	public function test_forgot_password_returns_success_for_unknown_email(): void
+	{
+		Notification::fake();
+
+		$this->postJson('/api/v1/auth/forgot-password', [
+			'email' => 'unknown@test.com',
+		])
+			->assertOk()
+			->assertJsonPath('success', true);
+
+		Notification::assertNothingSent();
+	}
+
+	public function test_reset_password_updates_password_and_revokes_tokens(): void
+	{
+		$user = User::factory()->create([
+			'email' => 'user@test.com',
+			'password' => Hash::make('old-password'),
+		]);
+		$user->createToken('mobile');
+
+		$token = Password::createToken($user);
+
+		$this->postJson('/api/v1/auth/reset-password', [
+			'email' => 'user@test.com',
+			'token' => $token,
+			'password' => 'new-password123',
+			'password_confirmation' => 'new-password123',
+		])
+			->assertOk()
+			->assertJsonPath('success', true)
+			->assertJsonPath('data.message', 'Password berhasil diubah. Silakan login.');
+
+		$this->assertTrue(Hash::check('new-password123', $user->fresh()->password));
+		$this->assertSame(0, $user->fresh()->tokens()->count());
 	}
 }

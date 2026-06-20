@@ -81,6 +81,50 @@ class AuthRepository {
     }
   }
 
+  Future<void> forgotPassword({required String email}) async {
+    try {
+      final response = await _dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+      final data = response.data as Map<String, dynamic>;
+      if (data['success'] != true) {
+        throw ApiException(
+          data['message']?.toString() ?? 'Permintaan reset password gagal.',
+        );
+      }
+    } on DioException catch (error) {
+      rethrowApi(error);
+    }
+  }
+
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/auth/reset-password',
+        data: {
+          'email': email,
+          'token': token,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+      );
+      final data = response.data as Map<String, dynamic>;
+      if (data['success'] != true) {
+        throw ApiException(
+          data['message']?.toString() ?? 'Reset password gagal.',
+        );
+      }
+    } on DioException catch (error) {
+      rethrowApi(error);
+    }
+  }
+
   Future<UserModel> me() async {
     try {
       final response = await _dio.get('/auth/me');

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
-import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/auth/presentation/reset_password_screen.dart';
+import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/home/presentation/app_info_screen.dart';
 import '../../features/home/presentation/app_shell.dart';
@@ -33,8 +35,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final location = state.matchedLocation;
       final user = authState.valueOrNull;
       final isSplash = location == '/splash';
-      final isAuthRoute =
-          location == '/login' || location == '/register';
+      final isAuthRoute = location == '/login' ||
+          location == '/register' ||
+          location == '/forgot-password' ||
+          location == '/reset-password';
 
       if (isSplash) {
         return null;
@@ -66,6 +70,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => ResetPasswordScreen(
+          initialEmail: state.extra as String?,
+        ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

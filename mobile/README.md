@@ -14,7 +14,7 @@ Aplikasi Android (Flutter) untuk kader.
 
 Default (tanpa konfigurasi tambahan):
 
-**`https://peka-stunting.yacanet.com/api/v1`**
+**`https://peka-stunting.anugerahbintan.ac.id/api/v1`**
 
 Didefinisikan di `lib/core/config/app_config.dart`. HP cukup **internet** (WiFi atau mobile data); tidak perlu backend lokal atau `adb reverse`.
 
@@ -115,7 +115,7 @@ API: `GET /api/v1/app/splash` → `{ "image_url": "https://..." }` atau `null`. 
 
 | Gejala | Solusi |
 |--------|--------|
-| Timeout / tidak bisa login | Cek internet HP; pastikan `https://peka-stunting.yacanet.com` bisa dibuka di browser HP |
+| Timeout / tidak bisa login | Cek internet HP; pastikan `https://peka-stunting.anugerahbintan.ac.id` bisa dibuka di browser HP |
 | Perlu backend lokal | Pakai `--dart-define=API_BASE_URL=...` (lihat atas) |
 | Konten edukasi masih lama setelah edit di CMS | Pastikan status **Published** di backend; di app **tarik ke bawah** (pull refresh) atau ketuk ikon refresh di layar Edukasi/Konten |
 
@@ -277,7 +277,7 @@ Checklist sebelum rilis:
 
 - [ ] Keystore & `key.properties` sudah dipakai (bukan debug)
 - [ ] `version` di `pubspec.yaml` dinaikkan
-- [ ] Login & API ke `https://peka-stunting.yacanet.com` diuji di HP fisik (build `--release`)
+- [ ] Login & API ke `https://peka-stunting.anugerahbintan.ac.id` diuji di HP fisik (build `--release`)
 - [ ] Akun kader / registrasi berfungsi di production
 
 ## Akun demo

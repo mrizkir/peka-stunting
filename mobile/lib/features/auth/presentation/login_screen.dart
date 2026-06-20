@@ -146,6 +146,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           : const Text('Masuk'),
                     ),
                     const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () => context.push('/forgot-password'),
+                        child: const Text('Lupa password?'),
+                      ),
+                    ),
                     TextButton(
                       onPressed: _isLoading ? null : () => context.push('/register'),
                       child: const Text('Belum punya akun? Daftar'),

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\ForgotPasswordRequest;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
+use App\Http\Requests\Api\ResetPasswordRequest;
 use App\Http\Requests\Api\UploadProfilePhotoRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
@@ -13,6 +15,9 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -65,6 +70,42 @@ class AuthController extends Controller
 			'token' => $token,
 			'token_type' => 'Bearer',
 			'user' => (new UserResource($user))->resolve($request),
+		]);
+	}
+
+	public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+	{
+		Password::sendResetLink($request->validated());
+
+		return ApiResponse::success([
+			'message' => 'Jika email terdaftar, kami mengirim instruksi reset password.',
+		]);
+	}
+
+	public function resetPassword(ResetPasswordRequest $request): JsonResponse
+	{
+		$status = Password::reset(
+			$request->validated(),
+			function (User $user, string $password) {
+				$user->forceFill([
+					'password' => Hash::make($password),
+					'remember_token' => Str::random(60),
+				])->save();
+
+				$user->tokens()->delete();
+
+				event(new PasswordReset($user));
+			},
+		);
+
+		if ($status !== Password::PASSWORD_RESET) {
+			throw ValidationException::withMessages([
+				'email' => [__($status)],
+			]);
+		}
+
+		return ApiResponse::success([
+			'message' => 'Password berhasil diubah. Silakan login.',
 		]);
 	}
 

@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Login - {{ config('app.name', 'PEKA Stunting') }}</title>
+        <title>Lupa Password - {{ config('app.name', 'PEKA Stunting') }}</title>
 
         <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
         <link rel="icon" type="image/png" href="{{ asset('images/logo_app_1.png') }}">
@@ -18,14 +18,14 @@
         <main class="mx-auto flex min-h-screen w-full max-w-md items-center px-5 py-10">
             <x-ui.card
                 class="w-full"
-                title="Masuk ke aplikasi"
-                description="Gunakan email dan password akun Anda untuk melanjutkan."
+                title="Lupa password"
+                description="Masukkan email akun Anda. Kami akan mengirim instruksi reset password jika email terdaftar."
             >
                 @if (session('status'))
                     <div class="alert alert-success mb-4 text-sm">{{ session('status') }}</div>
                 @endif
 
-                <form action="{{ route('login.attempt') }}" method="POST" class="space-y-4">
+                <form action="{{ route('password.email') }}" method="POST" class="space-y-4">
                     @csrf
 
                     <x-ui.input
@@ -40,32 +40,12 @@
                         <p class="text-error text-sm">{{ $message }}</p>
                     @enderror
 
-                    <x-ui.input
-                        label="Password"
-                        name="password"
-                        type="password"
-                        required
-                    />
-                    @error('password')
-                        <p class="text-error text-sm">{{ $message }}</p>
-                    @enderror
-
-                    <div class="flex items-center justify-between gap-3 text-sm">
-                        <label class="flex items-center gap-2">
-                            <input type="checkbox" name="remember" class="checkbox checkbox-sm">
-                            <span>Ingat saya</span>
-                        </label>
-                        <a href="{{ route('password.request') }}" class="text-primary font-medium hover:underline">
-                            Lupa password?
-                        </a>
-                    </div>
-
-                    <x-ui.button type="submit" class="w-full">Masuk</x-ui.button>
+                    <x-ui.button type="submit" class="w-full">Kirim instruksi reset</x-ui.button>
                 </form>
 
                 <p class="mt-4 text-center text-sm text-base-content/70">
-                    Belum punya akun?
-                    <a href="{{ route('register') }}" class="text-primary font-medium hover:underline">Daftar sekarang</a>
+                    Ingat password?
+                    <a href="{{ route('login') }}" class="text-primary font-medium hover:underline">Kembali ke login</a>
                 </p>
             </x-ui.card>
         </main>
