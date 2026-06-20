@@ -1,6 +1,11 @@
 import 'package:dio/dio.dart';
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/analytics/analytics_event_names.dart';
+import '../../../core/analytics/analytics_providers.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/storage/token_storage.dart';
@@ -10,14 +15,16 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
     ref.read(dioProvider),
     ref.read(tokenStorageProvider),
+    ref.read(analyticsServiceProvider),
   );
 });
 
 class AuthRepository {
-  AuthRepository(this._dio, this._tokenStorage);
+  AuthRepository(this._dio, this._tokenStorage, this._analytics);
 
   final Dio _dio;
   final TokenStorage _tokenStorage;
+  final AnalyticsService _analytics;
 
   Future<UserModel> register({
     required String name,
@@ -49,7 +56,11 @@ class AuthRepository {
       final payload = data['data'] as Map<String, dynamic>;
       final token = payload['token'] as String;
       await _tokenStorage.saveToken(token);
-      return UserModel.fromJson(payload['user'] as Map<String, dynamic>);
+      final user = UserModel.fromJson(payload['user'] as Map<String, dynamic>);
+      await _analytics.setUserId('${user.id}');
+      await _analytics.track(AnalyticsEventNames.registerSuccess);
+      unawaited(_analytics.flush());
+      return user;
     } on DioException catch (error) {
       rethrowApi(error);
     }
@@ -75,7 +86,11 @@ class AuthRepository {
       final payload = data['data'] as Map<String, dynamic>;
       final token = payload['token'] as String;
       await _tokenStorage.saveToken(token);
-      return UserModel.fromJson(payload['user'] as Map<String, dynamic>);
+      final user = UserModel.fromJson(payload['user'] as Map<String, dynamic>);
+      await _analytics.setUserId('${user.id}');
+      await _analytics.track(AnalyticsEventNames.loginSuccess);
+      unawaited(_analytics.flush());
+      return user;
     } on DioException catch (error) {
       rethrowApi(error);
     }
@@ -142,6 +157,9 @@ class AuthRepository {
       // Abaikan error logout jaringan, token tetap dihapus lokal.
     } finally {
       await _tokenStorage.clearToken();
+      await _analytics.setUserId(null);
+      await _analytics.track(AnalyticsEventNames.logout);
+      unawaited(_analytics.flush());
     }
   }
 
@@ -152,6 +170,7 @@ class AuthRepository {
       rethrowApi(error);
     } finally {
       await _tokenStorage.clearToken();
+      await _analytics.setUserId(null);
     }
   }
 

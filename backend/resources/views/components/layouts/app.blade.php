@@ -61,6 +61,9 @@
             <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'nav-link-active' : 'nav-link' }}">
               Kelola user
             </a>
+            <a href="{{ route('statistics.index') }}" class="{{ request()->routeIs('statistics.*') ? 'nav-link-active' : 'nav-link' }}">
+              Statistik aplikasi
+            </a>
             <a href="{{ route('screening-submissions.index') }}" class="{{ request()->routeIs('screening-submissions.*') ? 'nav-link-active' : 'nav-link' }}">
               Jawaban skrining
             </a>

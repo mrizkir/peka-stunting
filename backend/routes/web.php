@@ -12,6 +12,7 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EducationController;
 use App\Http\Controllers\ScreeningSubmissionController;
+use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -80,6 +81,10 @@ Route::middleware('auth')->group(function () {
   });
 
   Route::resource('users', UserController::class)->except(['show'])->middleware('role:admin');
+
+  Route::middleware('role:admin')->prefix('statistics')->name('statistics.')->group(function () {
+    Route::get('/', [StatisticsController::class, 'index'])->name('index');
+  });
 
   Route::middleware('role:admin')->prefix('screening-submissions')->name('screening-submissions.')->group(function () {
     Route::get('/', [ScreeningSubmissionController::class, 'index'])->name('index');

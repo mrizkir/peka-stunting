@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/analytics/analytics_providers.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
@@ -28,11 +29,16 @@ final _shellNavigatorProfileKey =
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
+    observers: [ref.read(analyticsRouteObserverProvider)],
     initialLocation: '/splash',
     refreshListenable: _AuthRefreshListenable(ref),
     redirect: (context, state) {
-      final authState = ref.read(authStateProvider);
       final location = state.matchedLocation;
+      if (location != '/splash') {
+        ref.read(analyticsServiceProvider).trackScreenView(location);
+      }
+
+      final authState = ref.read(authStateProvider);
       final user = authState.valueOrNull;
       final isSplash = location == '/splash';
       final isAuthRoute = location == '/login' ||

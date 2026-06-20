@@ -1,20 +1,28 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/analytics/analytics_providers.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/network/api_client.dart';
-import '../models/nutritional_status_screening_submission.dart';
 import '../domain/nutritional_status_calculator.dart';
+import '../models/nutritional_status_screening_submission.dart';
 
 final nutritionalStatusScreeningRepositoryProvider =
     Provider<NutritionalStatusScreeningRepository>((ref) {
-  return NutritionalStatusScreeningRepository(ref.read(dioProvider));
+  return NutritionalStatusScreeningRepository(
+    ref.read(dioProvider),
+    ref.read(analyticsServiceProvider),
+  );
 });
 
 class NutritionalStatusScreeningRepository {
-  NutritionalStatusScreeningRepository(this._dio);
+  NutritionalStatusScreeningRepository(this._dio, this._analytics);
 
   final Dio _dio;
+  final AnalyticsService _analytics;
   static final _dateFormat = DateFormat('yyyy-MM-dd');
 
   Future<NutritionalStatusScreeningSubmission> submit({
@@ -37,7 +45,16 @@ class NutritionalStatusScreeningRepository {
         },
       );
       final data = parseApiData(response.data);
-      return NutritionalStatusScreeningSubmission.fromJson(data);
+      final submission = NutritionalStatusScreeningSubmission.fromJson(data);
+      unawaited(
+        _analytics.trackScreeningCompleted(
+          calculatorSlug: submission.calculatorSlug,
+          menuSlug: submission.menuSlug,
+          category: submission.category,
+        ),
+      );
+      unawaited(_analytics.flush());
+      return submission;
     } on DioException catch (error) {
       rethrowApi(error);
     }

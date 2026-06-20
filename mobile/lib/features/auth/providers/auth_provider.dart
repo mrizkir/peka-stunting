@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/auth_repository.dart';
 import '../models/user_model.dart';
+import '../../../core/analytics/analytics_providers.dart';
 
 final authStateProvider =
     AsyncNotifierProvider<AuthNotifier, UserModel?>(AuthNotifier.new);
@@ -15,7 +16,9 @@ class AuthNotifier extends AsyncNotifier<UserModel?> {
       return null;
     }
     try {
-      return await repository.me();
+      final user = await repository.me();
+      await ref.read(analyticsServiceProvider).setUserId('${user.id}');
+      return user;
     } catch (_) {
       await repository.logout();
       return null;

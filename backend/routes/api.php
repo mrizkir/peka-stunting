@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AnalyticsController;
 use App\Http\Controllers\Api\V1\AnemiaCalculatorEvaluateController;
 use App\Http\Controllers\Api\V1\AnemiaScreeningSubmissionController;
 use App\Http\Controllers\Api\V1\BreastfeedingCalculatorEvaluateController;
@@ -32,6 +33,11 @@ Route::prefix('v1')->group(function () {
 			Route::delete('/profile-photo', [AuthController::class, 'destroyProfilePhoto'])->name('profile-photo.destroy');
 			Route::delete('/account', [AuthController::class, 'destroyAccount'])->name('account.destroy');
 		});
+	});
+
+	Route::prefix('analytics')->name('api.v1.analytics.')->group(function () {
+		Route::post('/events', [AnalyticsController::class, 'storeEvents'])->name('events.store');
+		Route::post('/sessions', [AnalyticsController::class, 'storeSession'])->name('sessions.store');
 	});
 
 	Route::prefix('education')->name('api.v1.education.')->group(function () {
