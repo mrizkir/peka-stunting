@@ -195,6 +195,15 @@ CREATE TABLE IF NOT EXISTS $_posterFilesTable (
     );
   }
 
+  Future<void> deletePosterFile(String url) async {
+    final db = await _database();
+    await db.delete(
+      _posterFilesTable,
+      where: 'url = ?',
+      whereArgs: [url],
+    );
+  }
+
   Future<void> deletePosterFilesNotIn(Iterable<String> urls) async {
     final keep = urls.toSet();
     final db = await _database();

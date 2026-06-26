@@ -110,8 +110,8 @@
             x-model="form.gender"
             @change="validateField('gender')"
             @blur="validateField('gender')"
-            :aria-invalid="errors.gender ? 'true' : 'false'"
-            :class="errors.gender ? 'border-error focus:border-error focus:ring-error/20' : ''"
+            x-bind:aria-invalid="errors.gender ? 'true' : 'false'"
+            x-bind:class="errors.gender ? 'border-error focus:border-error focus:ring-error/20' : ''"
           >
             <option value="">Pilih jenis kelamin</option>
             <option value="L" @selected(old('gender') === 'L')>Laki-laki</option>

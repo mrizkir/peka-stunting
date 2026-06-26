@@ -157,36 +157,9 @@ class _EducationPosterImageState extends State<EducationPosterImage> {
       url: widget.url,
       fit: widget.imageFit,
       gaplessPlayback: true,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) {
-          return child;
-        }
-        return Center(
-          child: CircularProgressIndicator(
-            value: loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
-                : null,
-            color: Colors.white,
-          ),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        debugPrint('Failed to load poster image: ${widget.url}');
-        debugPrint('Error: $error');
-        if (stackTrace != null) {
-          debugPrint('StackTrace: $stackTrace');
-        }
-
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            'Gagal memuat gambar.\n\nURL:\n${widget.url}\n\nError:\n$error',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade300),
-          ),
-        );
-      },
+      loadingBuilder: (context) => const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      ),
     );
 
     final poster = RepaintBoundary(

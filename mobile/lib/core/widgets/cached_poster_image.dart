@@ -8,14 +8,11 @@ import '../storage/cache_providers.dart';
 
 typedef CachedPosterImageErrorBuilder = Widget Function(
   BuildContext context,
-  Object error,
-  StackTrace? stackTrace,
+  VoidCallback onRetry,
 );
 
 typedef CachedPosterImageLoadingBuilder = Widget Function(
   BuildContext context,
-  Widget child,
-  ImageChunkEvent? loadingProgress,
 );
 
 class CachedPosterImage extends ConsumerStatefulWidget {
@@ -40,12 +37,13 @@ class CachedPosterImage extends ConsumerStatefulWidget {
 
 class _CachedPosterImageState extends ConsumerState<CachedPosterImage> {
   String? _localPath;
-  bool _resolved = false;
+  bool _isLoading = true;
+  bool _hasError = false;
 
   @override
   void initState() {
     super.initState();
-    _resolveLocalPath();
+    unawaited(_loadPoster());
   }
 
   @override
@@ -53,61 +51,73 @@ class _CachedPosterImageState extends ConsumerState<CachedPosterImage> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.url != widget.url) {
       _localPath = null;
-      _resolved = false;
-      _resolveLocalPath();
+      _isLoading = true;
+      _hasError = false;
+      unawaited(_loadPoster());
     }
   }
 
-  Future<void> _resolveLocalPath() async {
+  Future<void> _loadPoster() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+      _localPath = null;
+    });
+
     final cache = ref.read(posterImageCacheProvider);
-    final localPath = await cache.resolveLocalPath(widget.url);
+    var localPath = await cache.resolveLocalPath(widget.url);
+    localPath ??= await cache.cacheUrl(widget.url);
+
     if (!mounted) {
       return;
     }
-    setState(() {
-      _localPath = localPath;
-      _resolved = true;
-    });
-    if (localPath == null) {
-      unawaited(
-        cache.cacheUrl(widget.url).then((_) {
-          if (mounted) {
-            _resolveLocalPath();
-          }
-        }),
-      );
+
+    if (localPath != null) {
+      setState(() {
+        _localPath = localPath;
+        _isLoading = false;
+        _hasError = false;
+      });
+      return;
     }
+
+    setState(() {
+      _isLoading = false;
+      _hasError = true;
+    });
+  }
+
+  Future<void> _handleFileError() async {
+    await ref.read(posterImageCacheProvider).invalidateUrl(widget.url);
+    await _loadPoster();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_resolved) {
-      return widget.loadingBuilder?.call(context, const SizedBox.shrink(), null) ??
+    if (_isLoading) {
+      return widget.loadingBuilder?.call(context) ??
           const Center(child: CircularProgressIndicator(color: Colors.white));
     }
 
-    if (_localPath != null) {
-      return _buildImage(Image.file(
+    if (_hasError || _localPath == null) {
+      return widget.errorBuilder?.call(context, _loadPoster) ??
+          _defaultError(context);
+    }
+
+    return _buildImage(
+      Image.file(
         File(_localPath!),
         fit: widget.fit,
         gaplessPlayback: widget.gaplessPlayback,
         errorBuilder: (context, error, stackTrace) {
-          return widget.errorBuilder?.call(context, error, stackTrace) ??
-              _defaultError(context, error);
+          unawaited(_handleFileError());
+          return widget.loadingBuilder?.call(context) ??
+              const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              );
         },
-      ));
-    }
-
-    return _buildImage(Image.network(
-      widget.url,
-      fit: widget.fit,
-      gaplessPlayback: widget.gaplessPlayback,
-      loadingBuilder: widget.loadingBuilder,
-      errorBuilder: (context, error, stackTrace) {
-        return widget.errorBuilder?.call(context, error, stackTrace) ??
-            _defaultError(context, error);
-      },
-    ));
+      ),
+    );
   }
 
   Widget _buildImage(Widget image) {
@@ -121,13 +131,38 @@ class _CachedPosterImageState extends ConsumerState<CachedPosterImage> {
     }
   }
 
-  Widget _defaultError(BuildContext context, Object error) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Text(
-        'Gagal memuat gambar.\n\nURL:\n${widget.url}\n\nError:\n$error',
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.grey.shade300),
+  Widget _defaultError(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.image_not_supported_outlined, color: Colors.grey.shade400, size: 40),
+            const SizedBox(height: 12),
+            Text(
+              'Gagal memuat gambar.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey.shade300,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Periksa koneksi internet lalu coba lagi.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: _loadPoster,
+              icon: const Icon(Icons.refresh, color: Colors.white70),
+              label: const Text('Coba lagi'),
+              style: TextButton.styleFrom(foregroundColor: Colors.white70),
+            ),
+          ],
+        ),
       ),
     );
   }
