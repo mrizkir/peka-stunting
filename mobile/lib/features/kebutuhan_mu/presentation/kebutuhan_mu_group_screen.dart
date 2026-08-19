@@ -120,7 +120,7 @@ class KebutuhanMuGroupScreen extends ConsumerWidget {
       title: item.name,
       subtitle: item.excerpt?.trim().isNotEmpty == true
           ? item.excerpt!.trim()
-          : 'Lihat resep makanan kearifan lokal.',
+          : 'Lihat resep makanan kearifan lokal. Video demonstrasi dibawahnya.',
       color: AppTheme.primary,
       backgroundColor: const Color(0xFFE1ECC8),
       onTap: () => context.push(

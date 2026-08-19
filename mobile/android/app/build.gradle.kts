@@ -20,7 +20,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "ac.id.anugerahbintan.peka_stunting"
+    namespace = "ac.id.anugerahbintan.pekastunting"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "ac.id.anugerahbintan.peka_stunting"
+        applicationId = "id.ac.anugerahbintan.pekastunting"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

@@ -266,12 +266,12 @@ build/app/outputs/bundle/release/app-release.aab
 1. **Akun** [Google Play Console](https://play.google.com/console) (biaya pendaftaran developer sekali).
 2. **Buat aplikasi** → isi nama, bahasa, kategori (kesehatan/edukasi sesuai konten PEKA).
 3. **App signing** — aktifkan *Play App Signing*; unggah AAB; Google menandatangani APK untuk perangkat user.
-4. **Store listing** — deskripsi, screenshot (phone), ikon 512×512, feature graphic, kebijakan privasi (URL wajib jika app mengumpulkan data login).
+4. **Store listing** — deskripsi, screenshot (phone), ikon 512×512, feature graphic, kebijakan privasi: `https://peka-stunting.anugerahbintan.ac.id/privacy`. URL hapus akun (Data safety): `https://peka-stunting.anugerahbintan.ac.id/hapus-akun`.
 5. **Konten & kepatuhan** — kuesioner rating konten, Data safety (login kader, data kesehatan jika ada).
 6. **Testing** — jalur *Internal testing* / *Closed testing* dulu; tambahkan email tester; bagikan link opt-in.
 7. **Production** — buat *Release* → unggah `app-release.aab` → review (biasanya beberapa jam–hari).
 
-**Application ID** (tidak boleh diubah setelah rilis pertama): `ac.id.anugerahbintan.peka_stunting`.
+**Application ID** (tidak boleh diubah setelah rilis pertama): `id.ac.anugerahbintan.pekastunting`.
 
 Checklist sebelum rilis:
 

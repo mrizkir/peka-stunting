@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyC0s4etOyp8K35l0nKjDitnebyq3BosZlg',
-    appId: '1:1073720821408:android:1658e5c05483c33ea8ebc5',
+    appId: '1:1073720821408:android:dce16ce7bb7ceae6a8ebc5',
     messagingSenderId: '1073720821408',
     projectId: 'peka-stunting',
     storageBucket: 'peka-stunting.firebasestorage.app',

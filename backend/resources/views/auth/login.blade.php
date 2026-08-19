@@ -67,6 +67,9 @@
                     Belum punya akun?
                     <a href="{{ route('register') }}" class="text-primary font-medium hover:underline">Daftar sekarang</a>
                 </p>
+                <p class="mt-2 text-center text-sm text-base-content/70">
+                    <a href="{{ route('privacy') }}" class="text-primary font-medium hover:underline">Kebijakan privasi</a>
+                </p>
             </x-ui.card>
         </main>
     </body>
